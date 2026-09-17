@@ -3,8 +3,8 @@
     "$comment": "La bibliothèque anti-fraude se décrit par ce qu'elle fait, jamais par comment elle le fait : en publier le mécanisme, c'est publier de quoi le contourner.",
     "slug": "mobile-ticketing",
     "title": {
-      "fr": "La billettique mobile de 33 réseaux de transport",
-      "en": "Mobile ticketing for 33 transport networks"
+      "fr": "La billettique mobile des réseaux de transport",
+      "en": "Mobile ticketing for transport networks"
     },
     "subtitle": {
       "fr": "Instant System · depuis mai 2023 · en production",
