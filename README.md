@@ -142,6 +142,12 @@ produirait un carré vide dans le PDF — et un CV avec un carré vide est un CV
 grillé. Le build refuse alors de rendre, en nommant les caractères fautifs.
 C'est cette garde qui a fait apparaître le `→` de « Objective-C → Swift ».
 
+**Le PDF reste lisible par une machine.** Les polices étant embarquées en
+sous-ensembles, tout dépend de la table `ToUnicode` : sans elle, le document
+serait parfait à l'œil et rendrait du charabia à l'extraction — donc perdu pour
+un ATS. `pdftotext` rend aujourd'hui le CV entier, accents compris, et un test
+empêche qu'un changement de gabarit ou de moteur casse ça en silence.
+
 ### Ce que le CV contient
 
 Un CV n'est pas la page imprimée. La page déplie deux études de cas dont une en
