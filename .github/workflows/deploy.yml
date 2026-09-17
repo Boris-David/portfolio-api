@@ -150,3 +150,67 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run deploy
+
+      # ─────────────────────────────────────────────────────────────────────
+      # Propager au site — le chemin rapide (ADR 0007)
+      # ─────────────────────────────────────────────────────────────────────
+      #
+      # `portfolio-web` est un export statique : il ne « rafraîchit » pas son
+      # contenu, il se **reconstruit**. Sans ce signal, une modification
+      # publiée ici resterait invisible sur le site jusqu'à ce que son témoin
+      # de fraîcheur la rattrape — trois heures au pire.
+      #
+      # Le jeton est un PAT à portée fine, limité au seul dépôt
+      # `portfolio-web`, permission « Contents: read and write ». Il vit dans
+      # les secrets de CE dépôt et n'a aucun droit ailleurs.
+      #
+      # Son absence **n'échoue pas** — et c'est le seul repli gracieux que ce
+      # workflow s'autorise, parce qu'il est réellement couvert : le témoin de
+      # fraîcheur du site détecte et répare la propagation manquée tout seul.
+      # Ce qui est perdu sans jeton, c'est la vitesse, jamais la justesse.
+      - name: Vérifier l'empreinte du contenu publié
+        id: contenu
+        run: |
+          set -euo pipefail
+          for essai in 1 2 3 4 5; do
+            version="$(curl -fsS "https://api.amissan.dev/v1/portfolio?lang=fr" \
+              | python3 -c 'import json,sys; print(json.load(sys.stdin)["meta"]["contentVersion"])' || true)"
+            [ -n "${version:-}" ] && break
+            sleep 5
+          done
+          if [ -z "${version:-}" ]; then
+            echo "::error::L'API ne répond pas après publication — déploiement incomplet."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Contenu en ligne : $version"
+
+      - name: Demander au site de se reconstruire
+        env:
+          JETON: ${{ secrets.PORTFOLIO_WEB_DISPATCH_TOKEN }}
+          VERSION: ${{ steps.contenu.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -z "$JETON" ]; then
+            echo "::warning::PORTFOLIO_WEB_DISPATCH_TOKEN absent — le site se mettra à jour par son témoin de fraîcheur (3 h au pire). Voir l'en-tête de ce workflow."
+            exit 0
+          fi
+
+          code="$(curl -sS -o /tmp/dispatch.txt -w '%{http_code}' \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $JETON" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/Boris-David/portfolio-web/dispatches \
+            -d "{\"event_type\":\"contenu-mis-a-jour\",\"client_payload\":{\"contentVersion\":\"$VERSION\"}}")"
+
+          # 204 est la seule réponse correcte. Un 404 signifie presque toujours
+          # un jeton sans la permission « Contents: write » sur le dépôt visé —
+          # GitHub ne distingue pas « absent » de « pas le droit de le voir ».
+          if [ "$code" != "204" ]; then
+            echo "::error::Le site n'a pas pu être prévenu (HTTP $code)."
+            [ "$code" = "404" ] && echo "404 : dépôt introuvable OU jeton sans la permission « Contents: write » sur portfolio-web."
+            cat /tmp/dispatch.txt
+            exit 1
+          fi
+          echo "Site prévenu — reconstruction sur le contenu $VERSION."
