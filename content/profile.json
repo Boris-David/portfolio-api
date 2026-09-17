@@ -1,0 +1,70 @@
+{
+  "$comment": "Identité, accroche et contact. La forme longue du nom est réservée au pied de page et au CV.",
+  "name": {
+    "display": "Amissan Amoussou-G.",
+    "full": "Amissan Boris-David Amoussou-Guenou"
+  },
+  "headline": {
+    "fr": "Ingénieur iOS senior",
+    "en": "Senior iOS Engineer"
+  },
+  "availability": {
+    "fr": "Ouvert aux opportunités",
+    "en": "Open to opportunities"
+  },
+  "location": {
+    "fr": "Alpes-Maritimes",
+    "en": "French Riviera, France"
+  },
+  "remote": {
+    "fr": "Opportunités de télétravail complet et fréquent",
+    "en": "Fully remote, or mostly remote"
+  },
+  "languages": {
+    "fr": "Français · anglais professionnel (TOEIC 840)",
+    "en": "French · professional English (TOEIC 840)"
+  },
+  "summary": [
+    {
+      "fr": "Je développe la **billettique mobile** chez **Instant System**, et c'est mon domaine d'expertise. J'ai travaillé dans un grand groupe comme dans une startup de dix personnes, et j'y arrive toujours de la même façon : je prends un périmètre, je l'apprends à fond, et je le rends fiable.",
+      "en": "I build the **mobile ticketing** at **Instant System**, and it is my area of expertise. I have worked in a large corporation and in a ten-person startup alike, and I go about it the same way every time: I take a scope, I learn it thoroughly, and I make it dependable."
+    },
+    {
+      "fr": "Ce que j'apporte au-delà du code, ce sont des faits, pas des adjectifs : **j'ai tenu seul la billettique d'un portefeuille entier pendant un an**, et la bibliothèque anti-fraude qui protège nos titres dématérialisés est née d'une initiative personnelle — elle tourne aujourd'hui sur nos deux socles.",
+      "en": "What I bring beyond the code is facts, not adjectives: **I owned the ticketing of an entire app portfolio alone for a year**, and the anti-fraud library that protects our digital tickets began as my own initiative — it now runs on both of our platforms."
+    }
+  ],
+  "contact": {
+    "email": "amissan.ag@outlook.fr",
+    "title": {
+      "fr": "Travaillons ensemble.",
+      "en": "Let's work together."
+    },
+    "body": {
+      "fr": "Je cherche un poste de développeur iOS — confirmé, senior ou lead. L'étiquette compte moins que le reste : ce qui compte, c'est que ma voix pèse dans les choix techniques.",
+      "en": "I am looking for an iOS developer role — mid-level, senior or lead. The label matters less than the rest: what matters is that my voice carries weight in technical decisions."
+    },
+    "links": [
+      {
+        "id": "github",
+        "label": "GitHub",
+        "url": "https://github.com/Boris-David"
+      },
+      {
+        "id": "linkedin",
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/boris-david-amoussou-guenou-434169174"
+      }
+    ]
+  },
+  "footer": {
+    "role": {
+      "fr": "ingénieur iOS",
+      "en": "iOS engineer"
+    },
+    "location": {
+      "fr": "Alpes-Maritimes, France · télétravail",
+      "en": "French Riviera, France · remote"
+    }
+  }
+}

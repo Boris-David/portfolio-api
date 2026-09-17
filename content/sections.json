@@ -1,0 +1,52 @@
+[
+  {
+    "$comment": "Les en-têtes éditoriaux. Le numéro affiché (« 01 · ») est le rang dans cette liste, jamais une donnée.",
+    "id": "case-studies",
+    "eyebrow": { "fr": "Études de cas", "en": "Case studies" },
+    "title": {
+      "fr": "Deux projets racontés comme un ingénieur produit",
+      "en": "Two projects told the way a product engineer would"
+    },
+    "intro": {
+      "fr": "Le problème, les décisions que j'ai prises, et ce qu'elles ont produit. Ce n'est pas la syntaxe Swift qui se juge ici, c'est le jugement technique.",
+      "en": "The problem, the decisions I made, and what they produced. What is being judged here is not Swift syntax — it is technical judgement."
+    },
+    "note": null
+  },
+  {
+    "id": "apps",
+    "eyebrow": { "fr": "En production", "en": "In production" },
+    "title": {
+      "fr": "33 applications, 3 territoires, un même socle",
+      "en": "33 apps, 3 territories, one platform"
+    },
+    "intro": {
+      "fr": "Chez Instant System, les applications de transport sont construites en marque blanche sur un socle commun. **La couche de billettique que je développe et maintiens est embarquée dans chacune de celles-ci** — de Lyon à la Toscane, jusqu'à la Polynésie française.",
+      "en": "At Instant System, transport apps are built white-label on a shared platform. **The ticketing layer I build and maintain ships inside every one of these** — from Lyon to Tuscany, all the way to French Polynesia."
+    },
+    "note": {
+      "fr": "Applications éditées par les autorités de transport et leurs exploitants. Ma contribution porte sur la couche mobile de billettique — achat, usage, validation et contrôle — et son intégration dans chaque application.",
+      "en": "Apps published by transport authorities and their operators. My contribution covers the mobile ticketing layer — purchase, usage, validation and inspection — and its integration into each app."
+    }
+  },
+  {
+    "id": "depth",
+    "eyebrow": { "fr": "Profondeur technique", "en": "Technical depth" },
+    "title": { "fr": "Là où je vais au fond", "en": "Where I go deep" },
+    "intro": {
+      "fr": "Trois sujets creusés, plutôt que quinze technologies listées. Ce sont ceux sur lesquels je peux être challengé une heure durant.",
+      "en": "Three subjects explored properly, rather than fifteen technologies listed. These are the ones I can be challenged on for an hour."
+    },
+    "note": null
+  },
+  {
+    "id": "background",
+    "eyebrow": { "fr": "Parcours", "en": "Background" },
+    "title": {
+      "fr": "Expériences, formation et certifications",
+      "en": "Experience, education and certifications"
+    },
+    "intro": null,
+    "note": null
+  }
+]
