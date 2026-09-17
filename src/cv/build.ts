@@ -1,5 +1,6 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { digest } from '../content/digest.js';
 import { LOCALES, type Locale } from '../domain/locale.js';
 import type { Portfolio } from '../domain/portfolio.js';
 import { CV_DIRECTORY, cvFileName, type CvManifest } from './artifacts.js';
@@ -27,6 +28,16 @@ export interface RenderedCv {
   readonly locale: Locale;
   readonly fileName: string;
   readonly bytes: Uint8Array;
+  /**
+   * L'empreinte du **HTML source**, pas des octets du PDF.
+   *
+   * Chromium écrit une date de création dans le PDF : deux rendus d'un contenu
+   * identique produisent donc des octets différents, et une empreinte calculée
+   * dessus changerait à chaque build. Un client qui revalide retéléchargerait
+   * 330 Ko pour rien. Le HTML, lui, ne dépend que du contenu et des tokens —
+   * il change exactement quand le document change, et jamais autrement.
+   */
+  readonly sourceDigest: string;
 }
 
 export async function renderAllCvs(
@@ -42,6 +53,7 @@ export async function renderAllCvs(
       locale,
       fileName: cvFileName(content.profile.name.full, locale),
       bytes: await renderer.render(html),
+      sourceDigest: digest(html),
     });
   }
   return rendered;
@@ -66,6 +78,7 @@ export function writeCvArtifacts(
       locale: cv.locale,
       file: cv.fileName,
       bytes: cv.bytes.byteLength,
+      sourceDigest: cv.sourceDigest,
     })),
   };
   writeFileSync(join(directory, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);

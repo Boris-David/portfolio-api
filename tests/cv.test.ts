@@ -175,8 +175,8 @@ describe('les artefacts rendus', () => {
         contentVersion: version,
         renderedAt: new Date().toISOString(),
         files: [
-          { locale: 'fr', file: 'absent-fr.pdf', bytes: 10 },
-          { locale: 'en', file: 'absent-en.pdf', bytes: 10 },
+          { locale: 'fr', file: 'absent-fr.pdf', bytes: 10, sourceDigest: 'FR' },
+          { locale: 'en', file: 'absent-en.pdf', bytes: 10, sourceDigest: 'EN' },
         ],
       }),
     );
@@ -191,5 +191,54 @@ describe('les artefacts rendus', () => {
     expect(cvFileName('Amissan Boris-David Amoussou-Guenou', 'fr')).toBe(
       'amissan-boris-david-amoussou-guenou-cv-fr.pdf',
     );
+  });
+});
+
+describe("l'ETag du CV", () => {
+  it('se calcule sur le HTML source, jamais sur les octets du PDF', async () => {
+    const { mkdtempSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const { writeCvArtifacts } = await import('../src/cv/build.js');
+    const { loadCvLibrary } = await import('../src/cv/artifacts.js');
+
+    const directory = mkdtempSync(join(tmpdir(), 'cv-etag-'));
+    try {
+      // Deux « rendus » du MÊME document : même HTML source, octets différents —
+      // c'est précisément ce que produit Chromium, qui horodate ses PDF.
+      const rendu = (marqueur: number) => [
+        {
+          locale: 'fr' as const,
+          fileName: 'x-cv-fr.pdf',
+          sourceDigest: 'SOURCE-FR',
+          bytes: new Uint8Array([37, 80, 68, 70, marqueur]),
+        },
+        {
+          locale: 'en' as const,
+          fileName: 'x-cv-en.pdf',
+          sourceDigest: 'SOURCE-EN',
+          bytes: new Uint8Array([37, 80, 68, 70, marqueur]),
+        },
+      ];
+
+      writeCvArtifacts(rendu(1), 'v1', directory);
+      const premier = loadCvLibrary('v1', 'X', directory);
+      writeCvArtifacts(rendu(2), 'v1', directory);
+      const second = loadCvLibrary('v1', 'X', directory);
+
+      expect(premier.status).toBe('ready');
+      expect(second.status).toBe('ready');
+      if (premier.status !== 'ready' || second.status !== 'ready') return;
+
+      // Les octets ont changé…
+      expect(premier.artifacts.fr.bytes).not.toEqual(second.artifacts.fr.bytes);
+      // …mais l'ETag, non : un client qui revalide reçoit son 304.
+      expect(second.artifacts.fr.etag).toBe(premier.artifacts.fr.etag);
+      expect(premier.artifacts.fr.etag).toBe('"SOURCE-FR"');
+      // Et deux langues ne partagent jamais le même ETag.
+      expect(premier.artifacts.en.etag).not.toBe(premier.artifacts.fr.etag);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 });

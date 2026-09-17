@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { PATHS } from '../config.js';
-import { strongETag } from '../content/digest.js';
 import { LOCALES, LocaleSchema, type Locale } from '../domain/locale.js';
 
 /**
@@ -23,6 +22,7 @@ const ManifestSchema = z.object({
         locale: LocaleSchema,
         file: z.string().min(1),
         bytes: z.number().int().positive(),
+        sourceDigest: z.string().min(1),
       }),
     )
     .length(LOCALES.length),
@@ -111,7 +111,11 @@ export function loadCvLibrary(
     artifacts[entry.locale] = {
       locale: entry.locale,
       bytes,
-      etag: strongETag(bytes),
+      // L'`ETag` reprend l'empreinte du HTML source scellée au rendu, et non
+      // celle des octets du PDF : Chromium les horodate, donc deux rendus d'un
+      // contenu identique produiraient deux `ETag` différents et feraient
+      // retélécharger le document sans raison.
+      etag: `"${entry.sourceDigest}"`,
       fileName: cvFileName(fullName, entry.locale),
     };
   }
