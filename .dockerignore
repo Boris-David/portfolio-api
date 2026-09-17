@@ -1,0 +1,11 @@
+node_modules/
+dist/
+artifacts/
+coverage/
+.git/
+.github/
+.claude/
+tests/
+contracts/
+*.md
+.DS_Store

@@ -1,5 +1,13 @@
 node_modules/
 dist/
+coverage/
 .DS_Store
 .env
 .env.*
+
+# Les CV rendus sont des ARTEFACTS de build, pas de la source.
+# Les versionner ferait entrer un binaire dans l'historique à chaque virgule
+# corrigée, et créerait une seconde source de vérité pour un fichier que le
+# build sait reproduire. Ils sont produits par `npm run build:cv`, et dans
+# l'image par l'étage builder du Dockerfile.
+artifacts/

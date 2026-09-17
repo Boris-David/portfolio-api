@@ -1,0 +1,45 @@
+{
+  "name": "portfolio-api",
+  "version": "1.0.0",
+  "description": "Source unique du contenu du portfolio d'Amissan Amoussou-G. — contenu validé par Zod, contrat OpenAPI dérivé, CV PDF rendu au build.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "build:cv": "tsx scripts/build-cv.ts",
+    "build:openapi": "tsx scripts/build-openapi.ts",
+    "check:openapi": "tsx scripts/build-openapi.ts --check",
+    "check:tokens": "tsx scripts/check-tokens-drift.ts",
+    "start": "node dist/src/server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.1",
+    "@hono/zod-openapi": "^1.6.3",
+    "hono": "^4.13.8",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.19.1",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
+    "playwright": "^1.63.0",
+    "prettier": "^3.9.7",
+    "tsx": "^4.23.13",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.1"
+  }
+}
