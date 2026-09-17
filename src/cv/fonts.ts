@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { PATHS } from '../config.js';
+import { PATHS } from '../node/paths.js';
 
 /**
  * Les polices du CV, **embarquées dans le document**.
  *
- * Un conteneur de rendu n'a pas Fraunces ni Instrument Sans installées : sans
+ * Une machine de CI n'a pas Fraunces ni Instrument Sans installées : sans
  * embarquement, Chromium retomberait sur une police système et le PDF ne
  * ressemblerait plus au site. Les sous-ensembles sont donc versionnés dans le
  * dépôt (168 Ko au total, licence OFL à côté) et injectés en `data:` — le

@@ -2,3 +2,5 @@ dist/
 node_modules/
 contracts/openapi.json
 assets/
+public/
+.wrangler/

@@ -9,23 +9,24 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
     "build:cv": "tsx scripts/build-cv.ts",
     "build:openapi": "tsx scripts/build-openapi.ts",
     "check:openapi": "tsx scripts/build-openapi.ts --check",
     "check:tokens": "tsx scripts/check-tokens-drift.ts",
-    "start": "node dist/src/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "deploy": "wrangler deploy",
+    "check:bundle": "tsx scripts/check-bundle-size.ts",
+    "smoke": "tsx scripts/smoke-worker.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.1",
     "@hono/zod-openapi": "^1.6.3",
     "hono": "^4.13.8",
     "zod": "^4.6.5"
@@ -40,6 +41,7 @@
     "tsx": "^4.23.13",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.70.0",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.1",
+    "wrangler": "^4.134.0"
   }
 }

@@ -1,16 +1,17 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { PATHS } from '../src/config.js';
+import { PATHS } from '../src/node/paths.js';
 import { buildSnapshot } from '../src/content/snapshot.js';
 import { RESOURCES, resourcePath } from '../src/content/snapshot.js';
 import { envelopeOf } from '../src/domain/envelope.js';
 import { LOCALES } from '../src/domain/locale.js';
 import { PART_SCHEMAS, PortfolioSchema } from '../src/domain/portfolio.js';
+import { unavailableCvStore } from '../src/cv/unavailable-store.js';
 import { createApp } from '../src/http/app.js';
 import { openApiDocument } from '../src/http/openapi.js';
 
 const snapshot = buildSnapshot();
-const app = createApp({ snapshot, cv: { status: 'unavailable', reason: 'non requis ici' } });
+const app = createApp({ snapshot, cv: () => unavailableCvStore('non requis ici') });
 
 describe('les octets servis face au contrat', () => {
   it('satisfont le schéma déclaré, pour chaque ressource et chaque langue', () => {

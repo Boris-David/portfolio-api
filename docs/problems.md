@@ -42,8 +42,9 @@ les deux cas, servir le PDF ferait mentir l'API — elle préfère le dire.
 Le contenu, lui, reste servi normalement ; `GET /health` répond alors
 `"status": "degraded"` en donnant la raison exacte.
 
-Correction : `npm run build:cv`, puis redémarrer. Dans l'image de conteneur, le
-rendu est fait par l'étage _builder_ et ce cas ne peut pas se produire.
+Correction : `npm run build:cv`, puis redéployer. En production, le script du
+Worker et les CV sont publiés **ensemble** depuis le même build, donc ce cas
+suppose un déploiement lancé sans avoir re-rendu le CV — ce que la CI refuse.
 
 ## internal
 

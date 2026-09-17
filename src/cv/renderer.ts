@@ -32,14 +32,13 @@ const PDF_OPTIONS = {
  * lentement. Chromium met en page le CV avec **le moteur qui met en page le
  * site** — la forme ne peut pas dériver parce qu'il n'y a qu'un seul calcul.
  *
- * **Le poids et le démarrage à froid.** Ils ne sont pas payés, parce que le
- * navigateur n'est jamais dans l'image qui sert. Playwright est une dépendance
- * de développement ; Chromium n'existe que dans l'étage *builder* du
- * `Dockerfile`, qui rend les deux PDF et s'arrête là. L'image d'exécution est
- * un `node:22-slim` qui contient les PDF déjà rendus. Le rendu est déclenché
- * par le changement de contenu, comme l'exige l'ADR : une requête de lecture
- * ne paie jamais un rendu, et l'instance qui se réveille n'a pas de navigateur
- * à démarrer.
+ * **Le poids et le démarrage à froid.** Ils ne sont pas payés, parce que
+ * Chromium n'est jamais là où l'API tourne. Playwright est une dépendance de
+ * développement, et le rendu vit dans la CI, qui publie ensuite le Worker et
+ * ses assets. Un Worker ne pourrait de toute façon pas lancer un navigateur :
+ * la contrainte de l'ADR — « le rendu est déclenché par le changement de
+ * contenu, jamais par la requête » — est donc tenue par la plateforme, pas par
+ * la discipline. Et un isolat V8 n'a rien à amorcer au réveil.
  */
 export async function createChromiumRenderer(): Promise<CvRenderer> {
   const browser: Browser = await chromium.launch();

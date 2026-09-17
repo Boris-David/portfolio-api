@@ -1,9 +1,11 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadContent } from '../src/content/loader.js';
-import { cvFileName, loadCvLibrary } from '../src/cv/artifacts.js';
+import { CV_ASSET_PREFIX } from '../src/config.js';
+import { createAssetsCvStore, type AssetFetcher } from '../src/cv/assets-store.js';
+import { cvFileName, readCvCatalogue } from '../src/cv/manifest.js';
 import { buildCvHtml, renderAllCvs, writeCvArtifacts } from '../src/cv/build.js';
 import { assertCharactersAreCovered } from '../src/cv/fonts.js';
 import { buildCvDocument } from '../src/cv/model.js';
@@ -113,6 +115,27 @@ describe('la couverture des polices', () => {
   });
 });
 
+/**
+ * Le magasin d'assets, simulé depuis un répertoire.
+ *
+ * C'est exactement ce que fait le binding `ASSETS` de Cloudflare : il sert un
+ * fichier par chemin, ou 404. Le test exerce donc le vrai chemin de production
+ * — manifeste lu depuis le magasin, PDF relayé depuis le magasin — sans monter
+ * de Worker.
+ */
+function assetsFromDirectory(directory: string): AssetFetcher {
+  return {
+    fetch(request: Request): Promise<Response> {
+      const asset = new URL(request.url).pathname.slice(`${CV_ASSET_PREFIX}/`.length);
+      const path = join(directory, asset);
+      if (!existsSync(path)) return Promise.resolve(new Response(null, { status: 404 }));
+      return Promise.resolve(new Response(new Uint8Array(readFileSync(path))));
+    },
+  };
+}
+
+const ASSET_ORIGIN = 'https://api.amissan.dev';
+
 describe('les artefacts rendus', () => {
   let directory: string;
   let renderer: CvRenderer;
@@ -137,9 +160,6 @@ describe('les artefacts rendus', () => {
       expect(cv.bytes.byteLength).toBeGreaterThan(50_000);
     }
     expect(manifest.contentVersion).toBe(version);
-
-    const library = loadCvLibrary(version, portfolio.fr.profile.name.full, directory);
-    expect(library.status).toBe('ready');
   });
 
   it("reste lisible par une machine — un CV que l'ATS ne lit pas est un CV perdu", async () => {
@@ -152,22 +172,53 @@ describe('les artefacts rendus', () => {
     expect(raw).toContain('/ToUnicode');
   });
 
-  it('refuse de servir un CV rendu pour un autre contenu', () => {
-    const library = loadCvLibrary('une-autre-version', 'Nom Complet', directory);
+  it("se relaie depuis le magasin d'assets, octets et nom de fichier compris", async () => {
+    const store = createAssetsCvStore(
+      assetsFromDirectory(directory),
+      ASSET_ORIGIN,
+      version,
+      portfolio.fr.profile.name.full,
+    );
 
-    expect(library.status).toBe('unavailable');
-    expect(library.status === 'unavailable' && library.reason).toContain('périmé');
+    const lookup = await store.describe('fr');
+    expect(lookup.status).toBe('ready');
+    if (lookup.status !== 'ready') return;
+
+    expect(lookup.description.fileName).toBe('amissan-boris-david-amoussou-guenou-cv-fr.pdf');
+    const body = await store.open(lookup.description);
+    expect(body).not.toBeNull();
   });
 
-  it("signale l'absence de rendu en disant quoi lancer", () => {
+  it('refuse de servir un CV rendu pour un autre contenu', async () => {
+    const store = createAssetsCvStore(
+      assetsFromDirectory(directory),
+      ASSET_ORIGIN,
+      'une-autre-version',
+      'Nom Complet',
+    );
+
+    const lookup = await store.describe('fr');
+
+    expect(lookup.status).toBe('unavailable');
+    expect(lookup.status === 'unavailable' && lookup.reason).toContain('périmé');
+  });
+
+  it("signale l'absence de rendu en disant quoi lancer", async () => {
     const empty = mkdtempSync(join(tmpdir(), 'portfolio-cv-vide-'));
-    const library = loadCvLibrary(version, 'Nom Complet', empty);
+    const store = createAssetsCvStore(
+      assetsFromDirectory(empty),
+      ASSET_ORIGIN,
+      version,
+      'Nom Complet',
+    );
 
-    expect(library.status).toBe('unavailable');
-    expect(library.status === 'unavailable' && library.reason).toContain('build:cv');
+    const lookup = await store.describe('fr');
+
+    expect(lookup.status).toBe('unavailable');
+    expect(lookup.status === 'unavailable' && lookup.reason).toContain('build:cv');
   });
 
-  it('refuse un manifeste qui annonce un fichier absent', () => {
+  it('rend « aucun octet » quand le manifeste annonce un fichier absent', async () => {
     const broken = mkdtempSync(join(tmpdir(), 'portfolio-cv-casse-'));
     writeFileSync(
       join(broken, 'manifest.json'),
@@ -180,11 +231,26 @@ describe('les artefacts rendus', () => {
         ],
       }),
     );
+    const store = createAssetsCvStore(
+      assetsFromDirectory(broken),
+      ASSET_ORIGIN,
+      version,
+      'Nom Complet',
+    );
 
-    const library = loadCvLibrary(version, 'Nom Complet', broken);
+    const lookup = await store.describe('fr');
+    expect(lookup.status).toBe('ready');
+    if (lookup.status !== 'ready') return;
 
-    expect(library.status).toBe('unavailable');
-    expect(library.status === 'unavailable' && library.reason).toContain('absent');
+    // Le manifeste ment : la route HTTP en fera un 503 explicite.
+    expect(await store.open(lookup.description)).toBeNull();
+  });
+
+  it('refuse un manifeste que le schéma ne reconnaît pas', () => {
+    const catalogue = readCvCatalogue({ contentVersion: 'v1' }, 'v1', 'Nom Complet');
+
+    expect(catalogue.status).toBe('unavailable');
+    expect(catalogue.status === 'unavailable' && catalogue.reason).toContain('illisible');
   });
 
   it('nomme le fichier depuis le nom porté par le contenu', () => {
@@ -195,50 +261,30 @@ describe('les artefacts rendus', () => {
 });
 
 describe("l'ETag du CV", () => {
-  it('se calcule sur le HTML source, jamais sur les octets du PDF', async () => {
-    const { mkdtempSync, rmSync } = await import('node:fs');
-    const { tmpdir } = await import('node:os');
-    const { join } = await import('node:path');
-    const { writeCvArtifacts } = await import('../src/cv/build.js');
-    const { loadCvLibrary } = await import('../src/cv/artifacts.js');
+  it('se calcule sur le HTML source, jamais sur les octets du PDF', () => {
+    // Deux « rendus » du MÊME document : même HTML source, octets différents —
+    // c'est précisément ce que produit Chromium, qui horodate ses PDF.
+    const manifest = (bytes: number) => ({
+      contentVersion: 'v1',
+      renderedAt: new Date().toISOString(),
+      files: [
+        { locale: 'fr', file: 'x-cv-fr.pdf', bytes, sourceDigest: 'SOURCE-FR' },
+        { locale: 'en', file: 'x-cv-en.pdf', bytes, sourceDigest: 'SOURCE-EN' },
+      ],
+    });
 
-    const directory = mkdtempSync(join(tmpdir(), 'cv-etag-'));
-    try {
-      // Deux « rendus » du MÊME document : même HTML source, octets différents —
-      // c'est précisément ce que produit Chromium, qui horodate ses PDF.
-      const rendu = (marqueur: number) => [
-        {
-          locale: 'fr' as const,
-          fileName: 'x-cv-fr.pdf',
-          sourceDigest: 'SOURCE-FR',
-          bytes: new Uint8Array([37, 80, 68, 70, marqueur]),
-        },
-        {
-          locale: 'en' as const,
-          fileName: 'x-cv-en.pdf',
-          sourceDigest: 'SOURCE-EN',
-          bytes: new Uint8Array([37, 80, 68, 70, marqueur]),
-        },
-      ];
+    const premier = readCvCatalogue(manifest(101), 'v1', 'X');
+    const second = readCvCatalogue(manifest(202), 'v1', 'X');
 
-      writeCvArtifacts(rendu(1), 'v1', directory);
-      const premier = loadCvLibrary('v1', 'X', directory);
-      writeCvArtifacts(rendu(2), 'v1', directory);
-      const second = loadCvLibrary('v1', 'X', directory);
+    expect(premier.status).toBe('ready');
+    expect(second.status).toBe('ready');
+    if (premier.status !== 'ready' || second.status !== 'ready') return;
 
-      expect(premier.status).toBe('ready');
-      expect(second.status).toBe('ready');
-      if (premier.status !== 'ready' || second.status !== 'ready') return;
-
-      // Les octets ont changé…
-      expect(premier.artifacts.fr.bytes).not.toEqual(second.artifacts.fr.bytes);
-      // …mais l'ETag, non : un client qui revalide reçoit son 304.
-      expect(second.artifacts.fr.etag).toBe(premier.artifacts.fr.etag);
-      expect(premier.artifacts.fr.etag).toBe('"SOURCE-FR"');
-      // Et deux langues ne partagent jamais le même ETag.
-      expect(premier.artifacts.en.etag).not.toBe(premier.artifacts.fr.etag);
-    } finally {
-      rmSync(directory, { recursive: true, force: true });
-    }
+    // La taille des octets a changé, l'ETag non : un client qui revalide
+    // reçoit son 304 au lieu de retélécharger 330 Ko pour rien.
+    expect(second.entries.fr.etag).toBe(premier.entries.fr.etag);
+    expect(premier.entries.fr.etag).toBe('"SOURCE-FR"');
+    // Et deux langues ne partagent jamais le même ETag.
+    expect(premier.entries.en.etag).not.toBe(premier.entries.fr.etag);
   });
 });

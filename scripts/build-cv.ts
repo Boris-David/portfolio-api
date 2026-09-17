@@ -6,8 +6,7 @@
  * relayer les octets.
  */
 import { loadContent } from '../src/content/loader.js';
-import { renderAllCvs, writeCvArtifacts } from '../src/cv/build.js';
-import { CV_DIRECTORY } from '../src/cv/artifacts.js';
+import { CV_OUTPUT_DIRECTORY, renderAllCvs, writeCvArtifacts } from '../src/cv/build.js';
 import { createChromiumRenderer } from '../src/cv/renderer.js';
 
 const { version, portfolio } = loadContent();
@@ -16,7 +15,7 @@ const renderer = await createChromiumRenderer();
 try {
   const rendered = await renderAllCvs(portfolio, renderer);
   const manifest = writeCvArtifacts(rendered, version);
-  console.log(`[cv] contenu ${version} → ${CV_DIRECTORY}`);
+  console.log(`[cv] contenu ${version} → ${CV_OUTPUT_DIRECTORY}`);
   for (const file of manifest.files) {
     console.log(`[cv]   ${file.locale} · ${file.file} · ${String(file.bytes)} octets`);
   }

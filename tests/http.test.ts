@@ -1,19 +1,33 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildSnapshot, type ContentSnapshot } from '../src/content/snapshot.js';
-import type { CvArtifact, CvLibrary } from '../src/cv/artifacts.js';
+import type { CvBody, CvLookup, CvStore } from '../src/cv/store.js';
+import { unavailableCvStore } from '../src/cv/unavailable-store.js';
 import { strongETag } from '../src/content/digest.js';
 import { createApp } from '../src/http/app.js';
 
 const PDF_BYTES = new TextEncoder().encode('%PDF-1.4 faux document de test\n%%EOF');
 
-function readyLibrary(): CvLibrary {
-  const artifact = (locale: 'fr' | 'en'): CvArtifact => ({
-    locale,
-    bytes: PDF_BYTES,
-    etag: strongETag(`${locale}-${String(PDF_BYTES.byteLength)}`),
-    fileName: `cv-${locale}.pdf`,
-  });
-  return { status: 'ready', artifacts: { fr: artifact('fr'), en: artifact('en') } };
+/**
+ * Un magasin de CV qui répond, sans toucher au magasin d'assets.
+ *
+ * Ces tests vérifient le **service** du blob — en-têtes, revalidation, 503 —
+ * pas sa production. Celle-ci est exercée pour de vrai, Chromium compris, dans
+ * `tests/cv.test.ts`.
+ */
+function readyStore(): CvStore {
+  return {
+    describe: (locale): Promise<CvLookup> =>
+      Promise.resolve({
+        status: 'ready',
+        description: {
+          locale,
+          assetPath: `/cv/cv-${locale}.pdf`,
+          fileName: `cv-${locale}.pdf`,
+          etag: strongETag(`${locale}-source`),
+        },
+      }),
+    open: (): Promise<CvBody> => Promise.resolve(PDF_BYTES.buffer),
+  };
 }
 
 let snapshot: ContentSnapshot;
@@ -21,7 +35,7 @@ let app: ReturnType<typeof createApp>;
 
 beforeAll(() => {
   snapshot = buildSnapshot();
-  app = createApp({ snapshot, cv: readyLibrary() });
+  app = createApp({ snapshot, cv: () => readyStore() });
 });
 
 describe('les ressources de contenu', () => {
@@ -156,7 +170,7 @@ describe('le CV', () => {
   it('répond 503 en disant quoi faire, plutôt que de servir un CV périmé', async () => {
     const degraded = createApp({
       snapshot,
-      cv: { status: 'unavailable', reason: 'CV périmé : rendu pour un autre contenu.' },
+      cv: () => unavailableCvStore('CV périmé : rendu pour un autre contenu.'),
     });
 
     const response = await degraded.request('/v1/cv/fr.pdf');
@@ -171,7 +185,7 @@ describe("l'exploitation", () => {
   it('signale « degraded » quand le CV manque, sans couper le contenu', async () => {
     const degraded = createApp({
       snapshot,
-      cv: { status: 'unavailable', reason: 'aucun rendu' },
+      cv: () => unavailableCvStore('aucun rendu'),
     });
 
     const health = (await (await degraded.request('/health')).json()) as {

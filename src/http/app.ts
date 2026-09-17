@@ -9,9 +9,9 @@ import {
   type Representation,
   type ResourceId,
 } from '../content/snapshot.js';
-import type { CvLibrary } from '../cv/artifacts.js';
+import type { CvStore } from '../cv/store.js';
 import { envelopeOf } from '../domain/envelope.js';
-import { LOCALES, LocaleSchema, type Locale } from '../domain/locale.js';
+import { DEFAULT_LOCALE, LOCALES, LocaleSchema, type Locale } from '../domain/locale.js';
 import { PART_SCHEMAS, PortfolioSchema } from '../domain/portfolio.js';
 import { resolveLocale } from './locale.js';
 import { openApiDocument } from './openapi.js';
@@ -25,9 +25,18 @@ const PDF_CONTENT_TYPE = 'application/pdf';
 const OK = 200;
 const NOT_MODIFIED = 304;
 
+/**
+ * Résout le magasin de CV pour la requête courante.
+ *
+ * C'est une fonction et non une valeur parce que, sur Workers, le magasin
+ * d'assets n'est accessible que par `c.env` — il n'existe pas au moment où
+ * l'application est assemblée. Un test, lui, renvoie simplement un double.
+ */
+export type CvStoreResolver = (context: Context) => CvStore;
+
 export interface AppDependencies {
   readonly snapshot: ContentSnapshot;
-  readonly cv: CvLibrary;
+  readonly cv: CvStoreResolver;
 }
 
 /**
@@ -115,7 +124,7 @@ const RESPONSE_HEADERS = {
   'Cache-Control': { description: 'Politique de cache.', schema: { type: 'string' } },
 } as const;
 
-function registerCvRoutes(app: OpenAPIHono, library: CvLibrary): void {
+function registerCvRoutes(app: OpenAPIHono, resolve: CvStoreResolver): void {
   app.openAPIRegistry.registerPath({
     method: 'get',
     path: `${BASE_PATH}/cv/{locale}.pdf`,
@@ -123,7 +132,7 @@ function registerCvRoutes(app: OpenAPIHono, library: CvLibrary): void {
     summary: 'Le CV en PDF, une version par langue.',
     description:
       'Le PDF est rendu au build, au moment où le contenu change — jamais à la requête. ' +
-      'Il est servi comme un blob statique validé par « ETag ».',
+      'Il est publié dans les Workers Static Assets et relayé ici, validé par « ETag ».',
     request: {
       params: z.object({
         locale: LocaleSchema.meta({ param: { name: 'locale', in: 'path' } }),
@@ -147,21 +156,34 @@ function registerCvRoutes(app: OpenAPIHono, library: CvLibrary): void {
   // la compilation, et une route littérale ne peut pas accepter une valeur
   // qu'on aurait oublié de valider.
   for (const locale of LOCALES) {
-    app.get(`${BASE_PATH}/cv/${locale}.pdf`, (c) => {
-      if (library.status === 'unavailable') {
-        return problemResponse(c, 'cvUnavailable', library.reason);
+    app.get(`${BASE_PATH}/cv/${locale}.pdf`, async (c) => {
+      const store = resolve(c);
+      const lookup = await store.describe(locale);
+      if (lookup.status === 'unavailable') {
+        return problemResponse(c, 'cvUnavailable', lookup.reason);
       }
-      const artifact = library.artifacts[locale];
-      c.header('ETag', artifact.etag);
+
+      const { description } = lookup;
+      c.header('ETag', description.etag);
       c.header('Cache-Control', CACHE_CONTROL.cv);
       c.header('Content-Language', locale);
-      c.header('Content-Disposition', `inline; filename="${artifact.fileName}"`);
-      if (matchesETag(c.req.header('if-none-match'), artifact.etag)) {
+      c.header('Content-Disposition', `inline; filename="${description.fileName}"`);
+
+      // La revalidation répond avant d'ouvrir le PDF : télécharger 330 Ko pour
+      // dire au client qu'il les a déjà serait absurde.
+      if (matchesETag(c.req.header('if-none-match'), description.etag)) {
         return c.body(null, NOT_MODIFIED);
       }
-      return c.body(artifact.bytes as unknown as ArrayBuffer, OK, {
-        'Content-Type': PDF_CONTENT_TYPE,
-      });
+
+      const body = await store.open(description);
+      if (body === null) {
+        return problemResponse(
+          c,
+          'cvUnavailable',
+          `Le manifeste annonce ${description.assetPath}, absent du magasin d'assets.`,
+        );
+      }
+      return c.body(body, OK, { 'Content-Type': PDF_CONTENT_TYPE });
     });
   }
 }
@@ -191,15 +213,16 @@ function registerHealthRoute(app: OpenAPIHono, dependencies: AppDependencies): v
     },
   });
 
-  app.get('/health', (c) => {
-    const available = dependencies.cv.status === 'ready';
+  app.get('/health', async (c) => {
+    const lookup = await dependencies.cv(c).describe(DEFAULT_LOCALE);
+    const available = lookup.status === 'ready';
     return c.json(
       {
         status: available ? 'ok' : 'degraded',
         contentVersion: dependencies.snapshot.version,
         cv: {
           available,
-          reason: dependencies.cv.status === 'unavailable' ? dependencies.cv.reason : null,
+          reason: lookup.status === 'unavailable' ? lookup.reason : null,
         },
       },
       OK,

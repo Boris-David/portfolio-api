@@ -8,14 +8,15 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { PATHS } from '../src/config.js';
+import { PATHS } from '../src/node/paths.js';
 import { buildSnapshot } from '../src/content/snapshot.js';
+import { unavailableCvStore } from '../src/cv/unavailable-store.js';
 import { createApp } from '../src/http/app.js';
 import { openApiDocument } from '../src/http/openapi.js';
 
 const app = createApp({
   snapshot: buildSnapshot(),
-  cv: { status: 'unavailable', reason: 'non requis pour générer le contrat' },
+  cv: () => unavailableCvStore('non requis pour générer le contrat'),
 });
 
 const document = `${JSON.stringify(app.getOpenAPI31Document(openApiDocument), null, 2)}\n`;

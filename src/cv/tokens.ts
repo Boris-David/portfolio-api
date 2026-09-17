@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { z } from 'zod';
-import { PATHS } from '../config.js';
+import { PATHS } from '../node/paths.js';
 
 /**
  * Les tokens de design — la source unique de la **forme**.

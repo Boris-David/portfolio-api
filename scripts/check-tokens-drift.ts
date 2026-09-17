@@ -12,7 +12,7 @@
  * GitHub (CI).
  */
 import { existsSync, readFileSync } from 'node:fs';
-import { DESIGN_TOKENS_SOURCE, PATHS } from '../src/config.js';
+import { DESIGN_TOKENS_SOURCE, PATHS } from '../src/node/paths.js';
 
 const local = readFileSync(PATHS.designTokens, 'utf8');
 

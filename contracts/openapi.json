@@ -1842,7 +1842,7 @@
           "CV"
         ],
         "summary": "Le CV en PDF, une version par langue.",
-        "description": "Le PDF est rendu au build, au moment où le contenu change — jamais à la requête. Il est servi comme un blob statique validé par « ETag ».",
+        "description": "Le PDF est rendu au build, au moment où le contenu change — jamais à la requête. Il est publié dans les Workers Static Assets et relayé ici, validé par « ETag ».",
         "parameters": [
           {
             "schema": {

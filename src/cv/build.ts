@@ -3,7 +3,9 @@ import { join } from 'node:path';
 import { digest } from '../content/digest.js';
 import { LOCALES, type Locale } from '../domain/locale.js';
 import type { Portfolio } from '../domain/portfolio.js';
-import { CV_DIRECTORY, cvFileName, type CvManifest } from './artifacts.js';
+import { CV_ASSET_PREFIX } from '../config.js';
+import { PATHS } from '../node/paths.js';
+import { cvFileName, type CvManifest } from './manifest.js';
 import { buildCvDocument } from './model.js';
 import type { CvRenderer } from './renderer.js';
 import { renderCvHtml } from './template.js';
@@ -12,10 +14,19 @@ import { loadDesignTokens, type DesignTokens } from './tokens.js';
 /**
  * La fabrique des CV : contenu + tokens → HTML → PDF.
  *
- * Elle est déclenchée par le **build**, jamais par une requête (ADR 0004).
- * Le manifeste qu'elle écrit scelle la version de contenu rendue : c'est ce
- * qui permet au serveur de refuser de servir un PDF qui ne correspond plus.
+ * Elle est déclenchée par le **build**, jamais par une requête (ADR 0004) —
+ * Chromium ne tourne de toute façon pas sur un Worker. Le manifeste qu'elle
+ * écrit scelle la version de contenu rendue : c'est ce qui permet à l'API de
+ * refuser de servir un PDF qui ne correspond plus.
+ *
+ * Les fichiers atterrissent dans le répertoire des **Workers Static Assets**,
+ * publié avec le Worker : les PDF pèsent ~330 Ko et le script est plafonné à
+ * 1 Mo compressé, donc ils ne peuvent pas y être embarqués.
  */
+
+/** Le répertoire des CV dans le magasin d'assets. */
+export const CV_OUTPUT_DIRECTORY = join(PATHS.assets, CV_ASSET_PREFIX.replace(/^\//, ''));
+
 export function buildCvHtml(
   portfolio: Portfolio,
   locale: Locale,
@@ -62,7 +73,7 @@ export async function renderAllCvs(
 export function writeCvArtifacts(
   rendered: readonly RenderedCv[],
   contentVersion: string,
-  directory: string = CV_DIRECTORY,
+  directory: string = CV_OUTPUT_DIRECTORY,
 ): CvManifest {
   rmSync(directory, { recursive: true, force: true });
   mkdirSync(directory, { recursive: true });
