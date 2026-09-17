@@ -1,7 +1,7 @@
 {
   "$comment": "Applications en production portant une contribution d'Amissan. Chaque identifiant a été vérifié sur l'App Store le 2026-09-17.",
   "verifiedAt": "2026-09-17",
-  "count": 36,
+  "count": 35,
   "apps": [
     {
       "slug": "ales-y",
@@ -9,14 +9,6 @@
       "territory": "Alès",
       "appStoreId": "1568307294",
       "appStoreUrl": "https://apps.apple.com/fr/app/alesy/id1568307294",
-      "role": "ticketing"
-    },
-    {
-      "slug": "allez-zou",
-      "name": "Allez ZOU !",
-      "territory": "Provence-Alpes-Côte d'Azur",
-      "appStoreId": "6754984440",
-      "appStoreUrl": "https://apps.apple.com/fr/app/allez-zou/id6754984440",
       "role": "ticketing"
     },
     {
