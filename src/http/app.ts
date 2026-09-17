@@ -9,6 +9,7 @@ import {
   type Representation,
   type ResourceId,
 } from '../content/snapshot.js';
+import { cvFileName } from '../cv/manifest.js';
 import type { CvStore } from '../cv/store.js';
 import { envelopeOf } from '../domain/envelope.js';
 import { DEFAULT_LOCALE, LOCALES, LocaleSchema, type Locale } from '../domain/locale.js';
@@ -124,39 +125,52 @@ const RESPONSE_HEADERS = {
   'Cache-Control': { description: 'Politique de cache.', schema: { type: 'string' } },
 } as const;
 
-function registerCvRoutes(app: OpenAPIHono, resolve: CvStoreResolver): void {
-  app.openAPIRegistry.registerPath({
-    method: 'get',
-    path: `${BASE_PATH}/cv/{locale}.pdf`,
-    tags: ['CV'],
-    summary: 'Le CV en PDF, une version par langue.',
-    description:
-      'Le PDF est rendu au build, au moment où le contenu change — jamais à la requête. ' +
-      'Il est publié dans les Workers Static Assets et relayé ici, validé par « ETag ».',
-    request: {
-      params: z.object({
-        locale: LocaleSchema.meta({ param: { name: 'locale', in: 'path' } }),
-      }),
-    },
-    responses: {
-      200: {
-        description: 'Le CV rendu.',
-        content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
-        headers: RESPONSE_HEADERS,
-      },
-      304: { description: "Inchangé depuis l'« ETag » présenté." },
-      503: {
-        description: 'Aucun CV rendu pour la version de contenu servie.',
-        content: { 'application/problem+json': { schema: ProblemSchema } },
-      },
-    },
-  });
+/**
+ * Le chemin public du CV dans une langue donnée.
+ *
+ * Le dernier segment est **le nom du fichier**, et c'est tout l'objet de cette
+ * forme : sur iOS, Safari ignore `Content-Disposition` pour la feuille de
+ * partage et reprend le dernier segment de l'URL. Un chemin en
+ * `/v1/cv/fr.pdf` faisait donc apparaître « fr » au partage.
+ */
+export function cvPath(locale: Locale): string {
+  return `${BASE_PATH}/cv/${cvFileName(locale)}`;
+}
 
-  // Deux routes littérales plutôt qu'un paramètre : les langues sont connues à
-  // la compilation, et une route littérale ne peut pas accepter une valeur
-  // qu'on aurait oublié de valider.
+/** L'ancien chemin, conservé en redirection : des liens circulent déjà. */
+function legacyCvPath(locale: Locale): string {
+  return `${BASE_PATH}/cv/${locale}.pdf`;
+}
+
+const MOVED_PERMANENTLY = 301;
+
+function registerCvRoutes(app: OpenAPIHono, resolve: CvStoreResolver): void {
   for (const locale of LOCALES) {
-    app.get(`${BASE_PATH}/cv/${locale}.pdf`, async (c) => {
+    const path = cvPath(locale);
+
+    app.openAPIRegistry.registerPath({
+      method: 'get',
+      path,
+      tags: ['CV'],
+      summary: `Le CV en PDF (${locale}).`,
+      description:
+        'Le PDF est rendu au build, au moment où le contenu change — jamais à la requête. ' +
+        'Il est publié dans les Workers Static Assets et relayé ici, validé par « ETag ».',
+      responses: {
+        200: {
+          description: 'Le CV rendu.',
+          content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
+          headers: RESPONSE_HEADERS,
+        },
+        304: { description: "Inchangé depuis l'« ETag » présenté." },
+        503: {
+          description: 'Aucun CV rendu pour la version de contenu servie.',
+          content: { 'application/problem+json': { schema: ProblemSchema } },
+        },
+      },
+    });
+
+    app.get(path, async (c) => {
       const store = resolve(c);
       const lookup = await store.describe(locale);
       if (lookup.status === 'unavailable') {
@@ -185,6 +199,28 @@ function registerCvRoutes(app: OpenAPIHono, resolve: CvStoreResolver): void {
       }
       return c.body(body, OK, { 'Content-Type': PDF_CONTENT_TYPE });
     });
+
+    // L'ancien chemin reste, en redirection permanente : il a été partagé, et
+    // un lien de CV qui tombe en 404 chez un recruteur coûte plus cher que
+    // deux lignes de compatibilité.
+    app.openAPIRegistry.registerPath({
+      method: 'get',
+      path: legacyCvPath(locale),
+      tags: ['CV'],
+      summary: `Ancien chemin du CV (${locale}).`,
+      description: `Redirige définitivement vers « ${path} », dont le dernier segment est le nom du fichier.`,
+      deprecated: true,
+      responses: {
+        301: {
+          description: 'Redirection permanente vers le chemin courant.',
+          headers: {
+            Location: { description: 'Le chemin courant.', schema: { type: 'string' } },
+          },
+        },
+      },
+    });
+
+    app.get(legacyCvPath(locale), (c) => c.redirect(path, MOVED_PERMANENTLY));
   }
 }
 

@@ -31,15 +31,26 @@ export const CvManifestSchema = z.object({
 
 export type CvManifest = z.infer<typeof CvManifestSchema>;
 
-/** Le nom du fichier téléchargé, dérivé du nom porté par le contenu. */
-export function cvFileName(fullName: string, locale: Locale): string {
-  const slug = fullName
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-  return `${slug}-cv-${locale}.pdf`;
+/**
+ * Le préfixe du nom de fichier du CV.
+ *
+ * Il ne se dérive pas du nom complet : « Amissan Boris-David Amoussou-Guenou »
+ * donnerait un fichier interminable dans une feuille de partage. C'est une
+ * forme courte, choisie.
+ */
+const CV_FILE_PREFIX = 'amissan.ag-cv';
+
+/**
+ * Le nom du fichier téléchargé, pour une langue.
+ *
+ * Ce nom compte plus qu'il n'en a l'air : sur iOS, Safari ignore
+ * `Content-Disposition` pour la feuille de partage et reprend le **dernier
+ * segment de l'URL**. C'est pourquoi la route du CV porte exactement ce
+ * nom-là, et pas la langue seule — un chemin en `/v1/cv/fr.pdf` faisait
+ * apparaître « fr » au partage.
+ */
+export function cvFileName(locale: Locale): string {
+  return `${CV_FILE_PREFIX}-${locale}.pdf`;
 }
 
 /** Le chemin d'un CV dans le magasin d'assets statiques. */
@@ -78,11 +89,7 @@ export type CvCatalogue =
  * Lit un manifeste et en déduit le catalogue, ou la raison exacte de son
  * indisponibilité. Fonction pure : aucun accès au magasin, aucun réseau.
  */
-export function readCvCatalogue(
-  document: unknown,
-  expectedContentVersion: string,
-  fullName: string,
-): CvCatalogue {
+export function readCvCatalogue(document: unknown, expectedContentVersion: string): CvCatalogue {
   const manifest = CvManifestSchema.safeParse(document);
   if (!manifest.success) {
     return {
@@ -105,7 +112,7 @@ export function readCvCatalogue(
     entries[file.locale] = {
       locale: file.locale,
       assetPath: cvAssetPath(file.file),
-      fileName: cvFileName(fullName, file.locale),
+      fileName: cvFileName(file.locale),
       etag: `"${file.sourceDigest}"`,
     };
   }

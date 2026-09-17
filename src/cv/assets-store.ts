@@ -32,7 +32,6 @@ export function createAssetsCvStore(
   assets: AssetFetcher,
   origin: string,
   expectedContentVersion: string,
-  fullName: string,
 ): CvStore {
   let catalogue: Promise<CvCatalogue> | null = null;
 
@@ -53,7 +52,7 @@ export function createAssetsCvStore(
         reason: `Le magasin d'assets a répondu ${String(response.status)} pour ${CV_MANIFEST_ASSET}.`,
       };
     }
-    return readCvCatalogue(await response.json(), expectedContentVersion, fullName);
+    return readCvCatalogue(await response.json(), expectedContentVersion);
   };
 
   return {
