@@ -62,7 +62,7 @@ export async function renderAllCvs(
     const html = buildCvHtml(content, locale, tokens);
     rendered.push({
       locale,
-      fileName: cvFileName(content.profile.name.full, locale),
+      fileName: cvFileName(locale),
       bytes: await renderer.render(html),
       sourceDigest: digest(html),
     });

@@ -1836,27 +1836,13 @@
         }
       }
     },
-    "/v1/cv/{locale}.pdf": {
+    "/v1/cv/amissan.ag-cv-fr.pdf": {
       "get": {
         "tags": [
           "CV"
         ],
-        "summary": "Le CV en PDF, une version par langue.",
+        "summary": "Le CV en PDF (fr).",
         "description": "Le PDF est rendu au build, au moment où le contenu change — jamais à la requête. Il est publié dans les Workers Static Assets et relayé ici, validé par « ETag ».",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "enum": [
-                "fr",
-                "en"
-              ]
-            },
-            "required": true,
-            "name": "locale",
-            "in": "path"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Le CV rendu.",
@@ -1898,6 +1884,107 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cv/fr.pdf": {
+      "get": {
+        "tags": [
+          "CV"
+        ],
+        "summary": "Ancien chemin du CV (fr).",
+        "description": "Redirige définitivement vers « /v1/cv/amissan.ag-cv-fr.pdf », dont le dernier segment est le nom du fichier.",
+        "deprecated": true,
+        "responses": {
+          "301": {
+            "description": "Redirection permanente vers le chemin courant.",
+            "headers": {
+              "Location": {
+                "description": "Le chemin courant.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cv/amissan.ag-cv-en.pdf": {
+      "get": {
+        "tags": [
+          "CV"
+        ],
+        "summary": "Le CV en PDF (en).",
+        "description": "Le PDF est rendu au build, au moment où le contenu change — jamais à la requête. Il est publié dans les Workers Static Assets et relayé ici, validé par « ETag ».",
+        "responses": {
+          "200": {
+            "description": "Le CV rendu.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "503": {
+            "description": "Aucun CV rendu pour la version de contenu servie.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cv/en.pdf": {
+      "get": {
+        "tags": [
+          "CV"
+        ],
+        "summary": "Ancien chemin du CV (en).",
+        "description": "Redirige définitivement vers « /v1/cv/amissan.ag-cv-en.pdf », dont le dernier segment est le nom du fichier.",
+        "deprecated": true,
+        "responses": {
+          "301": {
+            "description": "Redirection permanente vers le chemin courant.",
+            "headers": {
+              "Location": {
+                "description": "Le chemin courant.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }

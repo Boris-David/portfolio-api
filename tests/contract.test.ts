@@ -7,7 +7,7 @@ import { envelopeOf } from '../src/domain/envelope.js';
 import { LOCALES } from '../src/domain/locale.js';
 import { PART_SCHEMAS, PortfolioSchema } from '../src/domain/portfolio.js';
 import { unavailableCvStore } from '../src/cv/unavailable-store.js';
-import { createApp } from '../src/http/app.js';
+import { createApp, cvPath } from '../src/http/app.js';
 import { openApiDocument } from '../src/http/openapi.js';
 
 const snapshot = buildSnapshot();
@@ -40,7 +40,12 @@ describe('le contrat OpenAPI dérivé', () => {
     for (const resource of RESOURCES) {
       expect(document.paths).toHaveProperty(`/v1/${resourcePath(resource)}`);
     }
-    expect(document.paths).toHaveProperty('/v1/cv/{locale}.pdf');
+    for (const locale of LOCALES) {
+      expect(document.paths).toHaveProperty(cvPath(locale));
+      // L'ancien chemin reste décrit : il redirige, et un client qui le lit
+      // doit apprendre qu'il a bougé plutôt que de le découvrir en 404.
+      expect(document.paths).toHaveProperty(`/v1/cv/${locale}.pdf`);
+    }
     expect(document.paths).toHaveProperty('/health');
   });
 

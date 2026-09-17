@@ -1,13 +1,13 @@
 [
   {
-    "$comment": "Les seuls chiffres publiables. La valeur 33 est vérifiée contre l'inventaire par tests/content-coherence.test.ts.",
-    "id": "networks",
-    "value": "33",
-    "unit": null,
-    "countTo": 33,
+    "$comment": "Les seuls chiffres publiables. Le compte des réseaux (33) n'est PAS une tuile : il vit dans la section « En production », où la liste des applications le démontre. Le citer partout l'aurait affaibli.",
+    "id": "contributed-reach",
+    "value": "~5",
+    "unit": "M",
+    "countTo": null,
     "caption": {
-      "fr": "applications de transport en production embarquent mon travail",
-      "en": "transport apps in production ship my work"
+      "fr": "d'utilisateurs des applications auxquelles j'ai contribué",
+      "en": "users of the apps I have contributed to"
     }
   },
   {
@@ -18,16 +18,6 @@
     "caption": {
       "fr": "d'ingénierie iOS, depuis octobre 2020",
       "en": "of iOS engineering, since October 2020"
-    }
-  },
-  {
-    "id": "mail-orange-reach",
-    "value": "~1",
-    "unit": "M",
-    "countTo": null,
-    "caption": {
-      "fr": "d'utilisateurs sur Mail Orange",
-      "en": "users on Mail Orange"
     }
   },
   {

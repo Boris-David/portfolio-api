@@ -1,7 +1,6 @@
 import type { Context } from 'hono';
 import { buildSnapshot } from './content/snapshot.js';
 import { createAssetsCvStore, type AssetFetcher } from './cv/assets-store.js';
-import { DEFAULT_LOCALE } from './domain/locale.js';
 import { createApp } from './http/app.js';
 
 /**
@@ -23,7 +22,6 @@ interface WorkerBindings {
 }
 
 const snapshot = buildSnapshot();
-const fullName = snapshot.portfolio[DEFAULT_LOCALE].profile.name.full;
 
 /**
  * Le binding d'assets, exigé explicitement.
@@ -45,12 +43,7 @@ function assetsOf(context: Context): AssetFetcher {
 const app = createApp({
   snapshot,
   cv: (context) =>
-    createAssetsCvStore(
-      assetsOf(context),
-      new URL(context.req.url).origin,
-      snapshot.version,
-      fullName,
-    ),
+    createAssetsCvStore(assetsOf(context), new URL(context.req.url).origin, snapshot.version),
 });
 
 export default { fetch: app.fetch };

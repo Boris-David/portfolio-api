@@ -66,7 +66,7 @@ Toutes les ressources de lecture sont versionnées sous `/v1`, servies avec un
 | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `GET /v1/portfolio`                                                                                                         | tout, d'un seul appel                 |
 | `GET /v1/profile` · `metrics` · `sections` · `case-studies` · `apps` · `expertise` · `experience` · `background` · `skills` | une partie                            |
-| `GET /v1/cv/{fr\|en}.pdf`                                                                                                   | le CV rendu                           |
+| `GET /v1/cv/amissan.ag-cv-{fr\|en}.pdf`                                                                                     | le CV rendu                           |
 | `GET /v1/openapi.json`                                                                                                      | le contrat, généré depuis les schémas |
 | `GET /health`                                                                                                               | l'état de l'instance                  |
 
@@ -196,6 +196,13 @@ serait parfait à l'œil et rendrait du charabia à l'extraction — donc perdu 
 un ATS. `pdftotext` rend aujourd'hui le CV entier, accents compris, et un test
 empêche qu'un changement de gabarit ou de moteur casse ça en silence.
 
+**Pourquoi le nom du fichier est dans l'URL.** Sur iOS, Safari **ignore**
+`Content-Disposition` pour la feuille de partage et reprend le dernier segment
+de l'URL. Un chemin en `/v1/cv/fr.pdf` faisait donc apparaître « fr » quand on
+partageait le CV depuis l'iPhone. La correction est dans l'URL, pas dans
+l'en-tête : le dernier segment **est** le nom du fichier. L'ancien chemin
+répond `301` — un lien de CV déjà envoyé à un recruteur ne doit pas tomber.
+
 ### Ce que le CV contient
 
 Un CV n'est pas la page imprimée. La page déplie deux études de cas dont une en
@@ -203,8 +210,20 @@ cinq chantiers : les y reverser ferait six pages qu'aucun recruteur ne lit. La
 sélection est **explicite dans `src/cv/model.ts`**, en code relisible, et ne
 retire aucun fait du contenu — que l'API continue de servir entier.
 
-Deux pages : identité, accroche, chiffres, expériences, profondeur technique,
-compétences, formation, certifications, projets ouverts, inventaire des réseaux.
+Deux pages : identité, accroche, chiffres, expériences, **le produit tenu de
+bout en bout**, profondeur technique, compétences, formation, certifications,
+inventaire des réseaux.
+
+KCalories y occupe une place à sa mesure — quatre stacks livrées seul en cinq
+mois, jusqu'à l'App Store : c'est la seule pièce du dossier qui prouve un
+produit entier. L'étude de cas de la billettique, elle, n'est pas reprise :
+l'expérience Instant System porte déjà les mêmes faits, et les écrire deux fois
+les affaiblirait.
+
+Les **projets ouverts** n'entrent pas. Un composant calendrier et un exercice
+d'entretien ne pèsent rien à côté d'un produit livré, et les garder repoussait
+la fin du document sur une troisième page au quart pleine. L'API les sert
+toujours, et le site les montre.
 
 ### Ce qui n'est pas déterministe
 

@@ -15,10 +15,10 @@ export interface CvLabels {
   readonly documentKind: string;
   readonly profile: string;
   readonly experience: string;
+  readonly project: string;
   readonly skills: string;
   readonly education: string;
   readonly certifications: string;
-  readonly openProjects: string;
   readonly stack: string;
   readonly verify: string;
   readonly page: string;
@@ -29,10 +29,10 @@ export const CV_LABELS: Readonly<Record<Locale, CvLabels>> = {
     documentKind: 'CV',
     profile: 'Profil',
     experience: 'Expérience',
+    project: 'Projet personnel',
     skills: 'Compétences',
     education: 'Formation',
     certifications: 'Certifications',
-    openProjects: 'Projets ouverts',
     stack: 'Stack',
     verify: 'Vérifier',
     page: 'Page',
@@ -41,10 +41,10 @@ export const CV_LABELS: Readonly<Record<Locale, CvLabels>> = {
     documentKind: 'Résumé',
     profile: 'Profile',
     experience: 'Experience',
+    project: 'Personal project',
     skills: 'Skills',
     education: 'Education',
     certifications: 'Certifications',
-    openProjects: 'Open projects',
     stack: 'Stack',
     verify: 'Verify',
     page: 'Page',

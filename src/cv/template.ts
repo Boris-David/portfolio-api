@@ -12,13 +12,24 @@ import { toCssVariables, type DesignTokens } from './tokens.js';
  * la forme, et on aurait seulement déplacé le problème.
  *
  * `--print-density` est la seule constante propre au support : l'échelle des
- * tokens est calée sur le Dynamic Type d'iOS (base 17 px), qui est trop
- * généreux pour une A4. Le facteur s'applique en `calc()` à tous les niveaux,
- * donc les rapports de l'échelle sont conservés.
+ * tokens est calée sur le Dynamic Type d'iOS (base 17 px), trop généreux pour
+ * une A4. Le facteur s'applique en `calc()` à tous les niveaux, donc les
+ * rapports de l'échelle sont conservés.
  */
-const PRINT_DENSITY = 0.7;
+const PRINT_DENSITY = 0.68;
 
-const PAGE_MARGIN = '14mm 14mm 12mm';
+/**
+ * L'interlettrage des intitulés en capitales.
+ *
+ * Il est **volontairement discret**. À cette taille, un interlettrage large
+ * disloque les mots — « COMPÉT ENCES », « S TACK » — et donne un document qui
+ * a l'air cassé. Ce qui distingue un intitulé, c'est la graisse, la couleur et
+ * le filet sous lui ; l'espacement n'est qu'une respiration.
+ */
+const CAPS_TRACKING = '0.035em';
+const MICRO_CAPS_TRACKING = '0.028em';
+
+const PAGE_MARGIN = '13mm 13mm 11mm';
 
 export function renderCvHtml(document: CvDocument, tokens: DesignTokens): string {
   const { labels, identity } = document;
@@ -37,6 +48,22 @@ ${embeddedFontFaces()}
        retomber sur une police EMBARQUÉE, jamais sur un générique — sinon un
        caractère absent de Fraunces se dessine en carré vide. */
     --cv-display: var(--font-display-family), var(--font-text);
+
+    /* Le rythme vertical, dérivé une seule fois puis réutilisé partout : c'est
+       lui qui fait qu'un document « respire » au lieu d'alterner tassé et vide. */
+    --gap-1: calc(var(--space-1) * var(--print-density));
+    --gap-2: calc(var(--space-2) * var(--print-density));
+    --gap-3: calc(var(--space-3) * var(--print-density));
+    --gap-4: calc(var(--space-4) * var(--print-density));
+    --gap-5: calc(var(--space-5) * var(--print-density));
+    --gap-6: calc(var(--space-6) * var(--print-density));
+
+    --size-caption: calc(var(--type-caption) * var(--print-density));
+    --size-subhead: calc(var(--type-subhead) * var(--print-density));
+    --size-body: calc(var(--type-body) * var(--print-density));
+    --size-title3: calc(var(--type-title3) * var(--print-density));
+    --size-title1: calc(var(--type-title1) * var(--print-density));
+    --size-large: calc(var(--type-large) * var(--print-density));
 }
 
 @page { size: A4; margin: ${PAGE_MARGIN}; }
@@ -45,78 +72,87 @@ ${embeddedFontFaces()}
 
 body {
   font-family: var(--font-text);
-  font-size: calc(var(--type-body) * var(--print-density));
-  line-height: 1.45;
+  font-size: var(--size-body);
+  line-height: 1.5;
   color: var(--color-ink-2);
   background: #fff;
   -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
-h1, h2, h3 { font-family: var(--cv-display); font-weight: 600; color: var(--color-ink); }
-code { font-family: var(--font-mono); font-size: 0.93em; }
+h1, h2, h3, h4 { font-weight: 600; color: var(--color-ink); }
+code { font-family: var(--font-mono); font-size: 0.92em; }
 strong { color: var(--color-ink); font-weight: 600; }
 a { color: var(--color-accent-d); text-decoration: none; }
 ul { list-style: none; }
 
-section { margin-top: calc(var(--space-5) * var(--print-density)); }
-/* Le contenu coule d'une page à l'autre ; seuls les blocs qu'on lit d'un
-   bloc — une expérience, une ligne de formation, une carte — refusent d'être
-   coupés. Interdire la coupe d'une section entière la repousserait tout
-   entière et laisserait une demi-page blanche. */
-article, li, .depth > div, .skill-groups > div { break-inside: avoid; }
-h2 { break-after: avoid; }
+/* Le contenu coule d'une page à l'autre ; seuls les blocs qu'on lit d'un bloc
+   refusent d'être coupés. Interdire la coupe d'une expérience entière la
+   repousserait tout entière et laisserait une demi-page blanche. */
+li, .rows li, .job-head, .product-head { break-inside: avoid; }
+h2, h3, h4 { break-after: avoid; }
+/* Une ligne isolée en haut ou en bas de page est laide ; deux, c'est une
+   demi-page perdue. Trois lignes de part et d'autre : le compromis tient le
+   document plein sans orpheline. */
+p { orphans: 3; widows: 3; }
 
+section { margin-top: var(--gap-5); }
+
+/* ── Intitulés de section ── */
 h2 {
   font-family: var(--font-text);
-  font-size: calc(var(--type-caption) * var(--print-density));
+  font-size: calc(var(--size-subhead) * 1.02);
   font-weight: 700;
-  letter-spacing: 0.09em;
+  letter-spacing: ${CAPS_TRACKING};
   text-transform: uppercase;
   color: var(--color-accent-d);
-  padding-bottom: calc(var(--space-1) * var(--print-density));
-  border-bottom: 0.6pt solid var(--color-line);
-  margin-bottom: calc(var(--space-4) * var(--print-density));
+  padding-bottom: var(--gap-1);
+  border-bottom: 0.7pt solid var(--color-line-2);
+  margin-bottom: var(--gap-4);
 }
 
 /* ── Identité ── */
-.identity { border-bottom: 1.4pt solid var(--color-ink); padding-bottom: calc(var(--space-4) * var(--print-density)); }
+.identity { border-bottom: 1.6pt solid var(--color-ink); padding-bottom: var(--gap-4); }
 .identity h1 {
-  font-size: calc(var(--type-large) * var(--print-density));
-  line-height: 1.04;
-  letter-spacing: -0.028em;
+  font-family: var(--cv-display);
+  font-size: calc(var(--size-large) * 1.12);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
 }
 .headline {
-  font-size: calc(var(--type-title3) * var(--print-density));
+  font-size: var(--size-title3);
   color: var(--color-accent-d);
   font-weight: 600;
-  margin-top: calc(var(--space-1) * var(--print-density));
+  letter-spacing: -0.01em;
+  margin-top: var(--gap-1);
 }
 .facts {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--space-1) * var(--print-density)) calc(var(--space-4) * var(--print-density));
-  margin-top: calc(var(--space-3) * var(--print-density));
-  font-size: calc(var(--type-caption) * var(--print-density));
+  gap: var(--gap-1) var(--gap-3);
+  margin-top: var(--gap-3);
+  font-size: calc(var(--size-caption) * 0.95);
+  line-height: 1.4;
   color: var(--color-ink-3);
 }
 .facts li::after { content: " ·"; color: var(--color-line-2); }
 .facts li:last-child::after { content: ""; }
-.facts a { color: var(--color-ink-3); }
+.facts a { color: var(--color-ink-2); font-weight: 500; }
 
 /* ── Chiffres ── */
 .metrics {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: calc(var(--space-4) * var(--print-density));
-  margin-top: calc(var(--space-4) * var(--print-density));
-  padding: calc(var(--space-3) * var(--print-density)) calc(var(--space-4) * var(--print-density));
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap-5);
+  margin-top: var(--gap-4);
+  padding: var(--gap-2) var(--gap-5);
   background: var(--color-paper-2);
   border: 0.6pt solid var(--color-line);
   border-radius: calc(var(--radius-md) * var(--print-density));
 }
 .metrics .value {
   font-family: var(--cv-display);
-  font-size: calc(var(--type-title1) * var(--print-density));
+  font-size: var(--size-title1);
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -124,98 +160,196 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 .metrics .caption {
-  font-size: calc(var(--type-caption) * var(--print-density) * 0.94);
+  font-size: calc(var(--size-caption) * 0.97);
   color: var(--color-ink-3);
-  line-height: 1.3;
-  margin-top: calc(var(--space-1) * var(--print-density));
+  line-height: 1.4;
+  margin-top: var(--gap-1);
 }
 
-.summary p + p { margin-top: calc(var(--space-2) * var(--print-density)); }
+.summary p { max-width: 96%; }
+.summary p + p { margin-top: var(--gap-2); }
 
-/* ── Expérience ── */
-.job + .job { margin-top: calc(var(--space-4) * var(--print-density)); }
-.job-head { display: flex; justify-content: space-between; align-items: baseline; gap: calc(var(--space-3) * var(--print-density)); }
-.job-head h3 { font-size: calc(var(--type-title3) * var(--print-density)); letter-spacing: -0.015em; }
-.job-head .where { font-size: calc(var(--type-subhead) * var(--print-density)); color: var(--color-ink-3); }
-.job-head .period {
-  font-size: calc(var(--type-caption) * var(--print-density));
-  color: var(--color-ink-3);
+/* ── Expérience ──
+   L'entreprise et la période portent le bloc : c'est « où » et « quand » qu'un
+   lecteur cherche d'abord en parcourant un CV. L'intitulé de poste vient
+   ensuite, en accent. */
+.job + .job { margin-top: var(--gap-5); }
+.job-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--gap-4);
+  border-bottom: 0.5pt solid var(--color-line);
+  padding-bottom: var(--gap-1);
+}
+.job-head h3 {
+  font-family: var(--cv-display);
+  font-size: var(--size-title3);
+  line-height: 1.15;
+  letter-spacing: -0.018em;
+}
+.job-when {
+  font-size: var(--size-subhead);
+  font-weight: 600;
+  color: var(--color-ink-2);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-.roles { display: flex; flex-wrap: wrap; gap: calc(var(--space-1) * var(--print-density)); margin-top: calc(var(--space-2) * var(--print-density)); }
+/* Le poste et ses étiquettes tiennent sur une seule ligne : elles se lisent
+   ensemble, et une rangée séparée coûtait une ligne par expérience. */
+.job-role {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--gap-1) var(--gap-2);
+  font-size: var(--size-body);
+  font-weight: 600;
+  color: var(--color-accent-d);
+  margin-top: var(--gap-2);
+}
+.roles { display: contents; }
 .roles li {
-  font-size: calc(var(--type-caption) * var(--print-density) * 0.92);
+  font-size: calc(var(--size-caption) * 0.95);
   font-weight: 600;
   color: var(--color-accent-d);
   background: var(--color-accent-w);
   border-radius: calc(var(--radius-sm) * var(--print-density));
-  padding: 0.4mm 1.4mm;
+  padding: 0.5mm 1.6mm;
 }
-.bullets { margin-top: calc(var(--space-3) * var(--print-density)); display: grid; gap: calc(var(--space-2) * var(--print-density)); }
-.bullets li { padding-left: 3.4mm; position: relative; }
+
+.bullets { margin-top: var(--gap-3); display: grid; gap: var(--gap-2); }
+.bullets li { padding-left: 3.6mm; position: relative; }
 .bullets li::before {
   content: "";
   position: absolute;
-  left: 0.4mm;
-  top: 1.5mm;
-  width: 1.3mm;
-  height: 1.3mm;
-  border-radius: 0.4mm;
+  left: 0.5mm;
+  top: 1.7mm;
+  width: 1.2mm;
+  height: 1.2mm;
+  border-radius: 0.35mm;
   background: var(--color-accent);
 }
+
 .stack {
-  margin-top: calc(var(--space-3) * var(--print-density));
-  padding-top: calc(var(--space-2) * var(--print-density));
-  border-top: 0.5pt solid var(--color-line);
-  font-size: calc(var(--type-caption) * var(--print-density) * 0.92);
+  margin-top: var(--gap-3);
+  font-size: calc(var(--size-caption) * 0.9);
+  line-height: 1.45;
   color: var(--color-ink-3);
 }
-.stack .key { font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-3); }
-
-.depth { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(var(--space-4) * var(--print-density)); }
-.depth h3 { font-size: calc(var(--type-subhead) * var(--print-density) * 1.1); margin-bottom: calc(var(--space-1) * var(--print-density)); }
-.depth p { font-size: calc(var(--type-caption) * var(--print-density) * 1.02); color: var(--color-ink-3); line-height: 1.4; }
-
-.skill-groups { display: grid; grid-template-columns: repeat(2, 1fr); gap: calc(var(--space-3) * var(--print-density)) calc(var(--space-6) * var(--print-density)); }
-.skill-groups h3 {
-  font-family: var(--font-text);
-  font-size: calc(var(--type-caption) * var(--print-density) * 0.92);
+.stack .key {
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: ${MICRO_CAPS_TRACKING};
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+}
+
+/* ── Le produit tenu de bout en bout ── */
+.product-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--gap-4);
+  border-bottom: 0.5pt solid var(--color-line);
+  padding-bottom: var(--gap-1);
+}
+.product-head h3 {
+  font-family: var(--cv-display);
+  font-size: var(--size-title3);
+  line-height: 1.15;
+  letter-spacing: -0.018em;
+}
+.product-link {
+  font-size: var(--size-subhead);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.product-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-4) var(--gap-6);
+  margin-top: var(--gap-3);
+}
+.product-panels h4 {
+  font-family: var(--font-text);
+  font-size: calc(var(--size-caption) * 0.95);
+  font-weight: 700;
+  letter-spacing: ${MICRO_CAPS_TRACKING};
   text-transform: uppercase;
   color: var(--color-ink-3);
-  margin-bottom: calc(var(--space-1) * var(--print-density));
 }
-.chips { display: flex; flex-wrap: wrap; gap: calc(var(--space-1) * var(--print-density)); }
+.product-panels .bullets { margin-top: var(--gap-2); }
+
+/* ── Profondeur technique ── */
+/* Colonnes plutôt que grille : une grille CSS ne se fragmente pas entre deux
+   pages — elle bascule tout entière et laisse une demi-page blanche. Les
+   colonnes, elles, coulent. C'est ce qui remplit les pages au lieu de les
+   trouer. */
+.depth { column-count: 3; column-gap: var(--gap-5); }
+.depth > div { break-inside: avoid; }
+.depth h3 {
+  font-family: var(--cv-display);
+  font-size: calc(var(--size-subhead) * 1.12);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  margin-bottom: var(--gap-1);
+}
+.depth p { font-size: calc(var(--size-caption) * 1.02); color: var(--color-ink-3); line-height: 1.4; }
+
+/* ── Compétences ── */
+.skill-groups { column-count: 2; column-gap: var(--gap-6); }
+.skill-groups > div { break-inside: avoid; margin-bottom: var(--gap-3); }
+.skill-groups h3 {
+  font-family: var(--font-text);
+  font-size: calc(var(--size-caption) * 0.95);
+  font-weight: 700;
+  letter-spacing: ${MICRO_CAPS_TRACKING};
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+  margin-bottom: var(--gap-1);
+}
+.chips { display: flex; flex-wrap: wrap; gap: var(--gap-1); }
 .chips li {
-  font-size: calc(var(--type-caption) * var(--print-density) * 0.94);
-  padding: 0.4mm 1.5mm;
+  font-size: calc(var(--size-caption) * 0.95);
+  padding: 0.5mm 1.7mm;
   border: 0.5pt solid var(--color-line);
   border-radius: calc(var(--radius-sm) * var(--print-density));
   color: var(--color-ink-2);
 }
 
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--space-6) * var(--print-density)); }
-.two-col section { margin-top: 0; }
-.rows { display: grid; gap: calc(var(--space-3) * var(--print-density)); }
-.rows .what { font-weight: 600; color: var(--color-ink); }
-.rows .where, .rows .when { font-size: calc(var(--type-caption) * var(--print-density)); color: var(--color-ink-3); }
-.rows .when { font-variant-numeric: tabular-nums; }
-
-.production .networks {
-  font-size: calc(var(--type-caption) * var(--print-density) * 1.02);
-  color: var(--color-ink-2);
-  line-height: 1.5;
+/* ── Formation, certifications, projets ── */
+.two-col { margin-top: var(--gap-5); column-count: 2; column-gap: var(--gap-6); }
+.two-col section { margin-top: 0; break-inside: avoid; }
+.two-col section + section { margin-top: var(--gap-5); }
+.rows { display: grid; gap: var(--gap-2); }
+.rows .what { font-weight: 600; color: var(--color-ink); line-height: 1.3; }
+.rows .where { font-size: calc(var(--size-caption) * 1.02); color: var(--color-ink-3); line-height: 1.4; }
+.rows .when {
+  font-size: var(--size-caption);
+  color: var(--color-ink-3);
+  font-variant-numeric: tabular-nums;
 }
-.production .note { font-size: calc(var(--type-caption) * var(--print-density) * 0.94); color: var(--color-ink-3); margin-top: calc(var(--space-2) * var(--print-density)); }
-.production .count { font-weight: 600; color: var(--color-ink); }
+
+
+/* ── En production ── */
+.production .networks {
+  font-size: calc(var(--size-caption) * 1.02);
+  color: var(--color-ink-2);
+  line-height: 1.6;
+}
+.production .note {
+  font-size: calc(var(--size-caption) * 0.95);
+  color: var(--color-ink-3);
+  line-height: 1.45;
+  margin-top: var(--gap-2);
+}
+.production .count { font-weight: 700; color: var(--color-ink); }
 </style>
 </head>
 <body>
 ${identityBlock(document)}
 ${summaryBlock(document)}
 ${experienceBlock(document)}
+${projectBlock(document)}
 ${depthBlock(document)}
 ${skillsBlock(document)}
 ${backgroundBlock(document)}
@@ -258,17 +392,17 @@ function experienceBlock(document: CvDocument): string {
     .map(
       (job) => `<article class="job">
     <div class="job-head">
-      <div>
-        <h3>${escapeHtml(job.role)}</h3>
-        <div class="where">${escapeHtml(job.organisation)} · ${escapeHtml(job.location)}</div>
-      </div>
-      <div class="period">${escapeHtml(job.period)}</div>
+      <h3>${escapeHtml(job.organisation)}</h3>
+      <div class="job-when">${escapeHtml(job.location)} · ${escapeHtml(job.period)}</div>
     </div>
-    ${
-      job.roles.length > 0
-        ? `<ul class="roles">${job.roles.map((role) => `<li>${escapeHtml(role)}</li>`).join('')}</ul>`
-        : ''
-    }
+    <div class="job-role">
+      <span>${escapeHtml(job.role)}</span>
+      ${
+        job.roles.length > 0
+          ? `<ul class="roles">${job.roles.map((role) => `<li>${escapeHtml(role)}</li>`).join('')}</ul>`
+          : ''
+      }
+    </div>
     <ul class="bullets">${job.highlights.map((highlight) => `<li>${richToHtml(highlight)}</li>`).join('')}</ul>
     <div class="stack"><span class="key">${escapeHtml(document.labels.stack)}</span> · ${job.stack
       .map(escapeHtml)
@@ -279,6 +413,36 @@ function experienceBlock(document: CvDocument): string {
   return `<section class="experience">
   <h2>${escapeHtml(document.labels.experience)}</h2>
   ${jobs}
+</section>`;
+}
+
+function projectBlock(document: CvDocument): string {
+  const { project } = document;
+  const panels = project.panels
+    .map(
+      (panel) =>
+        `<div><h4>${escapeHtml(panel.heading)}</h4><ul class="bullets">${panel.items
+          .map((item) => `<li>${richToHtml(item)}</li>`)
+          .join('')}</ul></div>`,
+    )
+    .join('');
+
+  return `<section class="project">
+  <h2>${escapeHtml(project.heading)}</h2>
+  <article class="product">
+    <div class="product-head">
+      <h3>${escapeHtml(project.title)}</h3>
+      ${
+        project.link === null
+          ? ''
+          : `<a class="product-link" href="${escapeHtml(project.link.url)}">${escapeHtml(project.link.label)}</a>`
+      }
+    </div>
+    <div class="product-panels">${panels}</div>
+    <div class="stack"><span class="key">${escapeHtml(document.labels.stack)}</span> · ${project.tags
+      .map(escapeHtml)
+      .join(' · ')}</div>
+  </article>
 </section>`;
 }
 
@@ -333,20 +497,7 @@ function backgroundBlock(document: CvDocument): string {
     )
     .join('');
 
-  const projects = document.openProjects
-    .map(
-      (entry) => `<li>
-      <div class="what">${escapeHtml(entry.name)}</div>
-      <div class="where">${richToHtml(entry.description)}${
-        entry.sourceUrl === null
-          ? ''
-          : ` — <a href="${escapeHtml(entry.sourceUrl)}">${escapeHtml(entry.sourceUrl)}</a>`
-      }</div>
-    </li>`,
-    )
-    .join('');
-
-  return `<div class="two-col" style="margin-top: calc(var(--space-6) * var(--print-density))">
+  return `<div class="two-col">
   <section>
     <h2>${escapeHtml(labels.education)}</h2>
     <ul class="rows">${education}</ul>
@@ -354,8 +505,6 @@ function backgroundBlock(document: CvDocument): string {
   <section>
     <h2>${escapeHtml(labels.certifications)}</h2>
     <ul class="rows">${certifications}</ul>
-    <h2 style="margin-top: calc(var(--space-5) * var(--print-density))">${escapeHtml(labels.openProjects)}</h2>
-    <ul class="rows">${projects}</ul>
   </section>
 </div>`;
 }

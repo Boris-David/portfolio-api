@@ -60,6 +60,30 @@ plage dans `fonts.ts`.
 
 Toute police ajoutée vient avec sa **licence** dans `assets/fonts/`.
 
+## Le nom du fichier est dans l'URL, pas seulement dans l'en-tête
+
+Sur iOS, Safari **ignore** `Content-Disposition` pour la feuille de partage et
+reprend le **dernier segment de l'URL**. La route porte donc exactement le nom
+du fichier (`/v1/cv/amissan.ag-cv-fr.pdf`), et `cvFileName` est la seule source
+de ce nom — route, en-tête et asset le lisent au même endroit.
+
+Changer ce nom change une URL publique : l'ancien chemin reste en `301`.
+
+## La typographie se juge à l'œil, jamais au test
+
+Deux pièges mesurés sur ce document, à ne pas réintroduire :
+
+- **L'interlettrage des capitales.** Au-delà de ~0,04 em à cette taille, les
+  mots se disloquent à l'impression — « COMPÉT ENCES », « S TACK » — et le
+  document a l'air cassé. Ce qui distingue un intitulé, c'est la graisse, la
+  couleur et le filet ; l'espacement n'est qu'une respiration.
+- **Les grilles CSS ne se fragmentent pas** entre deux pages : une grille
+  bascule tout entière et laisse une demi-page blanche. Pour du contenu qui
+  coule, employer `column-count`, pas `grid`.
+
+Après toute retouche : rendre, **regarder chaque page**, et vérifier qu'aucune
+ne se termine à moins de ~85 % de hauteur d'encre.
+
 ## Le CV est une sélection, et elle est explicite
 
 Un CV n'est pas la page imprimée. La sélection vit dans `src/cv/model.ts`, en

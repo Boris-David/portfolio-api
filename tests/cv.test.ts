@@ -173,18 +173,13 @@ describe('les artefacts rendus', () => {
   });
 
   it("se relaie depuis le magasin d'assets, octets et nom de fichier compris", async () => {
-    const store = createAssetsCvStore(
-      assetsFromDirectory(directory),
-      ASSET_ORIGIN,
-      version,
-      portfolio.fr.profile.name.full,
-    );
+    const store = createAssetsCvStore(assetsFromDirectory(directory), ASSET_ORIGIN, version);
 
     const lookup = await store.describe('fr');
     expect(lookup.status).toBe('ready');
     if (lookup.status !== 'ready') return;
 
-    expect(lookup.description.fileName).toBe('amissan-boris-david-amoussou-guenou-cv-fr.pdf');
+    expect(lookup.description.fileName).toBe('amissan.ag-cv-fr.pdf');
     const body = await store.open(lookup.description);
     expect(body).not.toBeNull();
   });
@@ -194,7 +189,6 @@ describe('les artefacts rendus', () => {
       assetsFromDirectory(directory),
       ASSET_ORIGIN,
       'une-autre-version',
-      'Nom Complet',
     );
 
     const lookup = await store.describe('fr');
@@ -205,12 +199,7 @@ describe('les artefacts rendus', () => {
 
   it("signale l'absence de rendu en disant quoi lancer", async () => {
     const empty = mkdtempSync(join(tmpdir(), 'portfolio-cv-vide-'));
-    const store = createAssetsCvStore(
-      assetsFromDirectory(empty),
-      ASSET_ORIGIN,
-      version,
-      'Nom Complet',
-    );
+    const store = createAssetsCvStore(assetsFromDirectory(empty), ASSET_ORIGIN, version);
 
     const lookup = await store.describe('fr');
 
@@ -231,12 +220,7 @@ describe('les artefacts rendus', () => {
         ],
       }),
     );
-    const store = createAssetsCvStore(
-      assetsFromDirectory(broken),
-      ASSET_ORIGIN,
-      version,
-      'Nom Complet',
-    );
+    const store = createAssetsCvStore(assetsFromDirectory(broken), ASSET_ORIGIN, version);
 
     const lookup = await store.describe('fr');
     expect(lookup.status).toBe('ready');
@@ -247,16 +231,17 @@ describe('les artefacts rendus', () => {
   });
 
   it('refuse un manifeste que le schéma ne reconnaît pas', () => {
-    const catalogue = readCvCatalogue({ contentVersion: 'v1' }, 'v1', 'Nom Complet');
+    const catalogue = readCvCatalogue({ contentVersion: 'v1' }, 'v1');
 
     expect(catalogue.status).toBe('unavailable');
     expect(catalogue.status === 'unavailable' && catalogue.reason).toContain('illisible');
   });
 
-  it('nomme le fichier depuis le nom porté par le contenu', () => {
-    expect(cvFileName('Amissan Boris-David Amoussou-Guenou', 'fr')).toBe(
-      'amissan-boris-david-amoussou-guenou-cv-fr.pdf',
-    );
+  it('porte le nom attendu au partage, par langue', () => {
+    // Sur iOS, Safari ignore Content-Disposition pour la feuille de partage et
+    // reprend le dernier segment de l'URL : le nom du fichier EST la route.
+    expect(cvFileName('fr')).toBe('amissan.ag-cv-fr.pdf');
+    expect(cvFileName('en')).toBe('amissan.ag-cv-en.pdf');
   });
 });
 
@@ -273,8 +258,8 @@ describe("l'ETag du CV", () => {
       ],
     });
 
-    const premier = readCvCatalogue(manifest(101), 'v1', 'X');
-    const second = readCvCatalogue(manifest(202), 'v1', 'X');
+    const premier = readCvCatalogue(manifest(101), 'v1');
+    const second = readCvCatalogue(manifest(202), 'v1');
 
     expect(premier.status).toBe('ready');
     expect(second.status).toBe('ready');

@@ -11,6 +11,7 @@
  * qui est déployé fonctionne.
  */
 import { spawn } from 'node:child_process';
+import { cvPath } from '../src/http/app.js';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const PORT = 8787;
@@ -59,7 +60,7 @@ const checks: readonly Check[] = [
   {
     name: 'le CV est relayé depuis le magasin d’assets',
     run: async () => {
-      const response = await fetch(`${BASE}/v1/cv/fr.pdf`);
+      const response = await fetch(`${BASE}${cvPath('fr')}`);
       expect(response.status === 200, `attendu 200, reçu ${String(response.status)}`);
       expect(
         response.headers.get('content-type') === 'application/pdf',
@@ -72,9 +73,9 @@ const checks: readonly Check[] = [
   {
     name: 'le CV se revalide sans retélécharger',
     run: async () => {
-      const first = await fetch(`${BASE}/v1/cv/en.pdf`);
+      const first = await fetch(`${BASE}${cvPath('en')}`);
       const etag = first.headers.get('etag') ?? '';
-      const second = await fetch(`${BASE}/v1/cv/en.pdf`, { headers: { 'If-None-Match': etag } });
+      const second = await fetch(`${BASE}${cvPath('en')}`, { headers: { 'If-None-Match': etag } });
       expect(second.status === 304, `attendu 304, reçu ${String(second.status)}`);
     },
   },
@@ -83,6 +84,13 @@ const checks: readonly Check[] = [
     run: async () => {
       const response = await fetch(`${BASE}/cv/manifest.json`);
       expect(response.status === 404, `attendu 404, reçu ${String(response.status)}`);
+    },
+  },
+  {
+    name: "l'ancien chemin du CV redirige au lieu de tomber",
+    run: async () => {
+      const response = await fetch(`${BASE}/v1/cv/fr.pdf`, { redirect: 'manual' });
+      expect(response.status === 301, `attendu 301, reçu ${String(response.status)}`);
     },
   },
   {

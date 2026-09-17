@@ -1,9 +1,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildSnapshot, type ContentSnapshot } from '../src/content/snapshot.js';
+import { cvFileName } from '../src/cv/manifest.js';
 import type { CvBody, CvLookup, CvStore } from '../src/cv/store.js';
 import { unavailableCvStore } from '../src/cv/unavailable-store.js';
 import { strongETag } from '../src/content/digest.js';
-import { createApp } from '../src/http/app.js';
+import { createApp, cvPath } from '../src/http/app.js';
 
 const PDF_BYTES = new TextEncoder().encode('%PDF-1.4 faux document de test\n%%EOF');
 
@@ -21,8 +22,8 @@ function readyStore(): CvStore {
         status: 'ready',
         description: {
           locale,
-          assetPath: `/cv/cv-${locale}.pdf`,
-          fileName: `cv-${locale}.pdf`,
+          assetPath: `/cv/${cvFileName(locale)}`,
+          fileName: cvFileName(locale),
           etag: strongETag(`${locale}-source`),
         },
       }),
@@ -152,17 +153,33 @@ describe('la revalidation par ETag', () => {
 
 describe('le CV', () => {
   it('est servi en PDF, avec son nom de fichier', async () => {
-    const response = await app.request('/v1/cv/fr.pdf');
+    const response = await app.request(cvPath('fr'));
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('application/pdf');
-    expect(response.headers.get('content-disposition')).toContain('cv-fr.pdf');
+    expect(response.headers.get('content-disposition')).toContain('amissan.ag-cv-fr.pdf');
+  });
+
+  it("porte le nom du fichier en DERNIER SEGMENT de l'URL", () => {
+    // Sur iOS, Safari ignore `Content-Disposition` pour la feuille de partage
+    // et reprend le dernier segment de l'URL. Avec « /v1/cv/fr.pdf », le
+    // partage annonçait « fr ». Ce test garde la correction.
+    for (const locale of ['fr', 'en'] as const) {
+      expect(cvPath(locale).split('/').at(-1)).toBe(cvFileName(locale));
+    }
+  });
+
+  it("redirige définitivement l'ancien chemin, pour ne pas casser un lien partagé", async () => {
+    const response = await app.request('/v1/cv/fr.pdf');
+
+    expect(response.status).toBe(301);
+    expect(response.headers.get('location')).toBe(cvPath('fr'));
   });
 
   it('se revalide comme le contenu', async () => {
-    const first = await app.request('/v1/cv/en.pdf');
+    const first = await app.request(cvPath('en'));
     const etag = first.headers.get('etag') ?? '';
-    const second = await app.request('/v1/cv/en.pdf', { headers: { 'if-none-match': etag } });
+    const second = await app.request(cvPath('en'), { headers: { 'if-none-match': etag } });
 
     expect(second.status).toBe(304);
   });
@@ -173,7 +190,7 @@ describe('le CV', () => {
       cv: () => unavailableCvStore('CV périmé : rendu pour un autre contenu.'),
     });
 
-    const response = await degraded.request('/v1/cv/fr.pdf');
+    const response = await degraded.request(cvPath('fr'));
     const problem = (await response.json()) as { detail: string };
 
     expect(response.status).toBe(503);

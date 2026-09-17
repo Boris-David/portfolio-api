@@ -42,26 +42,23 @@ describe('les références internes', () => {
   });
 });
 
-describe('les chiffres publiables', () => {
-  it('annoncent le nombre de réseaux réellement inventorié', () => {
-    const inventoried = countByRole(portfolio.fr.apps, 'ticketing');
-    const metric = portfolio.fr.metrics.find((entry) => entry.id === 'networks');
+describe('le compte des réseaux', () => {
+  const inventoried = String(countByRole(portfolio.fr.apps, 'ticketing'));
 
-    expect(metric?.value).toBe(String(inventoried));
-    expect(metric?.countTo).toBe(inventoried);
-  });
-
-  it("sont repris à l'identique dans les titres qui les citent", () => {
+  it("n'est cité qu'à un seul endroit : là où la liste le démontre", () => {
     // Un nombre écrit dans une phrase est une seconde source de vérité ; il
-    // n'est acceptable que gardé. C'est ici que la garde vit.
-    const inventoried = String(countByRole(portfolio.fr.apps, 'ticketing'));
+    // n'est acceptable que gardé. Et répété partout, il s'affaiblit — il vaut
+    // par la liste qui l'accompagne, pas par sa fréquence.
     const appsSection = portfolio.fr.sections.find((section) => section.id === 'apps');
-    const ticketingCase = portfolio.fr.caseStudies.find(
-      (study) => study.slug === 'mobile-ticketing',
-    );
-
     expect(appsSection?.title).toContain(inventoried);
-    expect(ticketingCase?.title).toContain(inventoried);
+
+    const ailleurs = [
+      ...portfolio.fr.caseStudies.map((study) => study.title),
+      ...portfolio.fr.metrics.map((metric) => metric.value),
+    ];
+    for (const texte of ailleurs) {
+      expect(texte, texte).not.toContain(inventoried);
+    }
   });
 });
 
