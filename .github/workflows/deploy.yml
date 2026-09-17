@@ -1,10 +1,9 @@
 name: Déploiement Cloudflare Workers
 
-# ⚠️ PRÉPARÉ, PAS BRANCHÉ.
+# Branché. Toute CI verte sur `main` publie l'API — et, avec elle, le CV rendu.
 #
-# Aucun jeton n'existe encore. Ce workflow ne se déclenche qu'à la main et
-# s'arrête proprement tant que la configuration manque — il ne peut pas rendre
-# la CI rouge.
+# La configuration ci-dessous est posée sur le dépôt et n'est à relire que pour
+# la reproduire ailleurs, ou si une rotation de jeton casse le déploiement.
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # CE QU'IL FAUT CRÉER, UNE FOIS
@@ -46,6 +45,28 @@ name: Déploiement Cloudflare Workers
 # il vit dans les secrets du dépôt — jamais dans le dépôt, qui est public.
 
 on:
+  # Le déploiement suit la CI, il ne court pas à côté d'elle. `workflow_run` se
+  # déclenche à la **fin** de la CI : rien ne part en ligne sans que la suite de
+  # tests soit passée sur le commit exact qu'on publie.
+  #
+  # Les deux autres montages ont été écartés :
+  #
+  #   `on: push` — partirait **en parallèle** de la CI. Le déploiement gagnerait
+  #   la course une fois sur deux et publierait un commit dont les tests
+  #   échouent ensuite. Une garde qui s'exécute après la publication ne garde
+  #   rien.
+  #
+  #   un job `deployer` dans `ci.yml` avec `needs:` — ferait entrer le jeton
+  #   Cloudflare dans le workflow qui s'exécute sur **chaque pull request**.
+  #   Une CI qui n'a besoin d'aucun secret ne peut en fuiter aucun ; c'est une
+  #   propriété vérifiable, elle vaut plus que l'économie d'un fichier.
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+  # Reste déclenchable à la main : republier sans nouveau commit — rotation de
+  # jeton, ou re-rendu du CV après un changement d'environnement de build.
   workflow_dispatch:
 
 concurrency:
@@ -62,41 +83,59 @@ jobs:
   deployer:
     name: Rendre le CV, puis publier
     runs-on: ubuntu-latest
+    # `workflow_run` se déclenche que la CI ait **réussi ou échoué** — `on:` n'a
+    # pas de filtre sur la conclusion, il s'écrit ici.
+    #
+    # Le `event == 'push'` n'est pas de la ceinture-bretelles : `branches:
+    # [main]` filtre sur la branche *source*. Une pull request venue d'un fork
+    # dont la branche s'appelle `main` la satisferait — et déploierait le code
+    # du fork. Seul un push sur notre `main` déclenche une publication.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
     steps:
+      # Ce contrôle passait l'étape en silence quand le jeton manquait, parce
+      # qu'aucun jeton n'existait encore. Il échoue depuis que le déploiement
+      # est automatique : un déploiement qui « réussit » sans rien publier
+      # laisse croire qu'un correctif mergé est en ligne.
       - name: Vérifier que la configuration existe
-        id: configuration
         env:
           JETON: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          COMPTE: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ -z "$JETON" ]; then
-            echo "::notice::Déploiement non configuré — voir l'en-tête de ce workflow."
-            echo "prete=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "prete=true" >> "$GITHUB_OUTPUT"
+          manquants=""
+          [ -n "$JETON" ] || manquants="$manquants CLOUDFLARE_API_TOKEN (secret)"
+          [ -n "$COMPTE" ] || manquants="$manquants CLOUDFLARE_ACCOUNT_ID (variable)"
+          if [ -n "$manquants" ]; then
+            echo "::error::Déploiement non configuré, manquant :$manquants — voir l'en-tête de ce workflow."
+            exit 1
           fi
 
+      # `workflow_run` exécute le fichier de workflow de la branche par défaut,
+      # mais ne positionne pas le dépôt pour autant : sans `ref`, on publierait
+      # la tête de `main` au moment du déploiement, pas le commit que la CI a
+      # validé. Deux merges rapprochés suffisent à les rendre différents — et
+      # ici l'écart porterait aussi sur le contenu du CV rendu.
       - uses: actions/checkout@v4
-        if: steps.configuration.outputs.prete == 'true'
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
       - uses: actions/setup-node@v4
-        if: steps.configuration.outputs.prete == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Installer les dépendances
-        if: steps.configuration.outputs.prete == 'true'
         run: npm ci
 
       # Le rendu du CV vit ici, et nulle part ailleurs : Chromium ne tourne pas
       # sur Workers, et l'ADR 0004 veut que le rendu soit déclenché par le
       # changement de contenu — donc par ce build, jamais par une requête.
       - name: Installer Chromium
-        if: steps.configuration.outputs.prete == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Rendre les CV
-        if: steps.configuration.outputs.prete == 'true'
         run: npm run build:cv
 
       # Garde de cohérence avant publication : le manifeste doit avoir été
@@ -104,11 +143,9 @@ jobs:
       # démarrer sur un « degraded », donc il attrape la divergence ici plutôt
       # qu'en production.
       - name: Exercer le Worker sur workerd
-        if: steps.configuration.outputs.prete == 'true'
         run: npm run smoke
 
       - name: Publier le Worker et ses assets
-        if: steps.configuration.outputs.prete == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
