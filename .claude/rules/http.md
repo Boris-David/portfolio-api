@@ -57,6 +57,14 @@ client.
 ## Injection
 
 `createApp` reçoit ses dépendances, ne lit aucun fichier et n'appelle aucune
-horloge. Le seul module qui touche le disque est `src/composition.ts`. Ne pas
-introduire de lecture directe dans un handler — c'est ce qui rend la couche HTTP
-testable sans environnement.
+horloge. Ne pas introduire de lecture directe dans un handler — c'est ce qui
+rend la couche HTTP testable sans environnement, et c'est aussi ce qui la rend
+exécutable sur Workers, qui n'a pas de disque.
+
+La dépendance CV est un **résolveur** `(Context) => CvStore`, et non une valeur :
+sur Workers, le magasin d'assets n'existe que dans `c.env`, donc par requête. Un
+test passe simplement un double.
+
+Décrire un CV ne lit jamais ses octets : une revalidation n'a besoin que de
+l'`ETag`, et télécharger 330 Ko pour répondre « vous l'avez déjà » serait
+absurde.

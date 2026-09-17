@@ -89,6 +89,50 @@ produire la réponse — un `304` coûterait alors le prix d'un `200`.
 
 ---
 
+## Où ça tourne — Cloudflare Workers
+
+**Contrainte de départ : un hébergement gratuit, sans carte bancaire.** Cloud
+Run, envisagé d'abord, exige un compte de facturation Google même pour rester
+dans le palier gratuit. Le plan gratuit de Workers ne demande aucun moyen de
+paiement : 100 000 requêtes/jour, **assets statiques gratuits et illimités**, et
+aucun frais de bande passante.
+
+L'échange est bon pour cette API, et pas seulement acceptable :
+
+- elle sert du **contenu figé** et des **PDF pré-rendus**. Rien à calculer, rien
+  à interroger : c'est le profil exact que les Workers servent le mieux ;
+- Hono est conçu pour Workers — le même code y tourne sans adaptateur ;
+- les **isolats V8 n'ont pas de démarrage à froid**. Le raisonnement de
+  l'ADR 0004 sur le coût d'un réveil d'instance devient sans objet : il n'y a
+  plus de réveil.
+
+**Ce que ça impose.** Un Worker n'a pas de système de fichiers, et son script
+est plafonné en taille. Deux conséquences, toutes deux mécaniques :
+
+- le **contenu est embarqué à la compilation** (`src/content/documents.ts`), pas
+  lu au démarrage. La version de contenu se calcule donc sur les valeurs
+  analysées et non sur les octets d'un fichier — ce qui la rend identique côté
+  build et côté isolat, et insensible à un reformatage ;
+- les **CV vont dans les Workers Static Assets** : ~330 Ko chacun, contre 1 Mo
+  compressé de plafond pour le script. `npm run check:bundle` mesure la marge
+  restante à chaque CI, parce que le contenu embarqué grossit avec le portfolio.
+
+Le linter tient la frontière : hors de `src/node/` et des modules de build du
+CV, importer `node:fs` est une erreur de lint. Seul `node:crypto` est autorisé —
+workerd l'implémente, et il rend le **même octet** que Node, ce qui est la
+condition pour comparer une empreinte calculée au build à une empreinte calculée
+dans l'isolat.
+
+**Le CV est-il servi par le Worker ou directement par le magasin d'assets ?**
+Par le Worker. Servir l'asset en direct serait gratuit et hors quota, mais
+Cloudflare calcule alors l'`ETag` sur les **octets** du PDF — que Chromium
+horodate — et on reperdrait exactement la stabilité que l'`ETag` d'empreinte
+source apporte, en plus du `Content-Disposition` et du `503` de péremption. Le
+relais coûte une requête Worker par téléchargement de CV ; sur 100 000 par jour,
+ce n'est pas la contrainte.
+
+---
+
 ## Le CV en PDF
 
 ### Ce que l'ADR 0004 impose
@@ -108,30 +152,34 @@ lentement — exactement le risque que l'ADR nomme. Chromium met en page le CV
 avec **le moteur qui met en page le site**. Les tokens produisent des variables
 CSS, et il n'y a qu'un seul calcul de mise en page dans tout le système.
 
-**Le poids de l'image et le démarrage à froid.** Ils ne sont pas payés, parce
-que **le navigateur n'est jamais dans l'image qui sert** :
+**Le poids du navigateur et le démarrage à froid.** Ils ne sont pas payés,
+parce que **Chromium n'est jamais là où l'API tourne** :
 
 - Playwright est une dépendance de **développement** ;
-- le `Dockerfile` a deux étages. L'étage _builder_ installe Chromium, rend les
-  deux PDF, et est **jeté**. L'étage d'exécution est un `node:22-bookworm-slim`
-  qui contient Node, le contenu et les PDF déjà rendus — pas un octet de
-  navigateur ;
-- une requête de lecture ne déclenche donc aucun rendu, et une instance Cloud
-  Run qui se réveille n'a rien d'autre à lancer que Node. Le téléchargement du
-  CV coûte une lecture mémoire.
+- le rendu vit dans la CI (`.github/workflows/deploy.yml`), qui installe
+  Chromium, rend les deux PDF, puis publie le Worker et ses assets. Rien de tout
+  cela ne part sur Cloudflare — un Worker ne pourrait de toute façon pas lancer
+  un navigateur ;
+- une requête de lecture ne déclenche donc aucun rendu, et un isolat V8 démarre
+  sans rien à amorcer. Le téléchargement du CV coûte une lecture d'asset.
 
 C'est aussi ce qui rend le point 1 mécanique plutôt que déclaratif : le rendu ne
 _peut pas_ arriver à la requête, puisque de quoi rendre n'est pas là.
 
-**La garde anti-péremption.** Le rendu écrit un manifeste portant la version de
-contenu. Au démarrage, l'API compare cette version à celle du contenu qu'elle
-vient de charger. Si elles diffèrent — ou si l'artefact manque —, la route CV
-répond `503` en disant quoi faire, et `/health` passe en `degraded`. Le contenu,
-lui, continue d'être servi : un CV manquant ne doit pas couper le portfolio,
-mais un CV périmé ne doit jamais être servi en silence.
+**La garde anti-péremption.** Le rendu écrit un manifeste, publié à côté des
+PDF, qui porte la version de contenu. L'API le lit une fois par isolat et
+compare cette version à celle du contenu qu'elle embarque. Si elles diffèrent —
+ou si le manifeste manque —, la route CV répond `503` en disant quoi faire, et
+`/health` passe en `degraded`. Le contenu, lui, continue d'être servi : un CV
+manquant ne doit pas couper le portfolio, mais un CV périmé ne doit jamais être
+servi en silence.
 
-**Les polices sont embarquées.** Un conteneur n'a ni Fraunces ni Instrument
-Sans. Les sous-ensembles Latin, Latin étendu et la flèche `→` sont versionnés
+Le déploiement rend d'ailleurs la divergence difficile : le script et les assets
+sont publiés **ensemble**, depuis le même build. La garde couvre ce qui reste —
+un déploiement lancé sans avoir re-rendu le CV.
+
+**Les polices sont embarquées.** Une machine de CI n'a ni Fraunces ni
+Instrument Sans. Les sous-ensembles Latin, Latin étendu et la flèche `→` sont versionnés
 dans `assets/fonts/` (≈ 170 Ko, licences OFL à côté) et injectés en `data:` dans
 le document : le rendu ne dépend d'aucun réseau et donne le même résultat
 partout. Provenance : Google Fonts, API `css2`, sous-ensembles `latin`,
@@ -182,18 +230,19 @@ seconde source de vérité.
 
 ## Lancer
 
-Node 22 ou plus.
+Node 22 ou plus. `wrangler dev` monte **workerd** en local — aucun compte
+Cloudflare n'est nécessaire pour développer ni pour jouer la CI.
 
 ```sh
 npm ci
 npx playwright install chromium   # une fois — pour rendre le CV et jouer ses tests
 
-npm run build:cv                  # rend artifacts/cv/*.pdf + le manifeste
-npm run dev                       # http://localhost:8080
+npm run build:cv                  # rend public/cv/*.pdf + le manifeste
+npm run dev                       # workerd sur http://localhost:8787
 ```
 
-Sans `build:cv`, l'API démarre et sert le contenu ; seule la route CV répond
-`503`, et `/health` l'annonce.
+Sans `build:cv`, le Worker démarre et sert le contenu ; seule la route CV répond
+`503`, et `/health` l'annonce en donnant la raison.
 
 ### Tests
 
@@ -201,6 +250,7 @@ Sans `build:cv`, l'API démarre et sert le contenu ; seule la route CV répond
 npm test               # toute la suite, y compris un vrai rendu Chromium
 npm run test:watch
 npx vitest run tests/cv.test.ts   # un fichier
+npm run smoke          # le Worker, sur workerd, routes réelles
 ```
 
 | Fichier                  | Ce qu'il garde                                                                                                    |
@@ -211,28 +261,39 @@ npx vitest run tests/cv.test.ts   # un fichier
 | `tests/http.test.ts`     | langues, `ETag`, `304`, cache, erreurs, `503` du CV, `/health`                                                    |
 | `tests/contract.test.ts` | les **octets servis** reparsés par le schéma publié, et le contrat figé à jour                                    |
 | `tests/locale.test.ts`   | la négociation `Accept-Language` et la comparaison d'`ETag`                                                       |
-| `tests/cv.test.ts`       | le modèle, le gabarit, la couverture des polices, et un rendu PDF réel                                            |
+| `tests/cv.test.ts`       | le modèle, le gabarit, la couverture des polices, un rendu PDF réel, et le relais depuis le magasin d'assets      |
+
+Les tests tournent sur Node : ils ne voient ni le bundle, ni les bindings, ni
+l'absence de système de fichiers. C'est `npm run smoke` qui couvre ça — il monte
+le Worker sur workerd et tape les routes. Sans lui, un `node:fs` enfoui passerait
+le build sans un mot et n'échouerait qu'en production.
 
 ### Vérifications complètes
 
 ```sh
 npm run format:check && npm run lint && npm run typecheck \
-  && npm run check:openapi && npm run check:tokens && npm test && npm run build
+  && npm run check:openapi && npm run check:tokens && npm test \
+  && npm run build:cv && npm run build && npm run check:bundle && npm run smoke
 ```
 
-C'est ce que joue la CI, à quoi s'ajoute la construction de l'image.
+C'est exactement ce que joue la CI.
 
-### Conteneur
+### Déployer
 
 ```sh
-docker build -t portfolio-api .
-docker run --rm -p 8080:8080 portfolio-api
+npm run build        # bundle à blanc, sans rien publier
+npm run deploy       # wrangler deploy
 ```
 
-Le déploiement Cloud Run est **écrit mais pas branché** : aucun secret n'existe
-encore. `.github/workflows/deploy.yml` liste en tête ce qu'il faudra fournir, et
-ne se déclenche qu'à la main. L'authentification passera par **fédération
-d'identité** — aucune clé de service dans un dépôt public.
+Le déploiement est **écrit mais pas branché** : aucun jeton n'existe encore.
+`.github/workflows/deploy.yml` liste en tête, précisément, le compte à créer, le
+jeton d'API et ses portées, et les deux entrées à poser dans les secrets du
+dépôt. Il ne se déclenche qu'à la main et s'arrête proprement sans jeton.
+
+L'API est prévue sur **`api.amissan.dev`**. Le domaine est enregistré chez
+Cloudflare Registrar, donc la zone est déjà sur le compte : le domaine
+personnalisé est déclaré dans `wrangler.jsonc` et créé par `wrangler deploy`.
+Rien à cliquer — la configuration reste dans le dépôt, versionnée.
 
 ---
 
@@ -242,16 +303,19 @@ d'identité** — aucune clé de service dans un dépôt public.
 content/            les fichiers de contenu, bilingues, validés par le schéma
 design/tokens.json  instantané des tokens du hub, gardé par check:tokens
 assets/fonts/       les polices embarquées dans le PDF (OFL)
+public/             les Workers Static Assets — les CV rendus y sont déposés
 contracts/          le contrat OpenAPI dérivé, figé pour être relu en revue
 docs/problems.md    les types d'erreur RFC 9457
+wrangler.jsonc      le Worker : entrée, assets, domaine, compatibilité
 src/
+  worker.ts         l'entrée Cloudflare Workers
   domain/           le modèle et son schéma — aucune dépendance sortante
-  content/          disque → domaine : dérivation, projection, instantané servi
-  cv/               modèle du CV, gabarit, rendu, artefacts
+  content/          documents embarqués, dérivation, projection, instantané servi
+  cv/               manifeste et magasin (runtime) ; modèle, gabarit et rendu (build)
   http/             routes, négociation de langue, erreurs, contrat
-  config.ts         les valeurs nommées (cache, chemins, port)
-  composition.ts    la racine de composition — le seul module qui lit le disque
-scripts/            build du CV, du contrat, garde des tokens
+  node/             les chemins disque — build et tests uniquement, jamais le Worker
+  config.ts         les valeurs nommées (cache, empreintes, assets)
+scripts/            build du CV et du contrat, gardes (tokens, taille, workerd)
 tests/
 ```
 

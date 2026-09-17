@@ -12,9 +12,9 @@ paths:
 
 ## Le rendu est déclenché par le contenu, jamais par la requête
 
-Le navigateur n'existe que dans l'étage _builder_ du `Dockerfile` ; l'image qui
-sert n'en contient pas un octet. Une requête de lecture ne peut donc pas
-déclencher un rendu, et une instance qui se réveille n'a que Node à démarrer.
+Le rendu vit dans la CI, qui publie ensuite le Worker et ses assets. Un Worker
+ne peut pas lancer un navigateur : la contrainte est tenue par la plateforme, pas
+par la discipline. Et un isolat V8 n'a rien à amorcer au réveil.
 
 **Ne jamais** rendre à la volée dans un handler, même « en secours », même « en
 dev ». Ce serait remettre le coût du démarrage du moteur sur le premier
@@ -22,6 +22,10 @@ téléchargement — précisément l'alternative que l'ADR a écartée.
 
 Un artefact absent ou rendu pour une autre version de contenu donne un `503`
 explicite et un `/health` `degraded`. Pas de PDF périmé servi en silence.
+
+Les PDF sont déposés dans `public/cv/` — le répertoire des **Workers Static
+Assets** — parce qu'ils pèsent ~330 Ko chacun et que le script est plafonné à
+1 Mo compressé. Ils ne sont pas versionnés : ce sont des artefacts de build.
 
 ## Le gabarit boit aux tokens
 
@@ -40,9 +44,9 @@ en `calc()` partout, donc les **rapports** de l'échelle sont conservés.
 
 ## Les polices sont embarquées, et leur couverture est vérifiée
 
-Un conteneur n'a aucune police installée. Les sous-ensembles sont versionnés
-dans `assets/fonts/` et injectés en `data:` : aucun réseau au rendu, même
-résultat partout.
+Une machine de CI n'a aucune police installée. Les sous-ensembles sont
+versionnés dans `assets/fonts/` et injectés en `data:` : aucun réseau au rendu,
+même résultat partout.
 
 La pile d'affichage retombe sur la police de **texte** avant tout générique : un
 caractère absent de Fraunces doit être dessiné par une police embarquée, jamais

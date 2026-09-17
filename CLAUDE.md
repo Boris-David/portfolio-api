@@ -8,7 +8,7 @@ Ce dépôt est **public** et lu par des recruteurs : le code fait partie du
 produit. Il porte deux choses, et seulement deux — le **contenu** du portfolio,
 et le **CV en PDF** qui s'en déduit.
 
-## Les trois invariants du dépôt
+## Les quatre invariants du dépôt
 
 ### 1. Le schéma Zod est la seule définition
 
@@ -30,9 +30,20 @@ erreur explicite — jamais un repli silencieux.
 
 ### 3. Le CV est rendu au build, jamais à la requête
 
-C'est l'ADR 0004, et c'est mécanique : le navigateur n'existe que dans l'étage
-_builder_ du `Dockerfile`. Un artefact absent ou périmé donne un `503` explicite
-et un `/health` `degraded` — jamais un PDF servi en silence.
+C'est l'ADR 0004, et c'est mécanique : le rendu vit dans la CI, et un Worker ne
+peut pas lancer un navigateur. Un artefact absent ou périmé donne un `503`
+explicite et un `/health` `degraded` — jamais un PDF servi en silence.
+
+### 4. Ce qui tourne sur Workers n'a pas de système de fichiers
+
+Le contenu est **embarqué à la compilation**, les CV vont dans les **Workers
+Static Assets**. Hors de `src/node/` et des modules de build du CV, importer
+`node:fs` est une erreur de lint ; seul `node:crypto` est autorisé, parce que
+workerd le rend au même octet que Node.
+
+Le linter ne voit que les importations directes : `npm run smoke` monte le
+Worker sur workerd et couvre le reste. C'est la seule vérification qui prouve
+que ce qui sera déployé fonctionne.
 
 ## Ce qu'on ne fait pas ici
 
@@ -43,15 +54,17 @@ et un `/health` `degraded` — jamais un PDF servi en silence.
 | stocker du HTML dans le contenu                               | le contenu n'appartient pas au web ; l'emphase se transporte en fragments typés |
 | ajouter un texte non traduit                                  | voir l'invariant 2                                                              |
 | inventer un fait, arrondir un chiffre, reformuler à la hausse | voir la règle éditoriale racine — chaque ligne y est un arbitrage rendu         |
-| commiter les PDF rendus                                       | ce sont des artefacts de build (`artifacts/` est ignoré)                        |
+| commiter les PDF rendus                                       | ce sont des artefacts de build (`public/cv/` est ignoré)                        |
 | mettre une valeur de forme en dur dans le gabarit du CV       | elle doit venir des tokens, sinon le PDF et le site divergent                   |
 | mettre un secret, une URL interne, un nom de module employeur | dépôt public, historique irréversible ; le hook de pre-commit refuse            |
+| rendre le CV à la volée dans un handler, même « en secours »  | le rendu est déclenché par le contenu (ADR 0004) — et Workers n'a pas Chromium  |
 
 ## Avant de dire que c'est fait
 
 ```sh
 npm run format:check && npm run lint && npm run typecheck \
-  && npm run check:openapi && npm run check:tokens && npm test && npm run build
+  && npm run check:openapi && npm run check:tokens && npm test \
+  && npm run build:cv && npm run build && npm run check:bundle && npm run smoke
 ```
 
 Vérifié **dans les logs**, jamais sur le code de retour d'un pipe. Un test qui
@@ -72,5 +85,6 @@ quand on touche la surface qu'elles régissent, et pas avant.
 | `contenu.md` | `content/**`                                                 |
 | `schema.md`  | `src/domain/**`, `src/content/**`                            |
 | `cv.md`      | `src/cv/**`, `scripts/build-cv.ts`, `design/**`, `assets/**` |
+| `worker.md`  | `src/worker.ts`, `wrangler.jsonc`, `scripts/smoke-worker.ts` |
 | `http.md`    | `src/http/**`                                                |
 | `tests.md`   | `tests/**`                                                   |
