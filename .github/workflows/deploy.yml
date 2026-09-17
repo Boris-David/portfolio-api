@@ -1,0 +1,115 @@
+name: Déploiement Cloudflare Workers
+
+# ⚠️ PRÉPARÉ, PAS BRANCHÉ.
+#
+# Aucun jeton n'existe encore. Ce workflow ne se déclenche qu'à la main et
+# s'arrête proprement tant que la configuration manque — il ne peut pas rendre
+# la CI rouge.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# CE QU'IL FAUT CRÉER, UNE FOIS
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# 1. Un compte Cloudflare, et y activer Workers.
+#    Plan gratuit : 100 000 requêtes/jour, assets statiques gratuits et
+#    illimités, aucune bande passante facturée. **Aucune carte bancaire.**
+#
+# 2. Un jeton d'API — tableau de bord → My Profile → API Tokens →
+#    Create Token → Edit Cloudflare Workers, puis restreindre à :
+#
+#      Account · Workers Scripts        : Edit
+#      Account · Account Settings       : Read
+#      Zone    · Workers Routes         : Edit   (zone amissan.dev)
+#      Zone    · Zone                   : Read   (zone amissan.dev)
+#
+#    Les deux portées de zone ne servent qu'au domaine personnalisé ; sans
+#    elles, le déploiement réussit mais `api.amissan.dev` n'est pas créé.
+#
+# 3. Dans ce dépôt — Settings → Secrets and variables → Actions :
+#
+#      Secret    CLOUDFLARE_API_TOKEN    le jeton ci-dessus
+#      Variable  CLOUDFLARE_ACCOUNT_ID   l'identifiant de compte (Workers → Overview)
+#
+#    Rien d'autre. Le nom du Worker, les assets et le domaine sont déclarés
+#    dans `wrangler.jsonc`, versionné.
+#
+# 4. Le domaine `api.amissan.dev` : **rien à cliquer**. `amissan.dev` est
+#    enregistré chez Cloudflare Registrar, donc la zone est déjà sur le compte,
+#    et `wrangler deploy` crée l'enregistrement DNS et le domaine personnalisé
+#    à partir de `routes` dans `wrangler.jsonc`.
+#
+#    À faire à la main uniquement si on préfère : Workers & Pages →
+#    portfolio-api → Settings → Domains & Routes → Add → Custom Domain →
+#    « api.amissan.dev ».
+#
+# Aucune clé privée, aucun fichier de service : le jeton est le seul secret, et
+# il vit dans les secrets du dépôt — jamais dans le dépôt, qui est public.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  deployer:
+    name: Rendre le CV, puis publier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vérifier que la configuration existe
+        id: configuration
+        env:
+          JETON: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$JETON" ]; then
+            echo "::notice::Déploiement non configuré — voir l'en-tête de ce workflow."
+            echo "prete=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "prete=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.configuration.outputs.prete == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.configuration.outputs.prete == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Installer les dépendances
+        if: steps.configuration.outputs.prete == 'true'
+        run: npm ci
+
+      # Le rendu du CV vit ici, et nulle part ailleurs : Chromium ne tourne pas
+      # sur Workers, et l'ADR 0004 veut que le rendu soit déclenché par le
+      # changement de contenu — donc par ce build, jamais par une requête.
+      - name: Installer Chromium
+        if: steps.configuration.outputs.prete == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Rendre les CV
+        if: steps.configuration.outputs.prete == 'true'
+        run: npm run build:cv
+
+      # Garde de cohérence avant publication : le manifeste doit avoir été
+      # scellé pour le contenu que le Worker embarque. Le smoke test refuse de
+      # démarrer sur un « degraded », donc il attrape la divergence ici plutôt
+      # qu'en production.
+      - name: Exercer le Worker sur workerd
+        if: steps.configuration.outputs.prete == 'true'
+        run: npm run smoke
+
+      - name: Publier le Worker et ses assets
+        if: steps.configuration.outputs.prete == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run deploy

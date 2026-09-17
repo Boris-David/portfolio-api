@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Une seule exécution utile par référence : les précédentes sont annulées.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  verifier:
+    name: Lint, types, contrat et tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      # Le rendu du CV est testé pour de vrai : un test qui saute le moteur ne
+      # prouve rien sur ce que le recruteur téléchargera.
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Types
+        run: npm run typecheck
+
+      # Le contrat OpenAPI est dérivé des schémas Zod. S'il n'a pas été
+      # régénéré, la revue lit un contrat qui ment — c'est bloquant.
+      - name: Contrat OpenAPI à jour
+        run: npm run check:openapi
+
+      # Les tokens de design appartiennent au dépôt hub ; ce dépôt en porte un
+      # instantané, gardé par cette comparaison.
+      - name: Tokens de design non dérivés
+        run: npm run check:tokens
+
+      - name: Tests
+        run: npm test
+
+  worker:
+    name: Worker — bundle et exécution réelle
+    runs-on: ubuntu-latest
+    needs: verifier
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
+
+      # Les assets doivent exister avant de monter le Worker : le CV est rendu
+      # au build, jamais à la requête.
+      - name: Rendre les CV
+        run: npm run build:cv
+
+      - name: Construire le script
+        run: npm run build
+
+      # Le contenu est embarqué DANS le script : il grossit à chaque
+      # application ajoutée. La marge restante se mesure, elle ne se suppose pas.
+      - name: Le script tient sous le plafond du plan gratuit
+        run: npm run check:bundle
+
+      # Les tests unitaires tournent sur Node. Seule cette étape prouve que ce
+      # qui sera déployé fonctionne : workerd, le bundle réel, les bindings, et
+      # l'absence de système de fichiers.
+      - name: Exercer le Worker sur workerd
+        run: npm run smoke

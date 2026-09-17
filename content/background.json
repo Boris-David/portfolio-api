@@ -1,0 +1,77 @@
+{
+  "$comment": "Formation, certifications et projets ouverts. Les certificats portent leur lien de vérification : une certification qui ne se vérifie pas ne vaut rien sur un dépôt public.",
+  "education": [
+    {
+      "slug": "master-ingenierie-informatique",
+      "degree": {
+        "fr": "Master 2 Ingénierie informatique",
+        "en": "Master's degree in Software Engineering"
+      },
+      "school": "Université Côte d'Azur — Nice",
+      "detail": null,
+      "startYear": 2020,
+      "endYear": 2021
+    },
+    {
+      "slug": "diplome-ingenieur-polytech",
+      "degree": {
+        "fr": "Diplôme d'ingénieur en sciences informatiques",
+        "en": "Engineering degree in Computer Science"
+      },
+      "school": "Polytech Nice Sophia Antipolis",
+      "detail": {
+        "fr": "spécialité Intelligence Ambiante et Mobile",
+        "en": "Ambient & Mobile Intelligence track"
+      },
+      "startYear": 2019,
+      "endYear": 2021
+    },
+    {
+      "slug": "ingenieur-travaux-informatiques",
+      "degree": {
+        "fr": "Ingénieur des travaux informatiques",
+        "en": "Bachelor of Engineering in Computer Science"
+      },
+      "school": "Institut Africain d'Informatique — Lomé",
+      "detail": null,
+      "startYear": 2016,
+      "endYear": 2019
+    }
+  ],
+  "certifications": [
+    {
+      "slug": "professional-scrum-master-i",
+      "name": "Professional Scrum Master I",
+      "issuer": "Scrum.org",
+      "awardedOn": "2025-11",
+      "verifyUrl": "https://www.scrum.org/certificates/1267010"
+    },
+    {
+      "slug": "safe-6-practitioner",
+      "name": "Certified SAFe 6 Practitioner",
+      "issuer": "Scaled Agile",
+      "awardedOn": "2025",
+      "verifyUrl": "https://community.scaledagile.com/s/certification-verification"
+    }
+  ],
+  "openProjects": [
+    {
+      "slug": "advanced-calendar",
+      "name": "Advanced Calendar",
+      "description": {
+        "fr": "Composant calendrier SwiftUI, construit par pont sur UIKit pour dépasser les limites de `UICalendarView`. Écrit parce que le framework ne suffisait pas.",
+        "en": "SwiftUI calendar component, bridged over UIKit to move past the limits of `UICalendarView`. Written because the framework was not enough."
+      },
+      "sourceUrl": null
+    },
+    {
+      "slug": "news-app",
+      "name": "News App",
+      "description": {
+        "fr": "Fil d'actualité en MVVM, parsing en direct, signature par fastlane et match. Écrite pour l'entretien technique d'Instant System.",
+        "en": "MVVM news feed, live parsing, signing handled by fastlane and match. Written for the Instant System technical interview."
+      },
+      "sourceUrl": "https://github.com/Boris-David/NewsApp"
+    }
+  ]
+}

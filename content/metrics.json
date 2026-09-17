@@ -1,0 +1,43 @@
+[
+  {
+    "$comment": "Les seuls chiffres publiables. La valeur 33 est vérifiée contre l'inventaire par tests/content-coherence.test.ts.",
+    "id": "networks",
+    "value": "33",
+    "unit": null,
+    "countTo": 33,
+    "caption": {
+      "fr": "applications de transport en production embarquent mon travail",
+      "en": "transport apps in production ship my work"
+    }
+  },
+  {
+    "id": "experience",
+    "value": "6",
+    "unit": { "fr": "ans", "en": "yrs" },
+    "countTo": 6,
+    "caption": {
+      "fr": "d'ingénierie iOS, depuis octobre 2020",
+      "en": "of iOS engineering, since October 2020"
+    }
+  },
+  {
+    "id": "mail-orange-reach",
+    "value": "~1",
+    "unit": "M",
+    "countTo": null,
+    "caption": {
+      "fr": "d'utilisateurs sur Mail Orange",
+      "en": "users on Mail Orange"
+    }
+  },
+  {
+    "id": "kcalories-crash-free",
+    "value": { "fr": "> 99,8", "en": "> 99.8" },
+    "unit": "%",
+    "countTo": null,
+    "caption": {
+      "fr": "de sessions sans crash sur KCalories",
+      "en": "crash-free sessions on KCalories"
+    }
+  }
+]

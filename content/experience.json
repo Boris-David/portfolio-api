@@ -1,0 +1,153 @@
+[
+  {
+    "$comment": "Les dates sont en AAAA-MM : « mai 2023 → aujourd'hui » se formate au rendu, et « aujourd'hui » se périmerait.",
+    "slug": "instant-system",
+    "role": { "fr": "Ingénieur iOS", "en": "iOS Engineer" },
+    "organisation": "Instant System",
+    "location": "Sophia Antipolis",
+    "start": "2023-05",
+    "end": null,
+    "roles": [
+      { "fr": "Référent technique billettique", "en": "Technical lead, ticketing" },
+      { "fr": "Scrum Master · depuis février 2025", "en": "Scrum Master · since February 2025" },
+      { "fr": "Ambassadeur IA", "en": "AI ambassador" },
+      { "fr": "Tuteur", "en": "Mentor" }
+    ],
+    "highlights": [
+      {
+        "fr": "**Seul développeur mobile** du périmètre billettique pendant un an, sur l'ensemble du portefeuille : stabilisation de la production et développement de fonctionnalités.",
+        "en": "**Sole mobile developer** on the ticketing scope for a year, across the whole portfolio: stabilising production and building features."
+      },
+      {
+        "fr": "Développement **quasiment seul du rechargement de carte de transport** sur l'application TCL, dont je suis aujourd'hui l'un des référents techniques.",
+        "en": "Built **transport card top-up almost single-handedly** on the TCL app, where I am now one of the technical leads."
+      },
+      {
+        "fr": "Deux **bibliothèques internes** conçues et livrées : la protection anti-fraude des titres à l'écran, et la génération des QR codes de validation.",
+        "en": "Two **internal libraries** designed and shipped: on-screen anti-fraud protection for tickets, and validation QR code generation."
+      },
+      {
+        "fr": "**Création du module d'un nouveau prestataire billettique**, et **remontée au niveau du produit des implémentations indépendantes du prestataire** — défendue, puis obtenue.",
+        "en": "**Created the module for a new ticketing vendor**, and **lifted vendor-independent implementations up to the product** — argued for, then obtained."
+      },
+      {
+        "fr": "**Refonte complète de la gestion de session** — jetons, renouvellement, retry, déconnexion — portée par des acteurs et `async/await`.",
+        "en": "**Complete rebuild of session handling** — tokens, renewal, retry, sign-out — on actors and `async/await`."
+      },
+      {
+        "fr": "**Onboarding de tous les développeurs mobiles** arrivés après moi, iOS et Android ; tutorat officiel d'un développeur iOS.",
+        "en": "**Onboarded every mobile developer** who joined after me, iOS and Android; official mentor to an iOS developer."
+      },
+      {
+        "fr": "**Ateliers d'architecture avec le CTO** et les architectes ; démos client ; conduite d'entretiens de recrutement.",
+        "en": "**Architecture workshops with the CTO** and the architects; client demos; conducting hiring interviews."
+      },
+      {
+        "fr": "**Scrum Master** de mon équipe sans quitter le développement — et resté l'un de ses principaux contributeurs techniques.",
+        "en": "**Scrum Master** of my team without stepping away from development — and still one of its main technical contributors."
+      }
+    ],
+    "stack": [
+      "Swift",
+      "SwiftUI",
+      "UIKit",
+      {
+        "fr": "Swift Concurrency, acteurs, async/await",
+        "en": "Swift Concurrency, actors, async/await"
+      },
+      "Combine",
+      {
+        "fr": "Clean Architecture 3 puis 4 couches",
+        "en": "Clean Architecture, 3 then 4 layers"
+      },
+      { "fr": "injection de dépendances", "en": "dependency injection" },
+      "SPM, XCFrameworks, CocoaPods",
+      { "fr": "XcodeGen et specs YAML", "en": "XcodeGen and YAML specs" },
+      "Jenkins",
+      "fastlane",
+      "match",
+      "Bitbucket",
+      "SAFe"
+    ]
+  },
+  {
+    "slug": "mail-orange",
+    "role": { "fr": "Ingénieur iOS", "en": "iOS Engineer" },
+    "organisation": "Mail Orange — Orange, via Inetum",
+    "location": "Mougins",
+    "start": "2022-01",
+    "end": "2023-04",
+    "roles": [],
+    "highlights": [
+      {
+        "fr": "Fonctionnalités et corrections sur une messagerie à **environ un million d'utilisateurs**, dans une équipe de trois développeurs iOS.",
+        "en": "Features and fixes on a mail app with **around one million users**, in a team of three iOS developers."
+      },
+      {
+        "fr": "Sujets menés **de bout en bout** dès les premières semaines : brouillons, gestion des pièces jointes.",
+        "en": "Topics owned **end to end** from the first weeks: drafts, attachment handling."
+      },
+      {
+        "fr": "Maintien de la **compatibilité multi-versions d'iOS** et du **layout iPad**, sur une base très utilisée en tablette.",
+        "en": "Maintained **compatibility across iOS versions** and the **iPad layout**, on a codebase heavily used on tablets."
+      },
+      {
+        "fr": "Travail sur un existant hétérogène — VIPER sur le composeur, MVP ailleurs.",
+        "en": "Worked on a heterogeneous codebase — VIPER in the composer, MVP elsewhere."
+      },
+      {
+        "fr": "Participation aux refinements et aux décisions techniques ; échanges avec les **équipes tierces** sur les services intégrés.",
+        "en": "Took part in refinements and technical decisions; worked with **third-party teams** on integrated services."
+      }
+    ],
+    "stack": [
+      "Swift",
+      "Objective-C",
+      {
+        "fr": "UIKit programmatique, xib, storyboards, Auto Layout",
+        "en": "Programmatic UIKit, xib, storyboards, Auto Layout"
+      },
+      "MVP",
+      "VIPER",
+      "Delegate, Observer",
+      "UIDocumentPicker",
+      { "fr": "app extensions", "en": "app extensions" },
+      "CocoaPods",
+      "SAFe"
+    ]
+  },
+  {
+    "slug": "stiilt",
+    "role": { "fr": "Ingénieur iOS — alternance", "en": "iOS Engineer — apprenticeship" },
+    "organisation": "STIILT",
+    "location": "Nice",
+    "start": "2020-10",
+    "end": "2021-10",
+    "roles": [],
+    "highlights": [
+      {
+        "fr": "**Migration complète d'Objective-C vers Swift** de l'application d'autopartage de véhicules premium, déjà publiée sur l'App Store — la base passe de **30 % à plus de 92 % de Swift en un an**.",
+        "en": "**Full migration from Objective-C to Swift** of a premium car-sharing app already live on the App Store — the codebase went from **30% to over 92% Swift in one year**."
+      },
+      {
+        "fr": "Migration menée **en parallèle des livraisons de fonctionnalités** par un collègue, sur la même base, sans interrompre les mises en production. La stratégie était de mon ressort.",
+        "en": "Migration carried out **alongside a colleague's feature releases** on the same codebase, without interrupting production. The strategy was mine."
+      },
+      {
+        "fr": "Refonte de la couche réseau, profiling et optimisation.",
+        "en": "Rebuilt the networking layer, profiling and optimisation."
+      }
+    ],
+    "stack": [
+      "Objective-C → Swift",
+      "UIKit",
+      "MVC",
+      "storyboards, xib",
+      "CocoaPods",
+      {
+        "fr": "migration incrémentale sur application vivante",
+        "en": "incremental migration on a live app"
+      }
+    ]
+  }
+]

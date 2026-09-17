@@ -1,8 +1,7 @@
 {
-  "$comment": "Applications en production portant une contribution d'Amissan. Chaque identifiant a été vérifié sur l'App Store le 2026-09-17.",
+  "$comment": "Applications en production portant une contribution d'Amissan. Chaque identifiant a été vérifié sur l'App Store le 2026-09-17. Le nombre ne figure pas ici : il se compte.",
   "verifiedAt": "2026-09-17",
-  "count": 35,
-  "apps": [
+  "items": [
     {
       "slug": "ales-y",
       "name": "Ales'Y",
@@ -14,7 +13,10 @@
     {
       "slug": "at-bus",
       "name": "at bus",
-      "territory": "Toscane, Italie",
+      "territory": {
+        "fr": "Toscane, Italie",
+        "en": "Tuscany, Italy"
+      },
       "appStoreId": "1636455849",
       "appStoreUrl": "https://apps.apple.com/fr/app/at-bus/id1636455849",
       "role": "ticketing"
@@ -238,7 +240,10 @@
     {
       "slug": "tere-tahiti",
       "name": "Tere Tahiti",
-      "territory": "Polynésie française",
+      "territory": {
+        "fr": "Polynésie française",
+        "en": "French Polynesia"
+      },
       "appStoreId": "6737310055",
       "appStoreUrl": "https://apps.apple.com/fr/app/tere-tahiti-mobilit%C3%A9s/id6737310055",
       "role": "ticketing"
@@ -278,7 +283,10 @@
     {
       "slug": "kcalories",
       "name": "KCalories",
-      "territory": "Projet personnel",
+      "territory": {
+        "fr": "Projet personnel",
+        "en": "Personal project"
+      },
       "appStoreId": "6761574750",
       "appStoreUrl": "https://apps.apple.com/fr/app/kcalories/id6761574750",
       "role": "end-to-end"

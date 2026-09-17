@@ -1,0 +1,460 @@
+[
+  {
+    "$comment": "La bibliothèque anti-fraude se décrit par ce qu'elle fait, jamais par comment elle le fait : en publier le mécanisme, c'est publier de quoi le contourner.",
+    "slug": "mobile-ticketing",
+    "title": {
+      "fr": "La billettique mobile de 33 réseaux de transport",
+      "en": "Mobile ticketing for 33 transport networks"
+    },
+    "subtitle": {
+      "fr": "Instant System · depuis mai 2023 · en production",
+      "en": "Instant System · since May 2023 · in production"
+    },
+    "intro": {
+      "fr": "J'arrive dans une équipe **sans aucun développeur mobile**, seul sur le périmètre billettique de l'ensemble du portefeuille — pendant un an. Voici cinq chantiers, avec le problème qui les a déclenchés et ce qu'ils ont produit.",
+      "en": "I joined a team with **no mobile developer at all**, alone on the ticketing scope of the whole portfolio — for a year. Here are five workstreams, each with the problem that triggered it and what it produced."
+    },
+    "link": null,
+    "media": [],
+    "tags": [
+      "Swift",
+      "SwiftUI",
+      "UIKit",
+      "Swift Concurrency",
+      { "fr": "Acteurs", "en": "Actors" },
+      "Clean Architecture",
+      { "fr": "Modules SPM", "en": "SPM modules" },
+      { "fr": "Injection de dépendances", "en": "Dependency injection" },
+      "XcodeGen",
+      "Jenkins",
+      "fastlane · match"
+    ],
+    "chapters": [
+      {
+        "slug": "authentication",
+        "title": {
+          "fr": "L'authentification qui déconnectait sans raison",
+          "en": "Authentication that logged people out for no reason"
+        },
+        "subtitle": {
+          "fr": "Un code hérité que personne ne voulait toucher — refondu avec des acteurs",
+          "en": "Inherited code nobody wanted to touch — rebuilt on actors"
+        },
+        "panels": [
+          {
+            "kind": "problem",
+            "heading": { "fr": "Problème", "en": "Problem" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Quand plusieurs requêtes recevaient une réponse « non autorisé » **en même temps**, chacune déclenchait son propre rafraîchissement de jeton. Les rafraîchissements concurrents s'invalidaient entre eux, et l'utilisateur se retrouvait **déconnecté sans raison apparente**. Le code d'authentification datait de 2019 et personne ne voulait y toucher.",
+                  "en": "When several requests received an unauthorised response **at the same time**, each one fired its own token refresh. The concurrent refreshes invalidated one another, and the user ended up **signed out for no apparent reason**. The authentication code dated back to 2019 and nobody wanted to touch it."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "decision",
+            "heading": { "fr": "Décision", "en": "Decision" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "J'ai pris l'initiative de la refonte, et je suis passé en `async/await` avec un **acteur** pour porter l'état d'authentification.",
+                  "en": "I took the initiative on the rebuild, moving to `async/await` with an **actor** holding the authentication state."
+                }
+              },
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "**Pourquoi un acteur plutôt qu'un verrou :** un verrou protège l'état à condition qu'on pense à le prendre partout — rien ne le vérifie, et un verrou tenu pendant une attente asynchrone est un blocage qui n'attend que son heure. Avec un acteur, l'isolation devient une **propriété du type** : tout accès venant de l'extérieur est nécessairement sérialisé, et l'oubli n'est plus possible.",
+                  "en": "**Why an actor rather than a lock:** a lock protects state provided you remember to take it everywhere — nothing checks that, and a lock held across an await is a deadlock waiting to happen. With an actor, isolation becomes a **property of the type**: every access from outside is necessarily serialised, and forgetting is no longer possible."
+                }
+              },
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Le cœur de la correction : la **tâche de rafraîchissement en cours est mémorisée**. Les requêtes concurrentes n'en lancent pas une nouvelle, elles attendent la même. Un seul rafraîchissement, quel que soit le nombre d'appels simultanés — plus une garde contre la boucle de réessais sur un même appel.",
+                  "en": "The heart of the fix: the **in-flight refresh task is remembered**. Concurrent requests do not start a new one, they await the same one. A single refresh, however many simultaneous calls — plus a guard against retry loops on the same call."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "result",
+            "heading": { "fr": "Résultat", "en": "Result" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "**L'authentification sur TCL est devenue nettement plus stable.** Fin des déconnexions inexpliquées — celles qu'on ne reproduit jamais en test et qu'on ne voit qu'en production.",
+                  "en": "**Authentication on TCL became markedly more stable.** No more unexplained sign-outs — the kind you never reproduce in testing and only ever see in production."
+                }
+              },
+              {
+                "type": "tags",
+                "items": ["actor", "async/await", "Task", "Sendable"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "qr-code-fraud",
+        "title": { "fr": "La fraude au QR code", "en": "QR code fraud" },
+        "subtitle": {
+          "fr": "Une initiative en sprint d'innovation, devenue une fonctionnalité vendue",
+          "en": "An innovation-sprint initiative that became a paid feature"
+        },
+        "panels": [
+          {
+            "kind": "problem",
+            "heading": { "fr": "Problème", "en": "Problem" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Un titre dématérialisé s'affiche en QR code. Les fraudeurs en prenaient une **capture d'écran** qu'ils transmettaient à des tiers — et au contrôle, rien ne distinguait la copie de l'original.",
+                  "en": "A digital ticket is displayed as a QR code. Fraudsters would take a **screenshot** and pass it on — and at inspection, nothing told the copy apart from the original."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "decision",
+            "heading": { "fr": "Décision", "en": "Decision" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "En **sprint d'innovation**, j'ai pris l'initiative de concevoir une bibliothèque interne qui **masque le contenu de l'écran** dès qu'une capture ou un enregistrement est en cours. Le titre reste lisible pour son porteur, et disparaît de tout ce qui pourrait être partagé.",
+                  "en": "During an **innovation sprint**, I took the initiative of designing an internal library that **masks the screen content** as soon as a capture or a recording is under way. The ticket stays readable to its holder, and disappears from anything that could be shared."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "result",
+            "heading": { "fr": "Résultat", "en": "Result" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Déployée sur **l'ensemble des applications**, puis **reprise sur le nouveau socle**. Les clients en sont satisfaits — au point que c'est devenu une **fonctionnalité qu'ils paient**. Une idée de sprint devenue une ligne de valeur.",
+                  "en": "Rolled out across **every app**, then **adopted on the new platform**. Clients are pleased with it — to the point that it became a **feature they pay for**. A sprint idea turned into a line of revenue."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "card-top-up",
+        "title": {
+          "fr": "Le rechargement de carte sur le réseau lyonnais",
+          "en": "Card top-up on the Lyon network"
+        },
+        "subtitle": {
+          "fr": "Du POC à la production, développé quasiment seul",
+          "en": "From proof of concept to production, built almost single-handedly"
+        },
+        "panels": [
+          {
+            "kind": "problem",
+            "heading": { "fr": "Problème", "en": "Problem" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Le réseau lyonnais attendait de pouvoir **recharger une carte de transport depuis le mobile**. Côté iOS, tout restait à faire : l'intégration du SDK du prestataire de billettique n'avait jamais été menée.",
+                  "en": "The Lyon network had been waiting to let riders **top up a transport card from their phone**. On iOS, everything was still to be done: the ticketing vendor's SDK had never been integrated."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "decision",
+            "heading": { "fr": "Décision", "en": "Decision" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "J'ai d'abord **prouvé l'intégration par un POC** — un POC ne doit pas montrer que ça marche, il doit montrer ce qui va coincer en production. Puis j'ai développé **quasiment seul la fonctionnalité complète sur iOS**, jusqu'à la mise en production.",
+                  "en": "I first **proved the integration with a POC** — a POC should not show that it works, it should show what will break in production. Then I built **almost the entire feature on iOS single-handedly**, through to release."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "result",
+            "heading": { "fr": "Résultat", "en": "Result" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Livrée. Je suis aujourd'hui **l'un des référents techniques de l'application TCL**, dont je suis l'expert, et je porte le **lancement du m-ticket** dessus.",
+                  "en": "Shipped. I am now **one of the technical leads on the TCL app**, which I know inside out, and I am driving the **m-ticket launch** on it."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "clean-architecture",
+        "title": {
+          "fr": "Tenir la clean architecture jusqu'au bout",
+          "en": "Carrying clean architecture all the way"
+        },
+        "subtitle": {
+          "fr": "Le produit porte le défaut, le prestataire n'override que sa différence",
+          "en": "The product owns the default, the vendor overrides only its difference"
+        },
+        "panels": [
+          {
+            "kind": "problem",
+            "heading": { "fr": "Problème", "en": "Problem" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "L'architecture d'abstraction par prestataire de billettique avait été posée par le tech lead. Mais des implémentations **totalement indépendantes du prestataire** vivaient quand même dans les modules prestataires — donc dupliquées autant de fois qu'il y a de fournisseurs.",
+                  "en": "The per-vendor ticketing abstraction had been laid down by the tech lead. But implementations that were **entirely vendor-independent** still lived inside the vendor modules — duplicated once per supplier."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "decision",
+            "heading": { "fr": "Décision", "en": "Decision" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "J'ai **créé le module d'un nouveau prestataire** alors qu'il présentait peu de spécificités : le faire vivre à part aurait été plus court, mais aurait laissé un trou dans l'architecture. La cohérence de bout en bout valait la ligne de code en plus.",
+                  "en": "I **created the module for a new vendor** even though it had few specifics: keeping it outside would have been quicker, but would have left a hole in the architecture. End-to-end consistency was worth the extra code."
+                }
+              },
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Et j'ai **milité pour — et obtenu — la remontée au niveau du produit** des implémentations indépendantes du prestataire. Les prestataires ne surchargent plus que ce qu'ils veulent réellement changer.",
+                  "en": "And I **argued for — and obtained — lifting vendor-independent implementations up to the product**. Vendors now override only what they actually mean to change."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "result",
+            "heading": { "fr": "Résultat", "en": "Result" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Moins de duplication entre fournisseurs, et une **règle claire qui tient sans arbitrage** : le produit porte le comportement par défaut, le prestataire n'override que sa différence.",
+                  "en": "Less duplication between suppliers, and a **clear rule that holds without arbitration**: the product owns the default behaviour, the vendor overrides only its difference."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "new-platform",
+        "title": { "fr": "Le lancement du nouveau socle", "en": "Launching the new platform" },
+        "subtitle": {
+          "fr": "Oùra et la Toscane, sur tous les pans fonctionnels",
+          "en": "Oùra and Tuscany, across every functional area"
+        },
+        "panels": [
+          {
+            "kind": "problem",
+            "heading": { "fr": "Problème", "en": "Problem" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Le nouveau socle produit, en clean architecture avec injection de dépendances, devait embarquer toute la billettique — sans régression par rapport à un socle éprouvé depuis des années.",
+                  "en": "The new product platform, in clean architecture with dependency injection, had to carry the whole of ticketing — with no regression against a platform proven over years."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "decision",
+            "heading": { "fr": "Décision", "en": "Decision" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Je suis intervenu sur **tous les pans fonctionnels** : catalogue d'achat, panier, produits à paramètres, historiques d'achat, gestion de bénéficiaires, achat pour autrui. Et j'ai écrit la **bibliothèque interne de génération des QR codes** à partir d'un payload encodé — la brique qui porte la validation du titre et son contrôle.",
+                  "en": "I worked across **every functional area**: purchase catalogue, cart, parameterised products, purchase history, beneficiary management, buying on someone's behalf. And I wrote the **internal QR code generation library** from an encoded payload — the building block behind ticket validation and inspection."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "result",
+            "heading": { "fr": "Résultat", "en": "Result" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Socle lancé sur **Oùra** (Auvergne-Rhône-Alpes) et sur la **Toscane**. J'y ai appris SwiftUI, l'injection de dépendances et cette architecture **en production, sur un produit livré**.",
+                  "en": "Platform launched on **Oùra** (Auvergne-Rhône-Alpes) and in **Tuscany**. That is where I learned SwiftUI, dependency injection and this architecture — **in production, on a shipped product**."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "kcalories",
+    "title": {
+      "fr": "KCalories — quatre stacks, seul, en cinq mois",
+      "en": "KCalories — four stacks, alone, in five months"
+    },
+    "subtitle": {
+      "fr": "Projet personnel · publiée sur l'App Store",
+      "en": "Personal project · published on the App Store"
+    },
+    "intro": null,
+    "link": {
+      "label": "App Store",
+      "url": "https://apps.apple.com/fr/app/kcalories/id6761574750"
+    },
+    "tags": [
+      "SwiftUI",
+      "SwiftData",
+      "Clean Architecture",
+      { "fr": "Modules SPM", "en": "SPM modules" },
+      "Feature flags",
+      "Backend",
+      "Back-office",
+      "CI/CD",
+      "FR · EN"
+    ],
+    "media": [
+      {
+        "id": "jeune",
+        "alt": {
+          "fr": "Écran de jeûne intermittent, intégré au journal.",
+          "en": "Intermittent fasting screen, built into the diary."
+        },
+        "caption": { "fr": "Le jeûne, dans le journal", "en": "Fasting, inside the diary" }
+      },
+      {
+        "id": "traversee",
+        "alt": {
+          "fr": "Les six phases physiologiques du jeûne.",
+          "en": "The six physiological phases of fasting."
+        },
+        "caption": {
+          "fr": "Les six phases physiologiques",
+          "en": "The six physiological phases"
+        }
+      },
+      {
+        "id": "regimes-keto",
+        "alt": {
+          "fr": "Sélection des régimes alimentaires, dont le cétogène.",
+          "en": "Diet selection, including the ketogenic diet."
+        },
+        "caption": { "fr": "Régimes et glucides nets", "en": "Diets and net carbs" }
+      },
+      {
+        "id": "themes",
+        "alt": {
+          "fr": "Les deux thèmes visuels de l'application.",
+          "en": "The two visual themes of the app."
+        },
+        "caption": { "fr": "Deux thèmes complets", "en": "Two complete themes" }
+      }
+    ],
+    "chapters": [
+      {
+        "slug": "product",
+        "title": null,
+        "subtitle": null,
+        "panels": [
+          {
+            "kind": "problem",
+            "heading": { "fr": "Problème", "en": "Problem" },
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "J'ai payé pour trois applications de suivi nutritionnel. Le prix n'a jamais été le frein — **aucune ne réunissait tout** : le jeûne, le suivi calorique, le suivi cétogène en glucides nets, et une interface qui ne se subit pas.",
+                  "en": "I paid for three nutrition tracking apps. Price was never the obstacle — **none of them had everything**: fasting, calorie tracking, keto tracking by net carbs, and an interface you do not have to put up with."
+                }
+              },
+              {
+                "type": "paragraph",
+                "text": {
+                  "fr": "Je voulais aussi savoir si je pouvais tenir un produit entier, pas seulement une couche iOS.",
+                  "en": "I also wanted to find out whether I could carry a whole product, not just an iOS layer."
+                }
+              }
+            ]
+          },
+          {
+            "kind": "decision",
+            "heading": {
+              "fr": "Décisions et réalisations",
+              "en": "Decisions & delivery"
+            },
+            "blocks": [
+              {
+                "type": "list",
+                "items": [
+                  {
+                    "fr": "**Construire les quatre stacks moi-même** plutôt que d'assembler des services : application iOS, backend, back-office d'administration, page de présentation. Tenir le produit de bout en bout était le but, pas un moyen.",
+                    "en": "**Build all four stacks myself** rather than assembling services: iOS app, backend, admin back-office, marketing page. Carrying the product end to end was the point, not the means."
+                  },
+                  {
+                    "fr": "**Architecture stricte et modules SPM dès le premier jour**, quand rien ne l'imposait encore — les frontières se posent avant d'avoir de quoi les remplir, sinon elles ne se posent jamais.",
+                    "en": "**Strict architecture and SPM modules from day one**, when nothing yet demanded it — boundaries get drawn before there is anything to put behind them, or they never get drawn at all."
+                  },
+                  {
+                    "fr": "**Feature flags et intégration continue dès la première semaine**, pour livrer sans bloquer et sans rituel manuel.",
+                    "en": "**Feature flags and continuous integration from week one**, to ship without blocking and without manual ritual."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "kind": "result",
+            "heading": { "fr": "Résultats", "en": "Results" },
+            "blocks": [
+              {
+                "type": "list",
+                "items": [
+                  {
+                    "fr": "**Publiée sur l'App Store cinq mois** après la première ligne de code.",
+                    "en": "**Published on the App Store five months** after the first line of code."
+                  },
+                  {
+                    "fr": "**Plus de 99,8 % de sessions sans crash** — la qualité se mesure, elle ne se déclare pas.",
+                    "en": "**Over 99.8% crash-free sessions** — quality is measured, not claimed."
+                  },
+                  {
+                    "fr": "**Version 2.0 vingt jours** après la 1.0 : la chaîne de livraison tenait.",
+                    "en": "**Version 2.0 twenty days** after 1.0: the delivery pipeline held."
+                  },
+                  {
+                    "fr": "Disponible en **français et en anglais**, avec deux thèmes complets.",
+                    "en": "Available in **French and English**, with two complete themes."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

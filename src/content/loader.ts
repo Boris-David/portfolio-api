@@ -1,0 +1,111 @@
+import { z } from 'zod';
+import { ContentValidationError } from '../domain/errors.js';
+import { LOCALES, type Locale } from '../domain/locale.js';
+import {
+  PART_SCHEMAS,
+  PORTFOLIO_PARTS,
+  PortfolioSchema,
+  type Portfolio,
+  type PortfolioPart,
+} from '../domain/portfolio.js';
+import { deriveContentSchema } from './derive.js';
+import { digest } from './digest.js';
+import { CONTENT_DOCUMENTS, type ContentDocuments } from './documents.js';
+
+/**
+ * Le nom de fichier et le segment d'URL d'une partie, dérivés de son nom.
+ *
+ * Une table de correspondance serait un troisième endroit à tenir synchronisé
+ * avec le schéma et l'arborescence ; une fonction ne peut pas dériver.
+ */
+export function kebabCase(part: string): string {
+  return part.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+}
+
+export function contentFileName(part: PortfolioPart): string {
+  return `${kebabCase(part)}.json`;
+}
+
+/**
+ * Retire les clés de commentaire (`$comment`, `$note`…) avant validation.
+ *
+ * Un fichier de contenu se relit ; un commentaire d'auteur y a sa place. Mais
+ * le schéma est strict — une clé inconnue est une faute de frappe — donc les
+ * clés `$…` sont retirées explicitement, jamais tolérées par laxisme du schéma.
+ */
+export function stripAuthorComments(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stripAuthorComments);
+  if (value === null || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => !key.startsWith('$'))
+      .map(([key, entry]) => [key, stripAuthorComments(entry)]),
+  );
+}
+
+export interface LoadedContent {
+  /** Condensat de tout le contenu : la version publiée. */
+  readonly version: string;
+  readonly portfolio: Readonly<Record<Locale, Portfolio>>;
+}
+
+/**
+ * Valide et projette tout le contenu — une fois, au démarrage de l'isolat.
+ *
+ * Aucune lecture disque : les documents sont embarqués à la compilation. Le
+ * contenu ne change pas pendant la vie d'un isolat, donc le revalider à chaque
+ * requête referait le même travail pour la même réponse.
+ *
+ * Tout échec ici est fatal, et c'est voulu — un portfolio à moitié faux est
+ * pire qu'une API qui refuse de démarrer.
+ */
+export function loadContent(documents: ContentDocuments = CONTENT_DOCUMENTS): LoadedContent {
+  const portfolio = Object.fromEntries(
+    LOCALES.map((locale) => [locale, buildPortfolio(documents, locale)]),
+  ) as Record<Locale, Portfolio>;
+
+  return { version: versionOf(documents), portfolio };
+}
+
+function buildPortfolio(documents: ContentDocuments, locale: Locale): Portfolio {
+  const parts: Record<string, unknown> = {};
+  for (const part of PORTFOLIO_PARTS) {
+    parts[part] = projectPart(part, documents[part], locale);
+  }
+
+  // Seconde passe : la valeur projetée doit satisfaire le schéma de domaine
+  // lui-même. C'est ce qui rattrape ce que la dérivation ne reproduit pas, et
+  // ce qui transforme un bug de projection en erreur bruyante au démarrage.
+  const parsed = PortfolioSchema.safeParse(parts);
+  if (!parsed.success) {
+    throw new ContentValidationError(`projection ${locale}`, z.prettifyError(parsed.error));
+  }
+  return parsed.data;
+}
+
+function projectPart(part: PortfolioPart, document: unknown, locale: Locale): unknown {
+  const schema = deriveContentSchema(PART_SCHEMAS[part], locale);
+  const result = schema.safeParse(stripAuthorComments(document));
+  if (!result.success) {
+    throw new ContentValidationError(
+      `${contentFileName(part)} (${locale})`,
+      z.prettifyError(result.error),
+    );
+  }
+  return result.data;
+}
+
+/**
+ * La version du contenu : le condensat des documents, dans l'ordre des parties.
+ *
+ * Elle se calcule sur les valeurs **déjà analysées**, jamais sur les octets des
+ * fichiers. C'est ce qui la rend identique partout — le Worker reçoit le
+ * contenu bundlé, le build le lit par le même module — et insensible à un
+ * simple reformatage, qui ne change pourtant rien à ce qui est publié.
+ */
+export function versionOf(documents: ContentDocuments): string {
+  const material = PORTFOLIO_PARTS.map((part) => `${part} ${JSON.stringify(documents[part])}`).join(
+    ' ',
+  );
+  return digest(material);
+}

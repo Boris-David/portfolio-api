@@ -1,0 +1,65 @@
+[
+  {
+    "$comment": "Un terme écrit en chaîne nue vaut « identique dans les deux langues » ; seuls les termes réellement traduits portent une paire.",
+    "id": "languages",
+    "title": { "fr": "Langages", "en": "Languages" },
+    "items": ["Swift", "Objective-C"]
+  },
+  {
+    "id": "interface",
+    "title": { "fr": "Interface", "en": "Interface" },
+    "items": ["SwiftUI", "UIKit", "Auto Layout", "Dynamic Type", "iPad", "App extensions"]
+  },
+  {
+    "id": "concurrency",
+    "title": { "fr": "Concurrence", "en": "Concurrency" },
+    "items": [
+      "async/await",
+      { "fr": "Acteurs", "en": "Actors" },
+      "Swift Concurrency",
+      "Combine",
+      "GCD"
+    ]
+  },
+  {
+    "id": "architecture",
+    "title": { "fr": "Architecture", "en": "Architecture" },
+    "items": [
+      "Clean Architecture",
+      "MVVM",
+      "MVP",
+      "VIPER",
+      { "fr": "Injection de dépendances", "en": "Dependency injection" },
+      { "fr": "Modules SPM", "en": "SPM modules" },
+      "Feature flags"
+    ]
+  },
+  {
+    "id": "tooling",
+    "title": { "fr": "Outils et CI/CD", "en": "Tooling & CI/CD" },
+    "items": [
+      "Xcode",
+      "XcodeGen",
+      "SPM",
+      "CocoaPods",
+      "XCFrameworks",
+      "fastlane",
+      "match",
+      "Jenkins",
+      "Git",
+      "Bitbucket"
+    ]
+  },
+  {
+    "id": "practice",
+    "title": { "fr": "Méthode", "en": "Practice" },
+    "items": [
+      "SAFe",
+      "Scrum",
+      "Code review",
+      { "fr": "Tests unitaires", "en": "Unit testing" },
+      "Refinement",
+      { "fr": "Mentorat", "en": "Mentoring" }
+    ]
+  }
+]

@@ -1,0 +1,1931 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "portfolio-api",
+    "version": "1.0.0",
+    "description": "Le contenu du portfolio d'Amissan Amoussou-G., en lecture seule et bilingue, et le CV en PDF rendu au build.",
+    "contact": {
+      "email": "amissan.ag@outlook.fr"
+    },
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "L'instance servant ce document."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Contenu",
+      "description": "Les ressources de contenu, versionnées et cachables."
+    },
+    {
+      "name": "CV",
+      "description": "Le CV en PDF, une version par langue."
+    },
+    {
+      "name": "Exploitation",
+      "description": "L'état de l'instance."
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Meta": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "fr",
+              "en"
+            ]
+          },
+          "contentVersion": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "locale",
+          "contentVersion"
+        ],
+        "description": "Langue servie et version du contenu. La version change si et seulement si le contenu change."
+      },
+      "Portfolio": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/Profile"
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Metric"
+            },
+            "minItems": 1
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Section"
+            },
+            "minItems": 1
+          },
+          "caseStudies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CaseStudy"
+            },
+            "minItems": 1
+          },
+          "apps": {
+            "$ref": "#/components/schemas/AppInventory"
+          },
+          "expertise": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Expertise"
+            },
+            "minItems": 1
+          },
+          "experience": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Experience"
+            },
+            "minItems": 1
+          },
+          "background": {
+            "$ref": "#/components/schemas/Background"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillGroup"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "profile",
+          "metrics",
+          "sections",
+          "caseStudies",
+          "apps",
+          "expertise",
+          "experience",
+          "background",
+          "skills"
+        ]
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "properties": {
+              "display": {
+                "type": "string",
+                "minLength": 1
+              },
+              "full": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "display",
+              "full"
+            ]
+          },
+          "headline": {
+            "type": "string",
+            "minLength": 1
+          },
+          "availability": {
+            "type": "string",
+            "minLength": 1
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1
+          },
+          "remote": {
+            "type": "string",
+            "minLength": 1
+          },
+          "languages": {
+            "type": "string",
+            "minLength": 1
+          },
+          "summary": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RichText"
+            },
+            "minItems": 1
+          },
+          "showcase": {
+            "type": "object",
+            "properties": {
+              "media": {
+                "$ref": "#/components/schemas/Media"
+              },
+              "caseStudy": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              }
+            },
+            "required": [
+              "media",
+              "caseStudy"
+            ]
+          },
+          "contact": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "body": {
+                "type": "string",
+                "minLength": 1
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Link"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "email",
+              "title",
+              "body",
+              "links"
+            ]
+          },
+          "footer": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "minLength": 1
+              },
+              "location": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "role",
+              "location"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "headline",
+          "availability",
+          "location",
+          "remote",
+          "languages",
+          "summary",
+          "showcase",
+          "contact",
+          "footer"
+        ]
+      },
+      "RichText": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Span"
+        },
+        "minItems": 1,
+        "description": "Texte enrichi découpé en fragments. La concaténation des « text » donne le texte nu."
+      },
+      "Span": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "style": {
+            "type": "string",
+            "enum": [
+              "plain",
+              "strong",
+              "code"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "style"
+        ],
+        "description": "Fragment de texte et son emphase. « plain » = sans emphase."
+      },
+      "Media": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "alt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "caption": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "alt",
+          "caption"
+        ]
+      },
+      "Link": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "github",
+              "linkedin"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "url"
+        ]
+      },
+      "Metric": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "countTo": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "exclusiveMinimum": 0
+          },
+          "caption": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "value",
+          "unit",
+          "countTo",
+          "caption"
+        ]
+      },
+      "Section": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "case-studies",
+              "apps",
+              "depth",
+              "background"
+            ]
+          },
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "intro": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RichText"
+              },
+              {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              }
+            ]
+          },
+          "note": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RichText"
+              },
+              {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "eyebrow",
+          "title",
+          "intro",
+          "note"
+        ]
+      },
+      "CaseStudy": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subtitle": {
+            "type": "string",
+            "minLength": 1
+          },
+          "intro": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RichText"
+              },
+              {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              }
+            ]
+          },
+          "link": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "required": [
+              "label",
+              "url"
+            ]
+          },
+          "chapters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Chapter"
+            },
+            "minItems": 1
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Media"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "subtitle",
+          "intro",
+          "link",
+          "chapters",
+          "media",
+          "tags"
+        ]
+      },
+      "Chapter": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "subtitle": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "panels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Panel"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "subtitle",
+          "panels"
+        ]
+      },
+      "Panel": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "problem",
+              "decision",
+              "result"
+            ]
+          },
+          "heading": {
+            "type": "string",
+            "minLength": 1
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Block"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "kind",
+          "heading",
+          "blocks"
+        ]
+      },
+      "Block": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "paragraph"
+                ]
+              },
+              "text": {
+                "$ref": "#/components/schemas/RichText"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "list"
+                ]
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RichText"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "type",
+              "items"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "tags"
+                ]
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "type",
+              "items"
+            ]
+          }
+        ]
+      },
+      "AppInventory": {
+        "type": "object",
+        "properties": {
+          "verifiedAt": {
+            "type": "string",
+            "format": "date"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/App"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "verifiedAt",
+          "items"
+        ]
+      },
+      "App": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "territory": {
+            "type": "string",
+            "minLength": 1
+          },
+          "appStoreId": {
+            "type": "string",
+            "pattern": "^\\d+$"
+          },
+          "appStoreUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ticketing",
+              "features",
+              "end-to-end"
+            ]
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "territory",
+          "appStoreId",
+          "appStoreUrl",
+          "role"
+        ]
+      },
+      "Expertise": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "body": {
+            "$ref": "#/components/schemas/RichText"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body"
+        ]
+      },
+      "Experience": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "organisation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1
+          },
+          "start": {
+            "type": "string",
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+          },
+          "end": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "highlights": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RichText"
+            },
+            "minItems": 1
+          },
+          "stack": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "slug",
+          "role",
+          "organisation",
+          "location",
+          "start",
+          "end",
+          "roles",
+          "highlights",
+          "stack"
+        ]
+      },
+      "Background": {
+        "type": "object",
+        "properties": {
+          "education": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Education"
+            },
+            "minItems": 1
+          },
+          "certifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Certification"
+            }
+          },
+          "openProjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OpenProject"
+            }
+          }
+        },
+        "required": [
+          "education",
+          "certifications",
+          "openProjects"
+        ]
+      },
+      "Education": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "degree": {
+            "type": "string",
+            "minLength": 1
+          },
+          "school": {
+            "type": "string",
+            "minLength": 1
+          },
+          "detail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "startYear": {
+            "type": "integer"
+          },
+          "endYear": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "slug",
+          "degree",
+          "school",
+          "detail",
+          "startYear",
+          "endYear"
+        ]
+      },
+      "Certification": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "issuer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "awardedOn": {
+            "type": "string",
+            "pattern": "^\\d{4}(-(0[1-9]|1[0-2]))?$"
+          },
+          "verifyUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "issuer",
+          "awardedOn",
+          "verifyUrl"
+        ]
+      },
+      "OpenProject": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "$ref": "#/components/schemas/RichText"
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "description",
+          "sourceUrl"
+        ]
+      },
+      "SkillGroup": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "items"
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail"
+        ],
+        "description": "Erreur au format RFC 9457."
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "contentVersion": {
+            "type": "string"
+          },
+          "cv": {
+            "type": "object",
+            "properties": {
+              "available": {
+                "type": "boolean"
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "available",
+              "reason"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "contentVersion",
+          "cv"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/v1/portfolio": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Tout le contenu du portfolio, d'un seul appel.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Portfolio"
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/profile": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "L'identité, l'accroche et le contact.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Profile"
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/metrics": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Les chiffres publiables.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Metric"
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sections": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Les en-têtes éditoriaux des sections.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Section"
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/case-studies": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Les études de cas.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CaseStudy"
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/apps": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Les applications en production.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AppInventory"
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/expertise": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Les sujets creusés en profondeur.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Expertise"
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/experience": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Les expériences professionnelles.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Experience"
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/background": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Formation, certifications et projets ouverts.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Background"
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/skills": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Les compétences, par groupe.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SkillGroup"
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cv/{locale}.pdf": {
+      "get": {
+        "tags": [
+          "CV"
+        ],
+        "summary": "Le CV en PDF, une version par langue.",
+        "description": "Le PDF est rendu au build, au moment où le contenu change — jamais à la requête. Il est publié dans les Workers Static Assets et relayé ici, validé par « ETag ».",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ]
+            },
+            "required": true,
+            "name": "locale",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le CV rendu.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "503": {
+            "description": "Aucun CV rendu pour la version de contenu servie.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Exploitation"
+        ],
+        "summary": "L'état de l'instance.",
+        "description": "« degraded » signifie que le contenu est servi mais que le CV rendu manque ou ne correspond plus à la version de contenu servie.",
+        "responses": {
+          "200": {
+            "description": "L'état courant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

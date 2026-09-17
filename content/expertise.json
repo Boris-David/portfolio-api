@@ -1,0 +1,27 @@
+[
+  {
+    "$comment": "Trois sujets creusés, pas quinze technologies listées. L'icône n'est pas stockée : c'est de la présentation, « id » suffit au client.",
+    "id": "concurrency",
+    "title": { "fr": "Concurrence et état partagé", "en": "Concurrency and shared state" },
+    "body": {
+      "fr": "Les jetons de session, leur renouvellement et les retours d'erreur sont l'endroit où les accès concurrents produisent les bugs qu'on ne reproduit jamais. Acteurs, `async/await`, isolation : ce que le compilateur garantit à ma place vaut mieux que ce que je promets de vérifier.",
+      "en": "Session tokens, their renewal and error paths are where concurrent access produces the bugs you can never reproduce. Actors, `async/await`, isolation: what the compiler guarantees on my behalf beats what I promise to check."
+    }
+  },
+  {
+    "id": "boundaries",
+    "title": { "fr": "Frontières et modularisation", "en": "Boundaries and modularisation" },
+    "body": {
+      "fr": "Clean Architecture en modules séparés plutôt qu'en dossiers, et des modules qui dépendent d'un contrat, jamais d'une implémentation. Une frontière que le compilateur ne refuse pas n'est pas une frontière — c'est une convention qu'on finit par oublier.",
+      "en": "Clean Architecture in separate modules rather than folders, and modules that depend on a contract, never on an implementation. A boundary the compiler does not refuse is not a boundary — it is a convention that eventually gets forgotten."
+    }
+  },
+  {
+    "id": "delivery",
+    "title": { "fr": "Du code au produit livré", "en": "From code to shipped product" },
+    "body": {
+      "fr": "Génération de projet par spec plutôt que par fichier binaire, signature gérée par fastlane et match, pipelines par produit et par module, feature flags pour découpler la livraison de la mise en service. Ce qui n'est pas automatisé finit par ne pas être fait.",
+      "en": "Project generation from a spec rather than a binary file, signing handled by fastlane and match, pipelines per product and per module, feature flags to decouple shipping from releasing. Whatever is not automated ends up not being done."
+    }
+  }
+]
