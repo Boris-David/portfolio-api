@@ -142,6 +142,16 @@ describe('les artefacts rendus', () => {
     expect(library.status).toBe('ready');
   });
 
+  it("reste lisible par une machine — un CV que l'ATS ne lit pas est un CV perdu", async () => {
+    // Les polices sont embarquées en sous-ensembles : sans table `ToUnicode`,
+    // les glyphes ne se remontent plus en caractères et l'extraction de texte
+    // rend du charabia. Le rendu doit donc toujours en produire une.
+    const [cv] = await renderAllCvs(portfolio, renderer, tokens);
+    const raw = new TextDecoder('latin1').decode(cv?.bytes ?? new Uint8Array());
+
+    expect(raw).toContain('/ToUnicode');
+  });
+
   it('refuse de servir un CV rendu pour un autre contenu', () => {
     const library = loadCvLibrary('une-autre-version', 'Nom Complet', directory);
 
