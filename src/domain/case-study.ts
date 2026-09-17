@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MediaSchema } from './media.js';
 import { label, prose, richText } from './text.js';
 
 /**
@@ -53,21 +54,6 @@ export const ChapterSchema = z
   .meta({ id: 'Chapter' });
 
 export type Chapter = z.infer<typeof ChapterSchema>;
-
-/**
- * Une capture d'écran. L'URL n'est pas ici : l'hébergement des visuels ne fait
- * pas partie de cette version. Inventer un chemin qui ne résout rien créerait
- * un contrat faux ; le client résout `id` contre son propre jeu d'assets.
- */
-export const MediaSchema = z
-  .object({
-    id: z.string().regex(/^[a-z0-9-]+$/),
-    alt: prose(),
-    caption: prose(),
-  })
-  .meta({ id: 'Media' });
-
-export type Media = z.infer<typeof MediaSchema>;
 
 export const CaseStudySchema = z
   .object({

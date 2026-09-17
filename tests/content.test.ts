@@ -34,6 +34,14 @@ describe('le contenu publié', () => {
   });
 });
 
+describe('les références internes', () => {
+  it('pointent vers une étude de cas qui existe — sinon le client suit un lien mort', () => {
+    const slugs = new Set(portfolio.fr.caseStudies.map((study) => study.slug));
+
+    expect(slugs.has(portfolio.fr.profile.showcase.caseStudy)).toBe(true);
+  });
+});
+
 describe('les chiffres publiables', () => {
   it('annoncent le nombre de réseaux réellement inventorié', () => {
     const inventoried = countByRole(portfolio.fr.apps, 'ticketing');

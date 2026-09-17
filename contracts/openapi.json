@@ -169,6 +169,22 @@
             },
             "minItems": 1
           },
+          "showcase": {
+            "type": "object",
+            "properties": {
+              "media": {
+                "$ref": "#/components/schemas/Media"
+              },
+              "caseStudy": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              }
+            },
+            "required": [
+              "media",
+              "caseStudy"
+            ]
+          },
           "contact": {
             "type": "object",
             "properties": {
@@ -225,6 +241,7 @@
           "remote",
           "languages",
           "summary",
+          "showcase",
           "contact",
           "footer"
         ]
@@ -258,6 +275,28 @@
           "style"
         ],
         "description": "Fragment de texte et son emphase. « plain » = sans emphase."
+      },
+      "Media": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "alt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "caption": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "alt",
+          "caption"
+        ]
       },
       "Link": {
         "type": "object",
@@ -588,28 +627,6 @@
               "items"
             ]
           }
-        ]
-      },
-      "Media": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[a-z0-9-]+$"
-          },
-          "alt": {
-            "type": "string",
-            "minLength": 1
-          },
-          "caption": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "id",
-          "alt",
-          "caption"
         ]
       },
       "AppInventory": {

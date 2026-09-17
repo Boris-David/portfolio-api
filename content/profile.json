@@ -34,6 +34,20 @@
       "en": "What I bring beyond the code is facts, not adjectives: **I owned the ticketing of an entire app portfolio alone for a year**, and the anti-fraud library that protects our digital tickets began as my own initiative — it now runs on both of our platforms."
     }
   ],
+  "showcase": {
+    "media": {
+      "id": "journal",
+      "alt": {
+        "fr": "Écran principal de KCalories : le journal alimentaire de la journée.",
+        "en": "KCalories' main screen: the day's food diary."
+      },
+      "caption": {
+        "fr": "KCalories — sur l'App Store",
+        "en": "KCalories — on the App Store"
+      }
+    },
+    "caseStudy": "kcalories"
+  },
   "contact": {
     "email": "amissan.ag@outlook.fr",
     "title": {

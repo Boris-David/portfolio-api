@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MediaSchema } from './media.js';
 import { label, prose, richText } from './text.js';
 
 export const LinkSchema = z
@@ -30,6 +31,16 @@ export const ProfileSchema = z
     remote: prose(),
     languages: prose(),
     summary: z.array(richText()).min(1),
+    /**
+     * Le visuel mis en avant à côté de l'accroche, et l'étude de cas qu'il
+     * illustre. La référence se fait par `slug` et non par URL : l'adresse de
+     * l'App Store est déjà portée par l'étude de cas, et la recopier ici en
+     * ferait un second endroit à corriger.
+     */
+    showcase: z.object({
+      media: MediaSchema,
+      caseStudy: z.string().regex(/^[a-z0-9-]+$/),
+    }),
     contact: z.object({
       email: z.email(),
       title: prose(),
