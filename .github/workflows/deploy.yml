@@ -117,11 +117,11 @@ jobs:
       # la tête de `main` au moment du déploiement, pas le commit que la CI a
       # validé. Deux merges rapprochés suffisent à les rendre différents — et
       # ici l'écart porterait aussi sur le contenu du CV rendu.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
