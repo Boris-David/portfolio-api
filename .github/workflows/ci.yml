@@ -57,17 +57,38 @@ jobs:
       - name: Tests
         run: npm test
 
-      - name: Build
-        run: npm run build
-
-  image:
-    name: Image de conteneur
+  worker:
+    name: Worker — bundle et exécution réelle
     runs-on: ubuntu-latest
     needs: verifier
     steps:
       - uses: actions/checkout@v4
 
-      # Construire l'image sans la pousser vérifie ce que le déploiement
-      # produira, y compris le rendu du CV dans l'étage builder.
-      - name: Construire l'image
-        run: docker build --tag portfolio-api:${{ github.sha }} .
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
+
+      # Les assets doivent exister avant de monter le Worker : le CV est rendu
+      # au build, jamais à la requête.
+      - name: Rendre les CV
+        run: npm run build:cv
+
+      - name: Construire le script
+        run: npm run build
+
+      # Le contenu est embarqué DANS le script : il grossit à chaque
+      # application ajoutée. La marge restante se mesure, elle ne se suppose pas.
+      - name: Le script tient sous le plafond du plan gratuit
+        run: npm run check:bundle
+
+      # Les tests unitaires tournent sur Node. Seule cette étape prouve que ce
+      # qui sera déployé fonctionne : workerd, le bundle réel, les bindings, et
+      # l'absence de système de fichiers.
+      - name: Exercer le Worker sur workerd
+        run: npm run smoke

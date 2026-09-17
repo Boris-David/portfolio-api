@@ -41,6 +41,48 @@ export default defineConfig(
     },
   },
   {
+    // ── La frontière Worker, tenue par le linter ──
+    //
+    // Un Worker n'a pas de système de fichiers. `node:crypto` est la seule
+    // exception : workerd l'implémente et rend le même octet que Node, ce qui
+    // est ce qui permet de comparer une empreinte calculée au build à une
+    // empreinte calculée dans l'isolat.
+    //
+    // La liste d'exemptions est explicite à dessein : y ajouter un fichier est
+    // une décision — « ce module ne tournera jamais sur Workers » — pas un
+    // effet de bord. Attention, la règle ne voit que les importations
+    // DIRECTES ; le transitif est couvert par `npm run smoke`, qui exerce le
+    // Worker sur workerd.
+    files: ['src/**/*.ts'],
+    ignores: [
+      'src/node/**',
+      'src/cv/build.ts',
+      'src/cv/renderer.ts',
+      'src/cv/tokens.ts',
+      'src/cv/fonts.ts',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['node:*', '!node:crypto'],
+              message:
+                "Ce module tourne sur Cloudflare Workers, qui n'a pas de système de fichiers. " +
+                'Le code qui a besoin du disque vit dans src/node/ ou dans les modules de build du CV.',
+            },
+            {
+              group: ['playwright', 'playwright-core'],
+              message:
+                'Chromium ne tourne pas sur Workers : le rendu du CV est déclenché par le build.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['tests/**/*.ts', 'scripts/**/*.ts', '*.config.ts', 'src/config.ts'],
     rules: {
       // Un test se lit mieux avec ses valeurs attendues sous les yeux ; un
