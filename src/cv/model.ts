@@ -15,9 +15,20 @@ import { CV_LABELS, type CvLabels } from './labels.js';
  * plutôt que dissimulée dans du balisage — et elle ne retire aucun fait du
  * contenu, qui reste servi entier par l'API.
  *
- * Ce qui entre : identité, accroche, chiffres, expériences, profondeur
- * technique, compétences, formation, certifications, projets ouverts, et
- * l'inventaire des réseaux en production.
+ * Ce qui entre : identité, accroche, chiffres, expériences, **le produit tenu
+ * de bout en bout**, profondeur technique, compétences, formation,
+ * certifications, et l'inventaire des réseaux en production.
+ *
+ * Ce qui n'entre pas : les **projets ouverts**. Un composant calendrier et un
+ * exercice d'entretien ne pèsent rien à côté d'un produit livré sur l'App
+ * Store, et les garder repoussait la fin du document sur une troisième page
+ * au quart pleine. Ils restent servis par l'API, et le site les montre.
+ *
+ * KCalories y a une place à sa mesure, et pas une ligne en bas de page : c'est
+ * la seule pièce du dossier qui prouve un produit entier — quatre stacks,
+ * seul, jusqu'à l'App Store. L'étude de cas de la billettique, elle, n'est pas
+ * reprise : l'expérience Instant System porte déjà les mêmes faits, et les
+ * écrire deux fois les affaiblirait.
  */
 export interface CvDocument {
   readonly locale: Locale;
@@ -40,6 +51,17 @@ export interface CvDocument {
     readonly highlights: readonly RichText[];
     readonly stack: readonly string[];
   }[];
+  /** Le produit personnel, raconté comme une pièce à conviction. */
+  readonly project: {
+    readonly heading: string;
+    readonly title: string;
+    readonly link: { readonly label: string; readonly url: string } | null;
+    readonly tags: readonly string[];
+    readonly panels: readonly {
+      readonly heading: string;
+      readonly items: readonly RichText[];
+    }[];
+  };
   readonly expertise: {
     readonly heading: string;
     readonly items: readonly { readonly title: string; readonly body: RichText }[];
@@ -57,11 +79,6 @@ export interface CvDocument {
     readonly awardedOn: string;
     readonly verifyUrl: string | null;
   }[];
-  readonly openProjects: readonly {
-    readonly name: string;
-    readonly description: RichText;
-    readonly sourceUrl: string | null;
-  }[];
   readonly production: {
     readonly heading: string;
     readonly note: RichText | null;
@@ -74,6 +91,7 @@ export function buildCvDocument(portfolio: Portfolio, locale: Locale): CvDocumen
   const { profile, apps } = portfolio;
   const productionSection = sectionById(portfolio, 'apps');
   const depthSection = sectionById(portfolio, 'depth');
+  const project = caseStudyBySlug(portfolio, CV_PROJECT_SLUG);
 
   return {
     locale,
@@ -99,6 +117,19 @@ export function buildCvDocument(portfolio: Portfolio, locale: Locale): CvDocumen
       highlights: job.highlights,
       stack: job.stack,
     })),
+    project: {
+      heading: CV_LABELS[locale].project,
+      title: project.title,
+      link: project.link,
+      tags: project.tags,
+      panels: project.chapters.flatMap((chapter) =>
+        chapter.panels.flatMap((panel) =>
+          panel.blocks
+            .filter((block) => block.type === 'list')
+            .map((block) => ({ heading: panel.heading, items: block.items })),
+        ),
+      ),
+    },
     expertise: {
       heading: depthSection.eyebrow,
       items: portfolio.expertise.map((item) => ({ title: item.title, body: item.body })),
@@ -116,11 +147,6 @@ export function buildCvDocument(portfolio: Portfolio, locale: Locale): CvDocumen
       awardedOn: formatAwardedOn(entry.awardedOn, locale),
       verifyUrl: entry.verifyUrl,
     })),
-    openProjects: portfolio.background.openProjects.map((entry) => ({
-      name: entry.name,
-      description: entry.description,
-      sourceUrl: entry.sourceUrl,
-    })),
     production: {
       heading: productionSection.eyebrow,
       note: productionSection.note,
@@ -128,6 +154,24 @@ export function buildCvDocument(portfolio: Portfolio, locale: Locale): CvDocumen
       networks: apps.items.filter((app) => app.role === 'ticketing').map((app) => app.name),
     },
   };
+}
+
+/**
+ * L'étude de cas qui entre au CV.
+ *
+ * Le choix est éditorial, donc il est écrit ici, en clair, plutôt que deviné
+ * par une heuristique sur les données. Un test garde qu'elle existe.
+ */
+const CV_PROJECT_SLUG = 'kcalories';
+
+function caseStudyBySlug(portfolio: Portfolio, slug: string) {
+  const found = portfolio.caseStudies.find((study) => study.slug === slug);
+  if (found === undefined) {
+    throw new Error(
+      `Le contenu ne décrit pas l'étude de cas « ${slug} » : le CV ne peut pas s'écrire.`,
+    );
+  }
+  return found;
 }
 
 /**
