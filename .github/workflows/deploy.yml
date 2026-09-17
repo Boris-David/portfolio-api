@@ -1,0 +1,83 @@
+name: Déploiement Cloud Run
+
+# ⚠️ PRÉPARÉ, PAS BRANCHÉ.
+#
+# Aucun secret ni aucune variable de dépôt n'existe encore. Ce workflow ne se
+# déclenche donc qu'à la main, et il s'arrête proprement tant que la
+# configuration n'est pas fournie — il ne peut pas rendre la CI rouge.
+#
+# Ce qu'il faudra fournir, une fois côté Google Cloud :
+#
+#   Variables de dépôt (Settings → Secrets and variables → Actions → Variables)
+#     GCP_PROJECT_ID              l'identifiant du projet GCP dédié au portfolio
+#     GCP_REGION                  p. ex. europe-west1
+#     GCP_WORKLOAD_IDENTITY_PROVIDER
+#                                 projects/<num>/locations/global/workloadIdentityPools/<pool>/providers/<provider>
+#     GCP_SERVICE_ACCOUNT         le compte de service déployeur, <nom>@<projet>.iam.gserviceaccount.com
+#     GCP_ARTIFACT_REPOSITORY     le dépôt Artifact Registry recevant l'image
+#
+#   Aucun secret de clé de service. La fédération d'identité (ADR 0003) échange
+#   le jeton OIDC de GitHub Actions contre un jeton Google de courte durée :
+#   il n'y a donc aucune clé à stocker dans un dépôt public, ni à faire tourner.
+#
+#   Côté GCP, à créer une fois : le pool et le provider d'identité de charge de
+#   travail liés à ce dépôt, le compte de service et ses rôles
+#   (`roles/run.admin`, `roles/artifactregistry.writer`,
+#   `roles/iam.serviceAccountUser`).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deployer:
+    name: Construire et déployer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vérifier que la configuration existe
+        id: configuration
+        run: |
+          if [ -z "${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ]; then
+            echo "::notice::Déploiement non configuré — voir l'en-tête de ce workflow."
+            echo "prete=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "prete=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.configuration.outputs.prete == 'true'
+
+      - name: Authentification par fédération d'identité
+        if: steps.configuration.outputs.prete == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        if: steps.configuration.outputs.prete == 'true'
+
+      - name: Construire et pousser l'image
+        if: steps.configuration.outputs.prete == 'true'
+        env:
+          IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GCP_ARTIFACT_REPOSITORY }}/portfolio-api:${{ github.sha }}
+        run: |
+          gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
+          docker build --tag "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Déployer sur Cloud Run
+        if: steps.configuration.outputs.prete == 'true'
+        env:
+          IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GCP_ARTIFACT_REPOSITORY }}/portfolio-api:${{ github.sha }}
+        run: |
+          gcloud run deploy portfolio-api \
+            --image "$IMAGE" \
+            --region "${{ vars.GCP_REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --min-instances 0 \
+            --port 8080
