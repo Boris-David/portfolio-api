@@ -262,6 +262,17 @@ seconde source de vérité.
 
 ---
 
+## Le source est en anglais, le contenu reste bilingue
+
+Commentaires, types, fonctions, variables : **en anglais, sans exception**. Ce
+dépôt est ouvert par des gens qui ne lisent pas forcément le français, et un
+raisonnement qu'ils ne peuvent pas lire ne sert à rien.
+
+Ce qui reste en français : `docs/`, qui s'adresse à l'auteur, et le **contenu**
+— qui est bilingue par nature et vit dans `src/content/`, pas dans le code.
+
+---
+
 ## Lancer
 
 Node 22 ou plus. `wrangler dev` monte **workerd** en local — aucun compte
@@ -281,7 +292,7 @@ Sans `build:cv`, le Worker démarre et sert le contenu ; seule la route CV répo
 ### Tests
 
 ```sh
-npm test               # toute la suite, y compris un vrai rendu Chromium
+npm test               # 8 fichiers, 94 tests, dont un vrai rendu Chromium
 npm run test:watch
 npx vitest run tests/cv.test.ts   # un fichier
 npm run smoke          # le Worker, sur workerd, routes réelles
