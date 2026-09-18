@@ -66,9 +66,24 @@ Toutes les ressources de lecture sont versionnées sous `/v1`, servies avec un
 | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `GET /v1/portfolio`                                                                                                         | tout, d'un seul appel                 |
 | `GET /v1/profile` · `metrics` · `sections` · `case-studies` · `apps` · `expertise` · `experience` · `background` · `skills` | une partie                            |
+| `GET /v1/deep-dives` · `architectures` · `timeline`                                                                         | le détail que le site abrège          |
 | `GET /v1/cv/amissan.ag-cv-{fr\|en}.pdf`                                                                                     | le CV rendu                           |
 | `GET /v1/openapi.json`                                                                                                      | le contrat, généré depuis les schémas |
 | `GET /health`                                                                                                               | l'état de l'instance                  |
+
+**Des vues, jamais un second magasin.** Les trois dernières existent pour l'app
+iOS, qui est le portfolio le plus détaillé : `deep-dives` sert les sujets
+d'expertise en version longue, `architectures` les motifs comparés et ceux des
+bases de code traversées, `timeline` le parcours entier en une seule suite. Elles
+lisent **le même contenu** que le reste, et le site n'a aucune raison d'y
+toucher.
+
+Une ressource est une entrée de `src/domain/resources.ts` : son schéma, et la
+façon dont on la prend dans l'agrégat déjà validé. Certaines rendent une partie
+telle quelle, une rend le tout, et `timeline` **recalcule** — elle fusionne
+expériences, formations et certifications sur une même clé de tri. Aucune ne
+stocke quoi que ce soit : une frise stockée serait une seconde copie de faits
+déjà publiés, et c'est la copie qui se périmerait.
 
 **Langue.** `?lang=fr|en` s'il est donné, sinon `Accept-Language`, sinon le
 français. Un `lang` inconnu est une **erreur** (`400`), pas un repli silencieux.
@@ -272,15 +287,16 @@ npx vitest run tests/cv.test.ts   # un fichier
 npm run smoke          # le Worker, sur workerd, routes réelles
 ```
 
-| Fichier                  | Ce qu'il garde                                                                                                    |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `tests/markup.test.ts`   | la grammaire d'emphase et ses refus                                                                               |
-| `tests/derive.test.ts`   | la dérivation du schéma bilingue, et son refus de laisser passer un noeud inconnu                                 |
-| `tests/content.test.ts`  | le contenu réel : structure identique dans les deux langues, chiffres cohérents avec l'inventaire, liens en HTTPS |
-| `tests/http.test.ts`     | langues, `ETag`, `304`, cache, erreurs, `503` du CV, `/health`                                                    |
-| `tests/contract.test.ts` | les **octets servis** reparsés par le schéma publié, et le contrat figé à jour                                    |
-| `tests/locale.test.ts`   | la négociation `Accept-Language` et la comparaison d'`ETag`                                                       |
-| `tests/cv.test.ts`       | le modèle, le gabarit, la couverture des polices, un rendu PDF réel, et le relais depuis le magasin d'assets      |
+| Fichier                   | Ce qu'il garde                                                                                                              |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `tests/markup.test.ts`    | la grammaire d'emphase et ses refus                                                                                         |
+| `tests/derive.test.ts`    | la dérivation du schéma bilingue, et son refus de laisser passer un noeud inconnu                                           |
+| `tests/content.test.ts`   | le contenu réel : structure identique dans les deux langues, chiffres cohérents avec l'inventaire, liens en HTTPS           |
+| `tests/resources.test.ts` | les ressources détaillées : références vivantes, comptes relevés épinglés, frise recalculée et ordonnée, aucun nom de tiers |
+| `tests/http.test.ts`      | langues, `ETag`, `304`, cache, erreurs, `503` du CV, `/health`                                                              |
+| `tests/contract.test.ts`  | les **octets servis** reparsés par le schéma publié, et le contrat figé à jour                                              |
+| `tests/locale.test.ts`    | la négociation `Accept-Language` et la comparaison d'`ETag`                                                                 |
+| `tests/cv.test.ts`        | le modèle, le gabarit, la couverture des polices, un rendu PDF réel, et le relais depuis le magasin d'assets                |
 
 Les tests tournent sur Node : ils ne voient ni le bundle, ni les bindings, ni
 l'absence de système de fichiers. C'est `npm run smoke` qui couvre ça — il monte

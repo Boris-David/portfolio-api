@@ -1,13 +1,9 @@
 import { envelope } from '../domain/envelope.js';
 import { LOCALES, type Locale } from '../domain/locale.js';
-import { PORTFOLIO_PARTS, type Portfolio, type PortfolioPart } from '../domain/portfolio.js';
+import type { Portfolio } from '../domain/portfolio.js';
+import { RESOURCE_VIEWS, RESOURCES, type ResourceId } from '../domain/resources.js';
 import { strongETag } from './digest.js';
 import { kebabCase, loadContent, type LoadedContent } from './loader.js';
-
-/** Les ressources de lecture : l'agrégat, et chaque partie. */
-export const RESOURCES = ['portfolio', ...PORTFOLIO_PARTS] as const;
-
-export type ResourceId = (typeof RESOURCES)[number];
 
 /** Le segment d'URL d'une ressource. */
 export function resourcePath(resource: ResourceId): string {
@@ -41,8 +37,9 @@ export function buildSnapshot(loaded: LoadedContent = loadContent()): ContentSna
   for (const locale of LOCALES) {
     const portfolio = loaded.portfolio[locale];
     for (const resource of RESOURCES) {
-      const data: unknown =
-        resource === 'portfolio' ? portfolio : portfolio[resource satisfies PortfolioPart];
+      // Every resource is a view over the same loaded aggregate — including the
+      // derived ones. Nothing here holds a second copy of the content.
+      const data: unknown = RESOURCE_VIEWS[resource].select(portfolio);
       const body = JSON.stringify(envelope(locale, loaded.version, data));
       representations.set(keyOf(resource, locale), { body, etag: strongETag(body) });
     }

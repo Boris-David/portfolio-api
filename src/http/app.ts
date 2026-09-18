@@ -2,18 +2,12 @@ import { OpenAPIHono, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { CACHE_CONTROL } from '../config.js';
 import { matchesETag } from '../content/digest.js';
-import {
-  RESOURCES,
-  resourcePath,
-  type ContentSnapshot,
-  type Representation,
-  type ResourceId,
-} from '../content/snapshot.js';
+import { resourcePath, type ContentSnapshot, type Representation } from '../content/snapshot.js';
 import { cvFileName } from '../cv/manifest.js';
 import type { CvStore } from '../cv/store.js';
 import { envelopeOf } from '../domain/envelope.js';
 import { DEFAULT_LOCALE, LOCALES, LocaleSchema, type Locale } from '../domain/locale.js';
-import { PART_SCHEMAS, PortfolioSchema } from '../domain/portfolio.js';
+import { RESOURCE_VIEWS, RESOURCES, type ResourceId } from '../domain/resources.js';
 import { resolveLocale } from './locale.js';
 import { openApiDocument } from './openapi.js';
 import { PROBLEMS, ProblemSchema, problemResponse } from './problem.js';
@@ -89,7 +83,7 @@ const LangQuerySchema = z.object({
 function registerContentRoutes(app: OpenAPIHono, snapshot: ContentSnapshot): void {
   for (const resource of RESOURCES) {
     const path = `${BASE_PATH}/${resourcePath(resource)}`;
-    const dataSchema = resource === 'portfolio' ? PortfolioSchema : PART_SCHEMAS[resource];
+    const { schema: dataSchema } = RESOURCE_VIEWS[resource];
 
     app.openAPIRegistry.registerPath({
       method: 'get',
@@ -303,9 +297,12 @@ const SUMMARIES: Readonly<Record<ResourceId, string>> = {
   caseStudies: 'Les études de cas.',
   apps: 'Les applications en production.',
   expertise: 'Les sujets creusés en profondeur.',
+  deepDives: 'Les mêmes sujets, en version longue.',
+  architectures: "Les motifs d'architecture comparés, et ceux des bases de code traversées.",
   experience: 'Les expériences professionnelles.',
   background: 'Formation, certifications et projets ouverts.',
   skills: 'Les compétences, par groupe.',
+  timeline: 'Le parcours entier en une seule suite, du plus récent au plus ancien.',
 };
 
 function summaryOf(resource: ResourceId): string {

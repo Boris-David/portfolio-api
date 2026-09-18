@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { PATHS } from '../src/node/paths.js';
 import { buildSnapshot } from '../src/content/snapshot.js';
-import { RESOURCES, resourcePath } from '../src/content/snapshot.js';
+import { resourcePath } from '../src/content/snapshot.js';
 import { envelopeOf } from '../src/domain/envelope.js';
 import { LOCALES } from '../src/domain/locale.js';
-import { PART_SCHEMAS, PortfolioSchema } from '../src/domain/portfolio.js';
+import { RESOURCE_VIEWS, RESOURCES } from '../src/domain/resources.js';
 import { unavailableCvStore } from '../src/cv/unavailable-store.js';
 import { createApp, cvPath } from '../src/http/app.js';
 import { openApiDocument } from '../src/http/openapi.js';
@@ -18,9 +18,7 @@ describe('les octets servis face au contrat', () => {
     // Plus fort qu'un contrôle de type : c'est la charge utile réelle,
     // pré-sérialisée au démarrage, qui est reparsée par le schéma publié.
     for (const resource of RESOURCES) {
-      const schema = envelopeOf(
-        resource === 'portfolio' ? PortfolioSchema : PART_SCHEMAS[resource],
-      );
+      const schema = envelopeOf(RESOURCE_VIEWS[resource].schema);
       for (const locale of LOCALES) {
         const { body } = snapshot.representation(resource, locale);
         const parsed = schema.safeParse(JSON.parse(body));

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { AppInventorySchema } from './apps.js';
+import { ArchitectureDossierSchema } from './architecture.js';
 import {
   BackgroundSchema,
   ExperienceSchema,
@@ -7,6 +8,7 @@ import {
   SkillGroupSchema,
 } from './background.js';
 import { CaseStudySchema } from './case-study.js';
+import { DeepDiveSchema } from './deep-dive.js';
 import { MetricSchema, ProfileSchema, SectionSchema } from './profile.js';
 
 /**
@@ -23,6 +25,8 @@ export const PART_SCHEMAS = {
   caseStudies: z.array(CaseStudySchema).min(1),
   apps: AppInventorySchema,
   expertise: z.array(ExpertiseSchema).min(1),
+  deepDives: z.array(DeepDiveSchema).min(1),
+  architectures: ArchitectureDossierSchema,
   experience: z.array(ExperienceSchema).min(1),
   background: BackgroundSchema,
   skills: z.array(SkillGroupSchema).min(1),

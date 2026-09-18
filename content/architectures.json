@@ -1,0 +1,182 @@
+{
+  "$comment": "Les motifs d'architecture, et ce que montrent les bases de code traversées. Aucun nom de dépôt, de module interne, de client ni de prestataire : on décrit des motifs, jamais le code d'un employeur. Les comptes sont des suffixes de types relevés dans les dépôts le 2026-09-18 ; ils sont épinglés par tests/resources.test.ts, parce qu'un chiffre qui n'est pas gardé finit par être arrondi.",
+  "verifiedOn": "2026-09-18",
+  "intro": {
+    "fr": "Trois bases de code, trois motifs, et une trajectoire : **MVVM sur UIKit vers Clean Architecture sur SwiftUI**. Les comptes cités plus bas ont été relevés dans les dépôts, pas dans un souvenir — c'est la seule raison pour laquelle ils sont là.",
+    "en": "Three codebases, three patterns, one trajectory: **MVVM on UIKit towards Clean Architecture on SwiftUI**. The counts below were measured in the repositories, not remembered — that is the only reason they are here."
+  },
+  "patterns": [
+    {
+      "id": "mvc",
+      "name": "MVC",
+      "separates": {
+        "fr": "La donnée, son affichage, et le contrôleur qui tient les deux bouts.",
+        "en": "The data, its display, and the controller holding both ends."
+      },
+      "buys": {
+        "fr": "**Rien à installer** : c'est le modèle que propose UIKit, et il se lit sans explication. Sur un écran simple, c'est le chemin le plus court entre l'intention et le pixel.",
+        "en": "**Nothing to set up**: it is the model UIKit hands you, and it reads without explanation. On a simple screen, it is the shortest path from intent to pixel."
+      },
+      "costs": {
+        "fr": "Le contrôleur devient le seul endroit où poser ce qui ne rentre nulle part — cycle de vie, appels réseau, mise en forme, navigation. Il grossit sans qu'aucune règle ne s'y oppose.",
+        "en": "The controller becomes the only place to put whatever fits nowhere else — lifecycle, network calls, formatting, navigation. It grows, and no rule stands in its way."
+      },
+      "chooseWhen": {
+        "fr": "Un écran de réglages, une vue de détail figée, un prototype qu'on jettera.",
+        "en": "A settings screen, a fixed detail view, a prototype you will throw away."
+      },
+      "breaksWhen": {
+        "fr": "Dès qu'il faut tester la logique : elle vit dans le contrôleur, et le contrôleur n'existe qu'avec une vue chargée.",
+        "en": "The moment the logic has to be tested: it lives in the controller, and the controller only exists with a loaded view."
+      }
+    },
+    {
+      "id": "mvp",
+      "name": "MVP",
+      "separates": {
+        "fr": "La décision de l'affichage : le présentateur décide, la vue exécute.",
+        "en": "The decision from the display: the presenter decides, the view carries out."
+      },
+      "buys": {
+        "fr": "La vue devient un **contrat** — un protocole. La logique se teste contre un double de vue, sans simulateur et sans cycle de vie à réveiller.",
+        "en": "The view becomes a **contract** — a protocol. The logic is tested against a view double, with no simulator and no lifecycle to wake up."
+      },
+      "costs": {
+        "fr": "Deux protocoles et un rafraîchissement écrit à la main par écran. Le présentateur pousse l'état méthode par méthode : un appel oublié, c'est un écran qui ne se met pas à jour.",
+        "en": "Two protocols and a hand-written refresh per screen. The presenter pushes state method by method: one forgotten call is a screen that does not update."
+      },
+      "chooseWhen": {
+        "fr": "Une base UIKit où la logique doit sortir du contrôleur sans introduire de réactif.",
+        "en": "A UIKit codebase where the logic must leave the controller without bringing in reactive plumbing."
+      },
+      "breaksWhen": {
+        "fr": "En SwiftUI : pousser l'état vers une vue qui se recalcule toute seule, c'est travailler contre le framework.",
+        "en": "In SwiftUI: pushing state into a view that recomputes itself means working against the framework."
+      }
+    },
+    {
+      "id": "mvvm",
+      "name": "MVVM",
+      "separates": {
+        "fr": "L'état affichable de la vue qui l'affiche. La vue observe, elle ne reçoit pas d'ordres.",
+        "en": "The displayable state from the view displaying it. The view observes; it is given no orders."
+      },
+      "buys": {
+        "fr": "L'état est une **valeur observable** et non une suite d'appels : la vue se reconstruit depuis lui, donc elle ne peut pas se désynchroniser. C'est exactement ce que SwiftUI attend.",
+        "en": "State is an **observable value** rather than a sequence of calls: the view rebuilds from it, so it cannot fall out of step. It is exactly what SwiftUI expects."
+      },
+      "costs": {
+        "fr": "Le modèle de vue attire tout — réseau, mise en forme, navigation — jusqu'à redevenir le contrôleur massif qu'on fuyait, sous un autre nom.",
+        "en": "The view model attracts everything — network, formatting, navigation — until it becomes the massive controller you were fleeing, under another name."
+      },
+      "chooseWhen": {
+        "fr": "Une application dont la complexité est l'interface, et dont le domaine tient en peu de règles.",
+        "en": "An app whose complexity is the interface, and whose domain holds few rules."
+      },
+      "breaksWhen": {
+        "fr": "Quand la règle métier pèse plus que l'écran : MVVM ne dit rien de l'endroit où elle doit vivre.",
+        "en": "When the business rule weighs more than the screen: MVVM says nothing about where it should live."
+      }
+    },
+    {
+      "id": "clean",
+      "name": "Clean Architecture",
+      "separates": {
+        "fr": "Le domaine de tout le reste : la règle métier ignore l'écran, le réseau et le stockage.",
+        "en": "The domain from everything else: the business rule knows nothing of the screen, the network or the store."
+      },
+      "buys": {
+        "fr": "La dépendance pointe **vers l'intérieur**. Changer d'interface ou de transport ne touche aucune règle, et le domaine se teste sans rien monter. Quand la frontière est un module, ce n'est plus une convention — le compilateur la refuse.",
+        "en": "Dependencies point **inwards**. Changing the interface or the transport touches no rule, and the domain is tested without standing anything up. When the boundary is a module, it stops being a convention — the compiler refuses to cross it."
+      },
+      "costs": {
+        "fr": "Beaucoup plus de fichiers, et un aller-retour par cas d'usage même quand il ne fait que relayer. Sur un écran trivial, l'indirection coûte plus qu'elle ne protège.",
+        "en": "Many more files, and a round trip per use case even when it only relays. On a trivial screen, the indirection costs more than it protects."
+      },
+      "chooseWhen": {
+        "fr": "Un produit qui doit durer, plusieurs équipes, ou plusieurs implémentations derrière une même règle.",
+        "en": "A product meant to last, several teams, or several implementations behind one rule."
+      },
+      "breaksWhen": {
+        "fr": "Quand elle tient par la discipline et non par le compilateur : un dossier nommé `Domain` qui importe le réseau ne sépare rien.",
+        "en": "When it holds by discipline rather than by the compiler: a folder named `Domain` that imports the network separates nothing."
+      }
+    }
+  ],
+  "projects": [
+    {
+      "id": "first-generation-platform",
+      "name": {
+        "fr": "Le socle de première génération",
+        "en": "The first-generation platform"
+      },
+      "context": {
+        "fr": "Le socle en marque blanche sur lequel tournent, côté iOS, les applications de transport en production.",
+        "en": "The white-label platform that the transport apps in production run on, on the iOS side."
+      },
+      "pattern": "mvvm",
+      "stack": [
+        "Swift",
+        "UIKit",
+        { "fr": "Navigation par objets de flux", "en": "Navigation by flow objects" }
+      ],
+      "evidence": [
+        { "symbol": "ViewController", "count": 304 },
+        { "symbol": "ViewModel", "count": 325 },
+        { "symbol": "Flow", "count": 124 },
+        { "symbol": "Presenter", "count": 14 }
+      ],
+      "reading": {
+        "fr": "**MVVM sur UIKit**, avec la navigation sortie des contrôleurs et portée par des objets de flux dédiés. Le rapport entre les modèles de vue et les présentateurs tranche la question : MVP n'y couvre qu'une poignée de modules — c'est un vestige, pas le motif de la base.",
+        "en": "**MVVM on UIKit**, with navigation lifted out of the controllers and carried by dedicated flow objects. The ratio between view models and presenters settles the question: MVP covers only a handful of modules — a leftover, not the pattern of the codebase."
+      }
+    },
+    {
+      "id": "current-generation-platform",
+      "name": { "fr": "Le socle actuel", "en": "The current platform" },
+      "context": {
+        "fr": "Le socle de nouvelle génération, sur lequel la couche de billettique a été reprise.",
+        "en": "The next-generation platform, onto which the ticketing layer was carried over."
+      },
+      "pattern": "clean",
+      "stack": [
+        "Swift",
+        "SwiftUI",
+        "Clean Architecture",
+        { "fr": "Modules par fonctionnalité", "en": "Feature modules" },
+        { "fr": "Injection de dépendances", "en": "Dependency injection" }
+      ],
+      "evidence": [
+        { "symbol": "UseCase", "count": 677 },
+        { "symbol": "Repository", "count": 417 },
+        { "symbol": "Protocol", "count": 558 },
+        { "symbol": "Store", "count": 69 }
+      ],
+      "reading": {
+        "fr": "**Clean Architecture modularisée par fonctionnalité** : chaque fonctionnalité porte ses trois couches — domaine, infrastructure, présentation — et l'état d'écran est tenu par des objets observables. Le nombre de protocoles n'est pas un détail de style : c'est la mesure de l'endroit où passent réellement les frontières.",
+        "en": "**Clean Architecture modularised per feature**: every feature carries its three layers — domain, infrastructure, presentation — and screen state is held by observable objects. The number of protocols is not a matter of style: it measures where the boundaries actually run."
+      }
+    },
+    {
+      "id": "kcalories",
+      "name": "KCalories",
+      "context": {
+        "fr": "Mon produit personnel, publié sur l'App Store : quatre stacks tenues seul, de la première ligne à la mise en vente.",
+        "en": "My own product, published on the App Store: four stacks carried alone, from the first line to release."
+      },
+      "pattern": "clean",
+      "stack": [
+        "SwiftUI",
+        "SwiftData",
+        "Clean Architecture",
+        { "fr": "Modules SPM", "en": "SPM modules" },
+        "Feature flags"
+      ],
+      "evidence": [],
+      "reading": {
+        "fr": "**SwiftUI, SwiftData et Clean Architecture en modules SPM**, posés quand rien ne les imposait encore. Sur un produit d'une seule personne, la frontière ne protège d'aucune autre équipe — elle empêche le raccourci qu'on se permet à soi-même.",
+        "en": "**SwiftUI, SwiftData and Clean Architecture in SPM modules**, laid down when nothing yet demanded them. On a one-person product, a boundary protects you from no other team — it stops the shortcut you would grant yourself."
+      }
+    }
+  ]
+}

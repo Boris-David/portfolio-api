@@ -91,7 +91,10 @@ describe('les ressources de contenu', () => {
     expect(problem.detail).toContain('de');
   });
 
-  it('exposent toutes les parties du portfolio', async () => {
+  it('exposent toutes les ressources de lecture', async () => {
+    // Deliberately written out rather than derived from the resource table: a
+    // list built from the same source it checks would keep passing the day a
+    // route silently disappears from it.
     for (const path of [
       'portfolio',
       'profile',
@@ -100,9 +103,12 @@ describe('les ressources de contenu', () => {
       'case-studies',
       'apps',
       'expertise',
+      'deep-dives',
+      'architectures',
       'experience',
       'background',
       'skills',
+      'timeline',
     ]) {
       const response = await app.request(`/v1/${path}`);
       expect(response.status, path).toBe(200);

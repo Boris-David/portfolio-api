@@ -1,6 +1,8 @@
 import apps from '../../content/apps.json' with { type: 'json' };
+import architectures from '../../content/architectures.json' with { type: 'json' };
 import background from '../../content/background.json' with { type: 'json' };
 import caseStudies from '../../content/case-studies.json' with { type: 'json' };
+import deepDives from '../../content/deep-dives.json' with { type: 'json' };
 import experience from '../../content/experience.json' with { type: 'json' };
 import expertise from '../../content/expertise.json' with { type: 'json' };
 import metrics from '../../content/metrics.json' with { type: 'json' };
@@ -31,6 +33,8 @@ export const CONTENT_DOCUMENTS: ContentDocuments = {
   caseStudies,
   apps,
   expertise,
+  deepDives,
+  architectures,
   experience,
   background,
   skills,

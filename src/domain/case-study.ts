@@ -1,23 +1,7 @@
 import { z } from 'zod';
+import { BlockSchema } from './block.js';
 import { MediaSchema } from './media.js';
 import { label, prose, richText } from './text.js';
-
-/**
- * Le corps d'un panneau d'étude de cas.
- *
- * Union discriminée plutôt que trois champs optionnels : un panneau porte une
- * suite de blocs typés, et aucune combinaison invalide (« un paragraphe *et*
- * une liste, mais dans quel ordre ? ») n'est représentable.
- */
-export const BlockSchema = z
-  .discriminatedUnion('type', [
-    z.object({ type: z.literal('paragraph'), text: richText() }),
-    z.object({ type: z.literal('list'), items: z.array(richText()).min(1) }),
-    z.object({ type: z.literal('tags'), items: z.array(label()).min(1) }),
-  ])
-  .meta({ id: 'Block' });
-
-export type Block = z.infer<typeof BlockSchema>;
 
 /**
  * Les trois temps d'un récit d'ingénieur : le problème, la décision, le
