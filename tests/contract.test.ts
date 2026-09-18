@@ -11,12 +11,12 @@ import { createApp, cvPath } from '../src/http/app.js';
 import { openApiDocument } from '../src/http/openapi.js';
 
 const snapshot = buildSnapshot();
-const app = createApp({ snapshot, cv: () => unavailableCvStore('non requis ici') });
+const app = createApp({ snapshot, cv: () => unavailableCvStore('not needed here') });
 
 describe('les octets servis face au contrat', () => {
   it('satisfont le schéma déclaré, pour chaque ressource et chaque langue', () => {
-    // Plus fort qu'un contrôle de type : c'est la charge utile réelle,
-    // pré-sérialisée au démarrage, qui est reparsée par le schéma publié.
+    // Stronger than a type check: it is the real payload, pre-serialised at
+    // startup, that gets reparsed by the published schema.
     for (const resource of RESOURCES) {
       const schema = envelopeOf(RESOURCE_VIEWS[resource].schema);
       for (const locale of LOCALES) {
@@ -40,8 +40,8 @@ describe('le contrat OpenAPI dérivé', () => {
     }
     for (const locale of LOCALES) {
       expect(document.paths).toHaveProperty(cvPath(locale));
-      // L'ancien chemin reste décrit : il redirige, et un client qui le lit
-      // doit apprendre qu'il a bougé plutôt que de le découvrir en 404.
+      // The old path stays described: it redirects, and a client reading it
+      // should learn it moved rather than discover that in a 404.
       expect(document.paths).toHaveProperty(`/v1/cv/${locale}.pdf`);
     }
     expect(document.paths).toHaveProperty('/health');

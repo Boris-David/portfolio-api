@@ -3,16 +3,16 @@ import { CV_ASSET_PREFIX } from '../config.js';
 import { LOCALES, LocaleSchema, type Locale } from '../domain/locale.js';
 
 /**
- * Le manifeste des CV rendus.
+ * The manifest of the rendered résumés.
  *
- * Il porte la **version de contenu** au moment du rendu. C'est la pièce qui
- * rend la promesse de l'ADR 0004 vérifiable : « le rendu est déclenché par le
- * changement de contenu ». L'API compare cette version à celle du contenu
- * qu'elle embarque ; si elles diffèrent, le PDF ne décrit plus ce que l'API
- * sert, et il ne doit pas être servi.
+ * It carries the **content version** as of render time. That is the piece that
+ * makes ADR 0004's promise checkable: "rendering is triggered by a content
+ * change". The API compares that version against the content it bundles; if
+ * they differ, the PDF no longer describes what the API serves, and it must
+ * not be served.
  *
- * Il porte aussi l'empreinte du **HTML source** de chaque CV, qui sert d'`ETag`
- * (voir `CvDescription.etag`).
+ * It also carries the digest of each résumé's **source HTML**, which is used
+ * as the `ETag` (see `CvDescription.etag`).
  */
 export const CvManifestSchema = z.object({
   contentVersion: z.string().min(1),
@@ -32,62 +32,62 @@ export const CvManifestSchema = z.object({
 export type CvManifest = z.infer<typeof CvManifestSchema>;
 
 /**
- * Le préfixe du nom de fichier du CV.
+ * The résumé file name prefix.
  *
- * Il ne se dérive pas du nom complet : « Amissan Boris-David Amoussou-Guenou »
- * donnerait un fichier interminable dans une feuille de partage. C'est une
- * forme courte, choisie.
+ * It is not derived from the full name: "Amissan Boris-David Amoussou-Guenou"
+ * would give an endless file name in a share sheet. This is a short form, and
+ * it was chosen.
  */
 const CV_FILE_PREFIX = 'amissan.ag-cv';
 
 /**
- * Le nom du fichier téléchargé, pour une langue.
+ * The downloaded file's name, for one language.
  *
- * Ce nom compte plus qu'il n'en a l'air : sur iOS, Safari ignore
- * `Content-Disposition` pour la feuille de partage et reprend le **dernier
- * segment de l'URL**. C'est pourquoi la route du CV porte exactement ce
- * nom-là, et pas la langue seule — un chemin en `/v1/cv/fr.pdf` faisait
- * apparaître « fr » au partage.
+ * This name matters more than it looks: on iOS, Safari ignores
+ * `Content-Disposition` for the share sheet and picks up the **last segment of
+ * the URL**. That is why the résumé route carries exactly this name, and not
+ * just the language — a path like `/v1/cv/fr.pdf` showed up as "fr" when
+ * shared.
  */
 export function cvFileName(locale: Locale): string {
   return `${CV_FILE_PREFIX}-${locale}.pdf`;
 }
 
-/** Le chemin d'un CV dans le magasin d'assets statiques. */
+/** A résumé's path in the static asset store. */
 export function cvAssetPath(file: string): string {
   return `${CV_ASSET_PREFIX}/${file}`;
 }
 
 export interface CvDescription {
   readonly locale: Locale;
-  /** Où lire les octets dans le magasin d'assets. */
+  /** Where to read the bytes in the asset store. */
   readonly assetPath: string;
-  /** Le nom proposé au téléchargement. */
+  /** The name offered on download. */
   readonly fileName: string;
   /**
-   * L'`ETag`, repris de l'empreinte du HTML source scellée au rendu — et non
-   * des octets du PDF : Chromium les horodate, donc deux rendus d'un contenu
-   * identique produiraient deux `ETag` différents et feraient retélécharger le
-   * document sans raison.
+   * The `ETag`, taken from the source HTML digest sealed at render time — and
+   * not from the PDF's bytes: Chromium timestamps them, so two renders of
+   * identical content would produce two different `ETag`s and make the
+   * document be re-downloaded for nothing.
    */
   readonly etag: string;
 }
 
 /**
- * L'état des CV, tel que l'API le voit.
+ * The state of the résumés, as the API sees it.
  *
- * L'indisponibilité est un **état nommé**, pas une exception : un CV absent ou
- * périmé ne doit pas empêcher l'API de servir le contenu, mais il ne doit pas
- * non plus être servi en silence. La route répond alors `503` en disant
- * exactement quoi faire, et `/health` le signale.
+ * Unavailability is a **named state**, not an exception: a missing or stale
+ * résumé must not stop the API from serving content, but it must not be served
+ * in silence either. The route then answers `503` saying exactly what to do,
+ * and `/health` reports it.
  */
 export type CvCatalogue =
   | { readonly status: 'ready'; readonly entries: Readonly<Record<Locale, CvDescription>> }
   | { readonly status: 'unavailable'; readonly reason: string };
 
 /**
- * Lit un manifeste et en déduit le catalogue, ou la raison exacte de son
- * indisponibilité. Fonction pure : aucun accès au magasin, aucun réseau.
+ * Reads a manifest and derives the catalogue from it, or the exact reason it
+ * is unavailable. A pure function: no store access, no network.
  */
 export function readCvCatalogue(document: unknown, expectedContentVersion: string): CvCatalogue {
   const manifest = CvManifestSchema.safeParse(document);

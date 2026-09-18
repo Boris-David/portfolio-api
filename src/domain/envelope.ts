@@ -2,13 +2,13 @@ import { z } from 'zod';
 import { LocaleSchema, type Locale } from './locale.js';
 
 /**
- * L'enveloppe de toute réponse de contenu.
+ * The envelope wrapped around every content response.
  *
- * Les en-têtes HTTP portent déjà `Content-Language` et `ETag` ; l'enveloppe
- * existe pour une raison précise : l'app iOS **écrit la réponse sur disque**
- * comme instantané hors ligne (ADR 0002). Un instantané qui ne porte pas sa
- * propre langue et sa propre version n'est pas vérifiable — et un instantané
- * non vérifiable devient une seconde source de vérité périmée.
+ * The HTTP headers already carry `Content-Language` and `ETag`; the envelope
+ * exists for one precise reason: the iOS app **writes the response to disk**
+ * as an offline snapshot (ADR 0002). A snapshot that does not carry its own
+ * language and its own version cannot be checked — and an uncheckable snapshot
+ * becomes a second, stale source of truth.
  */
 export const MetaSchema = z
   .object({

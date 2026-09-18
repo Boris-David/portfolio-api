@@ -1,16 +1,16 @@
 import { DEFAULT_LOCALE, isLocale, LOCALES, type Locale } from '../domain/locale.js';
 
 /**
- * Le choix de la langue servie.
+ * Choosing the language to serve.
  *
- * Trois sources, dans cet ordre : le paramètre `lang` s'il est donné, puis
- * `Accept-Language`, puis le français. Le paramètre explicite prime parce
- * qu'il vient d'un geste de l'utilisateur — le sélecteur de langue du site —
- * alors que l'en-tête décrit seulement une préférence de navigateur.
+ * Three sources, in this order: the `lang` parameter when given, then
+ * `Accept-Language`, then French. The explicit parameter wins because it comes
+ * from a deliberate action — the site's language switcher — whereas the header
+ * only describes a browser preference.
  *
- * Une valeur de `lang` inconnue est une **erreur**, pas un repli silencieux :
- * un client qui demande `?lang=de` doit l'apprendre, pas recevoir du français
- * en croyant avoir de l'allemand.
+ * An unknown `lang` value is an **error**, not a silent fallback: a client
+ * asking for `?lang=de` must be told, not handed French while believing it got
+ * German.
  */
 export type LocaleResolution =
   | { readonly ok: true; readonly locale: Locale }
@@ -29,10 +29,10 @@ export function resolveLocale(
 const DEFAULT_QUALITY = 1;
 
 /**
- * Négocie depuis `Accept-Language` : « fr-FR,fr;q=0.9,en;q=0.8 ».
+ * Negotiates from `Accept-Language`: "fr-FR,fr;q=0.9,en;q=0.8".
  *
- * Le préfixe suffit (`fr-CA` satisfait `fr`), et la qualité la plus haute
- * gagne. Aucune correspondance : la langue par défaut.
+ * The prefix is enough (`fr-CA` satisfies `fr`), and the highest quality wins.
+ * No match at all: the default language.
  */
 export function negotiate(acceptLanguage: string | undefined): Locale {
   if (acceptLanguage === undefined || acceptLanguage.trim() === '') return DEFAULT_LOCALE;

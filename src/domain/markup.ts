@@ -2,22 +2,21 @@ import { MarkupError } from './errors.js';
 import type { RichText, Span, SpanStyle } from './rich-text.js';
 
 /**
- * Grammaire d'emphase inline du contenu.
+ * The content's inline emphasis grammar.
  *
- * Le contenu porte de l'emphase — la page de référence met en gras le **fait**
- * dans chaque phrase, et en `code` les noms d'API. Trois façons de la
- * transporter existaient :
+ * The content carries emphasis — the reference page bolds the **fact** in each
+ * sentence and puts API names in `code`. There were three ways to transport it:
  *
- * 1. du HTML dans le JSON — injecté tel quel par les clients, donc une surface
- *    d'injection et un couplage du contenu au web ; l'app iOS n'en fait rien ;
- * 2. des spans structurés écrits à la main dans les fichiers — illisibles à
- *    écrire et à relire pour ~200 phrases ;
- * 3. un balisage minimal à l'écriture, **converti en spans structurés** au
- *    chargement.
+ * 1. HTML inside the JSON — injected as-is by clients, so an injection surface
+ *    and a coupling of the content to the web; the iOS app has no use for it;
+ * 2. structured spans written by hand in the files — unreadable to write and
+ *    to review across ~200 sentences;
+ * 3. minimal markup at authoring time, **converted into structured spans** at
+ *    load time.
  *
- * C'est la troisième : on écrit `**gras**` et `` `code` ``, l'API sert des
- * spans. Un seul analyseur existe, ici ; aucun client n'en réécrit un, et
- * aucun client ne reçoit de HTML.
+ * It is the third: you write `**bold**` and `` `code` ``, the API serves
+ * spans. One parser exists, here; no client rewrites one, and no client is
+ * ever handed HTML.
  */
 
 const STRONG_DELIMITER = '**';
@@ -28,7 +27,7 @@ interface DelimiterRule {
   readonly style: Exclude<SpanStyle, 'plain'>;
 }
 
-/** `String.indexOf` quand il ne trouve rien. */
+/** What `String.indexOf` returns when it finds nothing. */
 const NOT_FOUND = -1;
 
 const RULES: readonly DelimiterRule[] = [
@@ -52,9 +51,9 @@ function push(spans: Span[], text: string, style: SpanStyle): void {
 }
 
 /**
- * Convertit une source balisée en spans. Lève `MarkupError` sur un délimiteur
- * non fermé ou une emphase vide : un balisage cassé est une faute de contenu,
- * pas un texte à rendre tel quel.
+ * Turns a marked-up source into spans. Throws `MarkupError` on an unclosed
+ * delimiter or an empty emphasis: broken markup is a content defect, not a
+ * text to render as-is.
  */
 export function parseMarkup(source: string): RichText {
   const spans: Span[] = [];
@@ -68,15 +67,15 @@ export function parseMarkup(source: string): RichText {
     const contentStart = at + rule.delimiter.length;
     const closing = source.indexOf(rule.delimiter, contentStart);
     if (closing === NOT_FOUND) {
-      throw new MarkupError(source, `délimiteur « ${rule.delimiter} » jamais fermé`);
+      throw new MarkupError(source, `delimiter "${rule.delimiter}" never closed`);
     }
 
     const emphasised = source.slice(contentStart, closing);
     if (emphasised.length === 0) {
-      throw new MarkupError(source, `emphase vide « ${rule.delimiter}${rule.delimiter} »`);
+      throw new MarkupError(source, `empty emphasis "${rule.delimiter}${rule.delimiter}"`);
     }
     if (nextOpening(emphasised, 0) !== null) {
-      throw new MarkupError(source, 'emphases imbriquées');
+      throw new MarkupError(source, 'nested emphasis');
     }
 
     push(spans, source.slice(cursor, at), 'plain');
@@ -87,12 +86,12 @@ export function parseMarkup(source: string): RichText {
   push(spans, source.slice(cursor), 'plain');
 
   if (spans.length === 0) {
-    throw new MarkupError(source, 'texte vide');
+    throw new MarkupError(source, 'empty text');
   }
   return spans;
 }
 
-/** Vrai si la source respecte la grammaire — utilisé par le schéma. */
+/** True when the source obeys the grammar — used by the schema. */
 export function isValidMarkup(source: string): boolean {
   try {
     parseMarkup(source);
@@ -103,7 +102,7 @@ export function isValidMarkup(source: string): boolean {
   }
 }
 
-/** Le texte nu d'un contenu balisé, emphases retirées. */
+/** The bare text of marked-up content, emphasis stripped. */
 export function plainText(rich: RichText): string {
   return rich.map((span) => span.text).join('');
 }

@@ -3,32 +3,31 @@
   "name": "portfolio-api",
   "main": "src/worker.ts",
 
-  // Les API de la plateforme sont figées à cette date : une mise à jour de
-  // workerd ne peut pas changer le comportement du Worker sans qu'on l'ait
-  // décidé en avançant cette ligne.
+  // The platform APIs are frozen at this date: a workerd update cannot change
+  // the Worker's behaviour unless we decide it by moving this line forward.
   "compatibility_date": "2026-09-17",
 
-  // `node:crypto` sert à condenser le contenu servi (ETag, version). workerd
-  // l'implémente et rend le MÊME octet que Node — vérifié, donc l'empreinte
-  // calculée au build et celle calculée dans l'isolat sont comparables.
+  // `node:crypto` is what digests the content served (ETag, version). workerd
+  // implements it and returns the SAME byte as Node — verified, so the digest
+  // computed at build time and the one computed inside the isolate compare.
   "compatibility_flags": ["nodejs_compat"],
 
   "assets": {
-    // Les CV rendus. Ils pèsent ~330 Ko chacun et le script gratuit est
-    // plafonné à 1 Mo compressé : ils ne peuvent pas y être embarqués.
+    // The rendered résumés. They weigh ~330 KB each and the free script is
+    // capped at 1 MB compressed: they cannot be bundled into it.
     "directory": "./public",
     "binding": "ASSETS",
 
-    // Le Worker répond avant le magasin sur les chemins bruts des CV. Sans
-    // cela, chaque PDF aurait DEUX URL publiques — la route documentée et son
-    // chemin d'asset — dont une servie sans nos en-têtes. Le binding, lui,
-    // atteint le magasin directement : c'est par là que la route les relaie.
+    // The Worker answers before the store on the raw résumé paths. Without
+    // this, every PDF would have TWO public URLs — the documented route and
+    // its asset path — one of them served without our headers. The binding
+    // reaches the store directly: that is how the route relays them.
     "run_worker_first": ["/cv/*"],
   },
 
-  // Le domaine est enregistré chez Cloudflare Registrar, donc la zone est déjà
-  // sur le compte : `wrangler deploy` crée le domaine personnalisé lui-même.
-  // Rien à cliquer, et la configuration reste dans le dépôt.
+  // The domain is registered with Cloudflare Registrar, so the zone is already
+  // on the account: `wrangler deploy` creates the custom domain itself. Nothing
+  // to click, and the configuration stays in the repo.
   "routes": [{ "pattern": "api.amissan.dev", "custom_domain": true }],
 
   "observability": { "enabled": true },

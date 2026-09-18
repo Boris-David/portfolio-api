@@ -3,46 +3,44 @@ import { join } from 'node:path';
 import { PATHS } from '../node/paths.js';
 
 /**
- * Les polices du CV, **embarquées dans le document**.
+ * The résumé's fonts, **embedded in the document**.
  *
- * Une machine de CI n'a pas Fraunces ni Instrument Sans installées : sans
- * embarquement, Chromium retomberait sur une police système et le PDF ne
- * ressemblerait plus au site. Les sous-ensembles sont donc versionnés dans le
- * dépôt (168 Ko au total, licence OFL à côté) et injectés en `data:` — le
- * rendu ne dépend d'aucun réseau et donne le même octet partout.
+ * A CI machine has neither Fraunces nor Instrument Sans installed: without
+ * embedding, Chromium would fall back to a system font and the PDF would stop
+ * looking like the website. The subsets are therefore versioned in the repo
+ * (168 KB in total, OFL licence alongside) and injected as `data:` — the
+ * rendering depends on no network and yields the same byte everywhere.
  */
 interface FontSubset {
   readonly family: string;
   readonly file: string;
-  /** Les points de code que ce sous-ensemble couvre, tels que Google les découpe. */
+  /** The code points this subset covers, exactly as Google slices them. */
   readonly unicodeRange: string;
 }
 
 const DISPLAY_FAMILY = 'Fraunces';
 const TEXT_FAMILY = 'Instrument Sans';
 
-/** Latin de base et supplément Latin-1 — l'essentiel du français. */
+/** Basic Latin and Latin-1 Supplement — most of what French needs. */
 const LATIN_RANGE =
   'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, ' +
   'U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD';
 
-/** Latin étendu — diacritiques rares et symboles monétaires. */
+/** Latin Extended — rare diacritics and currency symbols. */
 const LATIN_EXT_RANGE =
   'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, ' +
   'U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, ' +
   'U+2C60-2C7F, U+A720-A7FF';
 
 /**
- * La flèche droite. Elle n'est dans aucun des deux sous-ensembles latins, et
- * le contenu l'emploie (« Objective-C → Swift »). Elle est donc embarquée à
- * part, sur la police de texte — la seule des deux que Google sert en
- * sous-ensemble sur mesure.
+ * The rightwards arrow. It is in neither Latin subset, and the content uses it
+ * ("Objective-C → Swift"). So it is embedded separately, on the text font —
+ * the only one of the two Google serves as a made-to-measure subset.
  *
- * Le gabarit met la police de texte en repli de la police d'affichage : dans
- * un PDF il n'existe aucune police système, donc un caractère absent de
- * Fraunces doit retomber sur une police **embarquée**, jamais sur un
- * générique. C'est ce qui rend la couverture ci-dessous vraie quel que soit
- * l'endroit du document.
+ * The template puts the text font as the display font's fallback: inside a PDF
+ * no system font exists, so a character missing from Fraunces must fall back
+ * to an **embedded** font, never to a generic one. That is what makes the
+ * coverage below true anywhere in the document.
  */
 const ARROWS_RANGE = 'U+2192';
 
@@ -60,7 +58,7 @@ const SUBSETS: readonly FontSubset[] = [
 
 const WEIGHT_RANGE = { [DISPLAY_FAMILY]: '400 900', [TEXT_FAMILY]: '400 700' } as const;
 
-/** Les `@font-face` du gabarit, polices incluses. */
+/** The template's `@font-face` rules, font bytes included. */
 export function embeddedFontFaces(directory: string = PATHS.fonts): string {
   return SUBSETS.map((subset) => {
     const data = readFileSync(join(directory, subset.file)).toString('base64');
@@ -79,11 +77,11 @@ export function embeddedFontFaces(directory: string = PATHS.fonts): string {
 }
 
 /**
- * L'ensemble des points de code couverts par les polices embarquées.
+ * The set of code points the embedded fonts cover.
  *
- * Il existe pour une seule raison : un caractère non couvert se rend en carré
- * vide dans le PDF, et un CV avec un carré vide est un CV grillé. La garde
- * (`assertCharactersAreCovered`) le transforme en échec de build.
+ * It exists for one reason: an uncovered character renders as an empty box in
+ * the PDF, and a résumé with an empty box in it is a résumé thrown away. The
+ * guard (`assertCharactersAreCovered`) turns that into a build failure.
  */
 export function coveredCodePoints(): ReadonlySet<number> {
   const covered = new Set<number>();
@@ -96,13 +94,13 @@ export function coveredCodePoints(): ReadonlySet<number> {
   return covered;
 }
 
-/** Les points de code hexadécimaux d'une plage `unicode-range`. */
+/** The hexadecimal code points of a `unicode-range`. */
 const HEX_RADIX = 16;
 
-/** Le premier caractère imprimable : en dessous, rien ne se dessine. */
+/** The first printable character: below it, nothing is drawn. */
 const FIRST_PRINTABLE_CODE_POINT = 0x20;
 
-/** « U+00E9 » : quatre chiffres, comme l'écrit la spécification. */
+/** "U+00E9": four digits, the way the spec writes them. */
 const CODE_POINT_DIGITS = 4;
 
 function parseUnicodeRange(token: string): [number, number] {
@@ -110,17 +108,17 @@ function parseUnicodeRange(token: string): [number, number] {
   const [from, to] = body.split('-');
   const start = Number.parseInt(from ?? '', HEX_RADIX);
   if (Number.isNaN(start)) {
-    throw new Error(`Plage Unicode illisible : ${JSON.stringify(token)}`);
+    throw new Error(`Unreadable Unicode range: ${JSON.stringify(token)}`);
   }
   const end = to === undefined ? start : Number.parseInt(to, HEX_RADIX);
   return [start, end];
 }
 
 /**
- * Refuse le rendu si un caractère du CV sort de la couverture des polices.
+ * Refuses to render if a character in the résumé falls outside the fonts'
+ * coverage.
  *
- * Les retours à la ligne et les espaces d'agencement sont ignorés : ils ne se
- * dessinent pas.
+ * Line breaks and layout whitespace are ignored: they are not drawn.
  */
 export function assertCharactersAreCovered(text: string): void {
   const covered = coveredCodePoints();
@@ -138,8 +136,8 @@ export function assertCharactersAreCovered(text: string): void {
       )
       .join(', ');
     throw new Error(
-      `Le CV emploie des caractères que les polices embarquées ne couvrent pas : ${listed}. ` +
-        `Ils se rendraient en carré vide dans le PDF.`,
+      `The résumé uses characters the embedded fonts do not cover: ${listed}. ` +
+        `They would render as an empty box in the PDF.`,
     );
   }
 }

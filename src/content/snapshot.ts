@@ -5,19 +5,19 @@ import { RESOURCE_VIEWS, RESOURCES, type ResourceId } from '../domain/resources.
 import { strongETag } from './digest.js';
 import { kebabCase, loadContent, type LoadedContent } from './loader.js';
 
-/** Le segment d'URL d'une ressource. */
+/** A resource's URL segment. */
 export function resourcePath(resource: ResourceId): string {
   return kebabCase(resource);
 }
 
 /**
- * Une représentation prête à partir : le corps sérialisé et son `ETag`.
+ * A representation ready to go out: the serialised body and its `ETag`.
  *
- * Elle est calculée **au démarrage**, pas à la requête. Le contenu est
- * immuable pour la vie du processus : re-sérialiser et re-condenser à chaque
- * appel serait un travail refait à l'identique, et surtout un `ETag` qu'on ne
- * pourrait plus comparer avant d'avoir produit le corps — donc un `304` qui
- * coûterait le prix d'un `200`.
+ * It is computed **at startup**, not per request. The content is immutable for
+ * the lifetime of the process: re-serialising and re-hashing on every call
+ * would be identical work redone, and above all an `ETag` that could no longer
+ * be compared before producing the body — so a `304` that costs the price of a
+ * `200`.
  */
 export interface Representation {
   readonly body: string;
@@ -30,7 +30,7 @@ export interface ContentSnapshot {
   representation(resource: ResourceId, locale: Locale): Representation;
 }
 
-/** Charge le contenu et pré-calcule toutes les représentations servies. */
+/** Loads the content and precomputes every representation served. */
 export function buildSnapshot(loaded: LoadedContent = loadContent()): ContentSnapshot {
   const representations = new Map<string, Representation>();
 
@@ -50,9 +50,9 @@ export function buildSnapshot(loaded: LoadedContent = loadContent()): ContentSna
     portfolio: loaded.portfolio,
     representation(resource, locale) {
       const found = representations.get(keyOf(resource, locale));
-      /* v8 ignore next 3 -- les clés viennent des mêmes listes que le remplissage. */
+      /* v8 ignore next 3 -- the keys come from the same lists that filled the map. */
       if (found === undefined) {
-        throw new Error(`Représentation absente : ${resource} / ${locale}`);
+        throw new Error(`Missing representation: ${resource} / ${locale}`);
       }
       return found;
     },

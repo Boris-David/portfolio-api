@@ -6,9 +6,9 @@ coverage/
 .env
 .env.*
 
-# Les CV rendus sont des ARTEFACTS de build, pas de la source.
-# Les versionner ferait entrer un binaire dans l'historique à chaque virgule
-# corrigée, et créerait une seconde source de vérité pour un fichier que le
-# build sait reproduire. Ils sont produits par `npm run build:cv`, et publiés
-# avec le Worker comme assets statiques.
+# The rendered résumés are build ARTEFACTS, not source.
+# Versioning them would pull a binary into the history for every comma fixed,
+# and would create a second source of truth for a file the build knows how to
+# reproduce. They are produced by `npm run build:cv`, and published alongside
+# the Worker as static assets.
 public/cv/

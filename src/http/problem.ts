@@ -2,12 +2,12 @@ import type { Context } from 'hono';
 import { z } from 'zod';
 
 /**
- * Les erreurs, au format RFC 9457 (`application/problem+json`).
+ * Errors, in RFC 9457 format (`application/problem+json`).
  *
- * Un format d'erreur maison obligerait chaque client à apprendre le nôtre ;
- * celui-ci est standard, typé, et documenté dans le contrat OpenAPI comme
- * n'importe quelle autre réponse. `type` est une URI stable : c'est elle que
- * le client teste, jamais le texte de `title`, qui peut être reformulé.
+ * A home-grown error format would force every client to learn ours; this one
+ * is standard, typed, and documented in the OpenAPI contract like any other
+ * response. `type` is a stable URI: that is what a client tests against, never
+ * the text of `title`, which may be reworded.
  */
 export const PROBLEM_CONTENT_TYPE = 'application/problem+json; charset=utf-8';
 

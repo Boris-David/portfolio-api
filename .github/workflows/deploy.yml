@@ -1,72 +1,72 @@
-name: Déploiement Cloudflare Workers
+name: Cloudflare Workers deployment
 
-# Branché. Toute CI verte sur `main` publie l'API — et, avec elle, le CV rendu.
+# Wired up. Any green CI on `main` publishes the API — and, with it, the
+# rendered résumé.
 #
-# La configuration ci-dessous est posée sur le dépôt et n'est à relire que pour
-# la reproduire ailleurs, ou si une rotation de jeton casse le déploiement.
+# The setup below is already in place on the repo and only needs re-reading to
+# reproduce it elsewhere, or if a token rotation breaks the deployment.
 #
 # ─────────────────────────────────────────────────────────────────────────────
-# CE QU'IL FAUT CRÉER, UNE FOIS
+# WHAT HAS TO BE CREATED, ONCE
 # ─────────────────────────────────────────────────────────────────────────────
 #
-# 1. Un compte Cloudflare, et y activer Workers.
-#    Plan gratuit : 100 000 requêtes/jour, assets statiques gratuits et
-#    illimités, aucune bande passante facturée. **Aucune carte bancaire.**
+# 1. A Cloudflare account, with Workers enabled on it.
+#    Free plan: 100,000 requests/day, static assets free and unlimited, no
+#    bandwidth billed. **No credit card.**
 #
-# 2. Un jeton d'API — tableau de bord → My Profile → API Tokens →
-#    Create Token → Edit Cloudflare Workers, puis restreindre à :
+# 2. An API token — dashboard → My Profile → API Tokens →
+#    Create Token → Edit Cloudflare Workers, then narrowed down to:
 #
 #      Account · Workers Scripts        : Edit
 #      Account · Account Settings       : Read
 #      Zone    · Workers Routes         : Edit   (zone amissan.dev)
 #      Zone    · Zone                   : Read   (zone amissan.dev)
 #
-#    Les deux portées de zone ne servent qu'au domaine personnalisé ; sans
-#    elles, le déploiement réussit mais `api.amissan.dev` n'est pas créé.
+#    The two zone scopes only serve the custom domain; without them the
+#    deployment succeeds but `api.amissan.dev` is not created.
 #
-# 3. Dans ce dépôt — Settings → Secrets and variables → Actions :
+# 3. In this repo — Settings → Secrets and variables → Actions:
 #
-#      Secret    CLOUDFLARE_API_TOKEN    le jeton ci-dessus
-#      Variable  CLOUDFLARE_ACCOUNT_ID   l'identifiant de compte (Workers → Overview)
+#      Secret    CLOUDFLARE_API_TOKEN    the token above
+#      Variable  CLOUDFLARE_ACCOUNT_ID   the account id (Workers → Overview)
 #
-#    Rien d'autre. Le nom du Worker, les assets et le domaine sont déclarés
-#    dans `wrangler.jsonc`, versionné.
+#    Nothing else. The Worker name, the assets and the domain are declared in
+#    `wrangler.jsonc`, which is versioned.
 #
-# 4. Le domaine `api.amissan.dev` : **rien à cliquer**. `amissan.dev` est
-#    enregistré chez Cloudflare Registrar, donc la zone est déjà sur le compte,
-#    et `wrangler deploy` crée l'enregistrement DNS et le domaine personnalisé
-#    à partir de `routes` dans `wrangler.jsonc`.
+# 4. The `api.amissan.dev` domain: **nothing to click**. `amissan.dev` is
+#    registered with Cloudflare Registrar, so the zone is already on the
+#    account, and `wrangler deploy` creates the DNS record and the custom
+#    domain from `routes` in `wrangler.jsonc`.
 #
-#    À faire à la main uniquement si on préfère : Workers & Pages →
+#    To be done by hand only if preferred: Workers & Pages →
 #    portfolio-api → Settings → Domains & Routes → Add → Custom Domain →
-#    « api.amissan.dev ».
+#    "api.amissan.dev".
 #
-# Aucune clé privée, aucun fichier de service : le jeton est le seul secret, et
-# il vit dans les secrets du dépôt — jamais dans le dépôt, qui est public.
+# No private key, no service file: the token is the only secret, and it lives
+# in the repo's secrets — never in the repo, which is public.
 
 on:
-  # Le déploiement suit la CI, il ne court pas à côté d'elle. `workflow_run` se
-  # déclenche à la **fin** de la CI : rien ne part en ligne sans que la suite de
-  # tests soit passée sur le commit exact qu'on publie.
+  # Deployment follows CI, it does not race alongside it. `workflow_run` fires
+  # at the **end** of CI: nothing goes live without the test suite having
+  # passed on the exact commit being published.
   #
-  # Les deux autres montages ont été écartés :
+  # The two other wirings were ruled out:
   #
-  #   `on: push` — partirait **en parallèle** de la CI. Le déploiement gagnerait
-  #   la course une fois sur deux et publierait un commit dont les tests
-  #   échouent ensuite. Une garde qui s'exécute après la publication ne garde
-  #   rien.
+  #   `on: push` — would start **in parallel** with CI. The deployment would
+  #   win the race one time in two and publish a commit whose tests then fail.
+  #   A guard that runs after publication guards nothing.
   #
-  #   un job `deployer` dans `ci.yml` avec `needs:` — ferait entrer le jeton
-  #   Cloudflare dans le workflow qui s'exécute sur **chaque pull request**.
-  #   Une CI qui n'a besoin d'aucun secret ne peut en fuiter aucun ; c'est une
-  #   propriété vérifiable, elle vaut plus que l'économie d'un fichier.
+  #   a `deploy` job inside `ci.yml` with `needs:` — would bring the Cloudflare
+  #   token into the workflow that runs on **every pull request**. A CI that
+  #   needs no secret can leak none; that is a checkable property, and it is
+  #   worth more than saving a file.
   workflow_run:
     workflows: [CI]
     types: [completed]
     branches: [main]
 
-  # Reste déclenchable à la main : republier sans nouveau commit — rotation de
-  # jeton, ou re-rendu du CV après un changement d'environnement de build.
+  # Stays triggerable by hand: republishing without a new commit — a token
+  # rotation, or re-rendering the résumé after a build environment change.
   workflow_dispatch:
 
 concurrency:
@@ -80,43 +80,43 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  deployer:
-    name: Rendre le CV, puis publier
+  deploy:
+    name: Render the résumé, then publish
     runs-on: ubuntu-latest
-    # `workflow_run` se déclenche que la CI ait **réussi ou échoué** — `on:` n'a
-    # pas de filtre sur la conclusion, il s'écrit ici.
+    # `workflow_run` fires whether CI **succeeded or failed** — `on:` has no
+    # filter on the conclusion, so it is written here.
     #
-    # Le `event == 'push'` n'est pas de la ceinture-bretelles : `branches:
-    # [main]` filtre sur la branche *source*. Une pull request venue d'un fork
-    # dont la branche s'appelle `main` la satisferait — et déploierait le code
-    # du fork. Seul un push sur notre `main` déclenche une publication.
+    # The `event == 'push'` is not belt and braces: `branches: [main]` filters
+    # on the *source* branch. A pull request from a fork whose branch is called
+    # `main` would satisfy it — and would deploy the fork's code. Only a push
+    # to our own `main` triggers a publication.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'push')
     steps:
-      # Ce contrôle passait l'étape en silence quand le jeton manquait, parce
-      # qu'aucun jeton n'existait encore. Il échoue depuis que le déploiement
-      # est automatique : un déploiement qui « réussit » sans rien publier
-      # laisse croire qu'un correctif mergé est en ligne.
-      - name: Vérifier que la configuration existe
+      # This check used to pass the step in silence when the token was missing,
+      # because no token existed yet. It fails now that deployment is
+      # automatic: a deployment that "succeeds" without publishing anything
+      # makes a merged fix look live when it is not.
+      - name: Check that the configuration exists
         env:
-          JETON: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          COMPTE: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          manquants=""
-          [ -n "$JETON" ] || manquants="$manquants CLOUDFLARE_API_TOKEN (secret)"
-          [ -n "$COMPTE" ] || manquants="$manquants CLOUDFLARE_ACCOUNT_ID (variable)"
-          if [ -n "$manquants" ]; then
-            echo "::error::Déploiement non configuré, manquant :$manquants — voir l'en-tête de ce workflow."
+          missing=""
+          [ -n "$TOKEN" ] || missing="$missing CLOUDFLARE_API_TOKEN (secret)"
+          [ -n "$ACCOUNT" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID (variable)"
+          if [ -n "$missing" ]; then
+            echo "::error::Deployment not configured, missing:$missing — see the header of this workflow."
             exit 1
           fi
 
-      # `workflow_run` exécute le fichier de workflow de la branche par défaut,
-      # mais ne positionne pas le dépôt pour autant : sans `ref`, on publierait
-      # la tête de `main` au moment du déploiement, pas le commit que la CI a
-      # validé. Deux merges rapprochés suffisent à les rendre différents — et
-      # ici l'écart porterait aussi sur le contenu du CV rendu.
+      # `workflow_run` runs the workflow file from the default branch, but does
+      # not position the repo for you: without `ref`, we would publish the head
+      # of `main` as of deployment time, not the commit CI validated. Two
+      # merges close together are enough to make them differ — and here the gap
+      # would cover the rendered résumé's content too.
       - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
@@ -126,91 +126,91 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Installer les dépendances
+      - name: Install dependencies
         run: npm ci
 
-      # Le rendu du CV vit ici, et nulle part ailleurs : Chromium ne tourne pas
-      # sur Workers, et l'ADR 0004 veut que le rendu soit déclenché par le
-      # changement de contenu — donc par ce build, jamais par une requête.
-      - name: Installer Chromium
+      # Résumé rendering lives here and nowhere else: Chromium does not run on
+      # Workers, and ADR 0004 wants rendering triggered by a content change —
+      # so by this build, never by a request.
+      - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Rendre les CV
+      - name: Render the résumés
         run: npm run build:cv
 
-      # Garde de cohérence avant publication : le manifeste doit avoir été
-      # scellé pour le contenu que le Worker embarque. Le smoke test refuse de
-      # démarrer sur un « degraded », donc il attrape la divergence ici plutôt
-      # qu'en production.
-      - name: Exercer le Worker sur workerd
+      # Consistency guard before publishing: the manifest must have been sealed
+      # for the content the Worker bundles. The smoke test refuses to start on
+      # a "degraded", so it catches the divergence here rather than in
+      # production.
+      - name: Exercise the Worker on workerd
         run: npm run smoke
 
-      - name: Publier le Worker et ses assets
+      - name: Publish the Worker and its assets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run deploy
 
       # ─────────────────────────────────────────────────────────────────────
-      # Propager au site — le chemin rapide (ADR 0007)
+      # Propagate to the website — the fast path (ADR 0007)
       # ─────────────────────────────────────────────────────────────────────
       #
-      # `portfolio-web` est un export statique : il ne « rafraîchit » pas son
-      # contenu, il se **reconstruit**. Sans ce signal, une modification
-      # publiée ici resterait invisible sur le site jusqu'à ce que son témoin
-      # de fraîcheur la rattrape — trois heures au pire.
+      # `portfolio-web` is a static export: it does not "refresh" its content,
+      # it **rebuilds**. Without this signal, a change published here would
+      # stay invisible on the site until its freshness check caught up — three
+      # hours at worst.
       #
-      # Le jeton est un PAT à portée fine, limité au seul dépôt
-      # `portfolio-web`, permission « Contents: read and write ». Il vit dans
-      # les secrets de CE dépôt et n'a aucun droit ailleurs.
+      # The token is a fine-grained PAT limited to the `portfolio-web` repo
+      # alone, permission "Contents: read and write". It lives in THIS repo's
+      # secrets and has no rights anywhere else.
       #
-      # Son absence **n'échoue pas** — et c'est le seul repli gracieux que ce
-      # workflow s'autorise, parce qu'il est réellement couvert : le témoin de
-      # fraîcheur du site détecte et répare la propagation manquée tout seul.
-      # Ce qui est perdu sans jeton, c'est la vitesse, jamais la justesse.
-      - name: Vérifier l'empreinte du contenu publié
-        id: contenu
+      # Its absence **does not fail** the run — and that is the only graceful
+      # fallback this workflow allows itself, because it is genuinely covered:
+      # the site's freshness check detects and repairs a missed propagation on
+      # its own. What is lost without the token is speed, never correctness.
+      - name: Check the digest of the published content
+        id: content
         run: |
           set -euo pipefail
-          for essai in 1 2 3 4 5; do
+          for attempt in 1 2 3 4 5; do
             version="$(curl -fsS "https://api.amissan.dev/v1/portfolio?lang=fr" \
               | python3 -c 'import json,sys; print(json.load(sys.stdin)["meta"]["contentVersion"])' || true)"
             [ -n "${version:-}" ] && break
             sleep 5
           done
           if [ -z "${version:-}" ]; then
-            echo "::error::L'API ne répond pas après publication — déploiement incomplet."
+            echo "::error::The API is not answering after publication — incomplete deployment."
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Contenu en ligne : $version"
+          echo "Content live: $version"
 
-      - name: Demander au site de se reconstruire
+      - name: Ask the website to rebuild
         env:
-          JETON: ${{ secrets.PORTFOLIO_WEB_DISPATCH_TOKEN }}
-          VERSION: ${{ steps.contenu.outputs.version }}
+          TOKEN: ${{ secrets.PORTFOLIO_WEB_DISPATCH_TOKEN }}
+          VERSION: ${{ steps.content.outputs.version }}
         run: |
           set -euo pipefail
-          if [ -z "$JETON" ]; then
-            echo "::warning::PORTFOLIO_WEB_DISPATCH_TOKEN absent — le site se mettra à jour par son témoin de fraîcheur (3 h au pire). Voir l'en-tête de ce workflow."
+          if [ -z "$TOKEN" ]; then
+            echo "::warning::PORTFOLIO_WEB_DISPATCH_TOKEN missing — the site will update through its freshness check (3 h at worst). See the header of this workflow."
             exit 0
           fi
 
           code="$(curl -sS -o /tmp/dispatch.txt -w '%{http_code}' \
             -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $JETON" \
+            -H "Authorization: Bearer $TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/Boris-David/portfolio-web/dispatches \
             -d "{\"event_type\":\"contenu-mis-a-jour\",\"client_payload\":{\"contentVersion\":\"$VERSION\"}}")"
 
-          # 204 est la seule réponse correcte. Un 404 signifie presque toujours
-          # un jeton sans la permission « Contents: write » sur le dépôt visé —
-          # GitHub ne distingue pas « absent » de « pas le droit de le voir ».
+          # 204 is the only correct answer. A 404 almost always means a token
+          # without the "Contents: write" permission on the target repo —
+          # GitHub does not distinguish "missing" from "not allowed to see it".
           if [ "$code" != "204" ]; then
-            echo "::error::Le site n'a pas pu être prévenu (HTTP $code)."
-            [ "$code" = "404" ] && echo "404 : dépôt introuvable OU jeton sans la permission « Contents: write » sur portfolio-web."
+            echo "::error::The website could not be notified (HTTP $code)."
+            [ "$code" = "404" ] && echo "404: repo not found OR token without the \"Contents: write\" permission on portfolio-web."
             cat /tmp/dispatch.txt
             exit 1
           fi
-          echo "Site prévenu — reconstruction sur le contenu $VERSION."
+          echo "Website notified — rebuilding on content $VERSION."

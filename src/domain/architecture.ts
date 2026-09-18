@@ -38,8 +38,8 @@ export const ArchitecturePatternSchema = z
 export type ArchitecturePattern = z.infer<typeof ArchitecturePatternSchema>;
 
 /**
- * A counted symbol suffix in a codebase — « 325 types whose name ends in
- * ViewModel ».
+ * A counted symbol suffix in a codebase — "325 types whose name ends in
+ * ViewModel".
  *
  * It is structured data rather than a number written inside a sentence, and
  * that is the whole point: a figure buried in prose cannot be checked, while

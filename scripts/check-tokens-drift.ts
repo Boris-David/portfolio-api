@@ -1,15 +1,15 @@
 /**
- * Vérifie que l'instantané des tokens de design n'a pas dérivé de l'original.
+ * Checks that the design token snapshot has not drifted from the original.
  *
- * Les tokens appartiennent au dépôt hub (ADR 0001), mais ce dépôt doit se
- * cloner et se construire seul : il en porte donc une copie. Une copie sans
- * garde devient une seconde source de vérité — c'est exactement ce que l'ADR
- * 0002 dit de l'instantané embarqué côté iOS, et le remède est le même : la CI
- * compare, et échoue si ça diverge.
+ * The tokens belong to the hub repo (ADR 0001), but this repo has to clone and
+ * build on its own: so it carries a copy. A copy with no guard becomes a
+ * second source of truth — which is exactly what ADR 0002 says about the
+ * snapshot embedded on the iOS side, and the remedy is the same: CI compares,
+ * and fails when the two diverge.
  *
- * La comparaison se fait contre le dépôt hub voisin quand il est présent
- * (développement local, éventuellement hors ligne), sinon contre `main` sur
- * GitHub (CI).
+ * The comparison runs against the neighbouring hub repo when it is there
+ * (local development, possibly offline), and against `main` on GitHub
+ * otherwise (CI).
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { DESIGN_TOKENS_SOURCE, PATHS } from '../src/node/paths.js';
@@ -19,12 +19,12 @@ const local = readFileSync(PATHS.designTokens, 'utf8');
 const { reference, origin } = await readReference();
 
 if (normalise(local) === normalise(reference)) {
-  console.log(`[tokens] instantané conforme à ${origin}`);
+  console.log(`[tokens] snapshot matches ${origin}`);
 } else {
   console.error(
-    `[tokens] ${PATHS.designTokens} a dérivé de ${origin}.\n` +
-      `         Les tokens appartiennent au hub : recopier l'original, ` +
-      `ne pas modifier l'instantané.`,
+    `[tokens] ${PATHS.designTokens} has drifted from ${origin}.\n` +
+      `         The tokens belong to the hub: copy the original over, ` +
+      `do not edit the snapshot.`,
   );
   process.exit(1);
 }
@@ -39,13 +39,13 @@ async function readReference(): Promise<{ reference: string; origin: string }> {
   const response = await fetch(DESIGN_TOKENS_SOURCE.rawUrl);
   if (!response.ok) {
     throw new Error(
-      `Tokens du hub inaccessibles (${String(response.status)}) : ${DESIGN_TOKENS_SOURCE.rawUrl}`,
+      `Hub tokens unreachable (${String(response.status)}): ${DESIGN_TOKENS_SOURCE.rawUrl}`,
     );
   }
   return { reference: await response.text(), origin: DESIGN_TOKENS_SOURCE.rawUrl };
 }
 
-/** Compare le contenu, pas la mise en forme : un JSON reformaté n'a pas dérivé. */
+/** Compares content, not formatting: reformatted JSON has not drifted. */
 function normalise(raw: string): string {
   return JSON.stringify(JSON.parse(raw));
 }

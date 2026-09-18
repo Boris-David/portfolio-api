@@ -4,11 +4,11 @@ import { readCvCatalogue, type CvCatalogue, type CvDescription } from './manifes
 import type { CvBody, CvLookup, CvStore } from './store.js';
 
 /**
- * Le magasin d'assets statiques, vu comme une dépendance.
+ * The static asset store, seen as a dependency.
  *
- * Interface minimale plutôt que le type `Fetcher` de Cloudflare : elle décrit
- * exactement ce dont on se sert, et un test peut la satisfaire avec un objet
- * littéral — sans monter de Worker.
+ * A minimal interface rather than Cloudflare's `Fetcher` type: it describes
+ * exactly what we use, and a test can satisfy it with an object literal — with
+ * no Worker to spin up.
  */
 export interface AssetFetcher {
   fetch(request: Request): Promise<Response>;
@@ -17,16 +17,16 @@ export interface AssetFetcher {
 const NOT_FOUND = 404;
 
 /**
- * Le magasin de CV adossé aux **Workers Static Assets**.
+ * The résumé store backed by the **Workers Static Assets**.
  *
- * Les PDF ne peuvent pas vivre dans le script — le plan gratuit le plafonne à
- * 1 Mo compressé, et chaque CV pèse ~330 Ko. Ils sont donc publiés à côté du
- * Worker, qui les relaie.
+ * The PDFs cannot live in the script — the free plan caps it at 1 MB
+ * compressed, and each résumé weighs ~330 KB. So they are published alongside
+ * the Worker, which relays them.
  *
- * Le manifeste est lu **une fois par isolat** : les assets sont immuables pour
- * la durée d'un déploiement, donc le relire à chaque requête referait le même
- * travail pour le même résultat. Un catalogue indisponible est mémorisé lui
- * aussi — il le restera jusqu'au prochain déploiement, par construction.
+ * The manifest is read **once per isolate**: assets are immutable for the
+ * lifetime of a deployment, so re-reading it on every request would redo the
+ * same work for the same result. An unavailable catalogue is memoised too — it
+ * will stay unavailable until the next deployment, by construction.
  */
 export function createAssetsCvStore(
   assets: AssetFetcher,

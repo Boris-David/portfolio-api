@@ -1,14 +1,14 @@
 /**
- * Exerce le Worker **sur son vrai runtime**, avant de le déclarer bon.
+ * Exercises the Worker **on its real runtime**, before calling it good.
  *
- * Les tests unitaires tournent sur Node : ils ne voient ni le bundle, ni les
- * bindings, ni les drapeaux de compatibilité, ni le fait qu'un Worker n'a pas
- * de système de fichiers. Une importation de `node:fs` enfouie dans une
- * dépendance passe le build sans un mot et n'échoue qu'en production.
+ * The unit tests run on Node: they see neither the bundle, nor the bindings,
+ * nor the compatibility flags, nor the fact that a Worker has no file system.
+ * A `node:fs` import buried in a dependency passes the build without a word
+ * and only fails in production.
  *
- * Ce script monte `wrangler dev` — workerd, localement, sans aucun compte — et
- * tape les routes qui comptent. C'est la seule vérification qui prouve que ce
- * qui est déployé fonctionne.
+ * This script brings up `wrangler dev` — workerd, locally, with no account at
+ * all — and hits the routes that matter. It is the only check that proves what
+ * gets deployed works.
  */
 import { spawn } from 'node:child_process';
 import { cvPath } from '../src/http/app.js';
@@ -30,81 +30,81 @@ function expect(condition: boolean, message: string): void {
 
 const checks: readonly Check[] = [
   {
-    name: 'le contenu est servi, et porte sa version',
+    name: 'content is served, and carries its version',
     run: async () => {
       const response = await fetch(`${BASE}/v1/portfolio`);
-      expect(response.status === 200, `attendu 200, reçu ${String(response.status)}`);
+      expect(response.status === 200, `expected 200, got ${String(response.status)}`);
       const body = (await response.json()) as { meta: { contentVersion: string } };
-      expect(body.meta.contentVersion.length > 0, 'version de contenu absente');
+      expect(body.meta.contentVersion.length > 0, 'content version missing');
     },
   },
   {
-    name: 'la langue se négocie',
+    name: 'the language is negotiated',
     run: async () => {
       const response = await fetch(`${BASE}/v1/profile?lang=en`);
       const body = (await response.json()) as { data: { headline: string } };
-      expect(body.data.headline === 'Senior iOS Engineer', `accroche inattendue`);
-      expect(response.headers.get('content-language') === 'en', 'Content-Language absent ou faux');
+      expect(body.data.headline === 'Senior iOS Engineer', `unexpected headline`);
+      expect(
+        response.headers.get('content-language') === 'en',
+        'Content-Language missing or wrong',
+      );
     },
   },
   {
-    name: 'le contenu se revalide en 304',
+    name: 'content revalidates to a 304',
     run: async () => {
       const first = await fetch(`${BASE}/v1/apps`);
       const etag = first.headers.get('etag') ?? '';
-      expect(etag.length > 0, 'ETag absent');
+      expect(etag.length > 0, 'ETag missing');
       const second = await fetch(`${BASE}/v1/apps`, { headers: { 'If-None-Match': etag } });
-      expect(second.status === 304, `attendu 304, reçu ${String(second.status)}`);
+      expect(second.status === 304, `expected 304, got ${String(second.status)}`);
     },
   },
   {
-    name: 'le CV est relayé depuis le magasin d’assets',
+    name: 'the résumé is relayed from the asset store',
     run: async () => {
       const response = await fetch(`${BASE}${cvPath('fr')}`);
-      expect(response.status === 200, `attendu 200, reçu ${String(response.status)}`);
-      expect(
-        response.headers.get('content-type') === 'application/pdf',
-        'type de contenu inattendu',
-      );
+      expect(response.status === 200, `expected 200, got ${String(response.status)}`);
+      expect(response.headers.get('content-type') === 'application/pdf', 'unexpected content type');
       const bytes = await response.arrayBuffer();
-      expect(bytes.byteLength > 50_000, `PDF trop petit : ${String(bytes.byteLength)} octets`);
+      expect(bytes.byteLength > 50_000, `PDF too small: ${String(bytes.byteLength)} bytes`);
     },
   },
   {
-    name: 'le CV se revalide sans retélécharger',
+    name: 'the résumé revalidates without re-downloading',
     run: async () => {
       const first = await fetch(`${BASE}${cvPath('en')}`);
       const etag = first.headers.get('etag') ?? '';
       const second = await fetch(`${BASE}${cvPath('en')}`, { headers: { 'If-None-Match': etag } });
-      expect(second.status === 304, `attendu 304, reçu ${String(second.status)}`);
+      expect(second.status === 304, `expected 304, got ${String(second.status)}`);
     },
   },
   {
-    name: "le chemin brut de l'asset n'est pas une seconde URL du CV",
+    name: 'the raw asset path is not a second URL for the résumé',
     run: async () => {
       const response = await fetch(`${BASE}/cv/manifest.json`);
-      expect(response.status === 404, `attendu 404, reçu ${String(response.status)}`);
+      expect(response.status === 404, `expected 404, got ${String(response.status)}`);
     },
   },
   {
-    name: "l'ancien chemin du CV redirige au lieu de tomber",
+    name: 'the old résumé path redirects instead of dying',
     run: async () => {
       const response = await fetch(`${BASE}/v1/cv/fr.pdf`, { redirect: 'manual' });
-      expect(response.status === 301, `attendu 301, reçu ${String(response.status)}`);
+      expect(response.status === 301, `expected 301, got ${String(response.status)}`);
     },
   },
   {
-    name: 'une langue inconnue est refusée',
+    name: 'an unknown language is refused',
     run: async () => {
       const response = await fetch(`${BASE}/v1/profile?lang=de`);
-      expect(response.status === 400, `attendu 400, reçu ${String(response.status)}`);
+      expect(response.status === 400, `expected 400, got ${String(response.status)}`);
     },
   },
   {
-    name: 'le contrat est servi par le Worker lui-même',
+    name: 'the contract is served by the Worker itself',
     run: async () => {
       const response = await fetch(`${BASE}/v1/openapi.json`);
-      expect(response.status === 200, `attendu 200, reçu ${String(response.status)}`);
+      expect(response.status === 200, `expected 200, got ${String(response.status)}`);
     },
   },
 ];
@@ -116,18 +116,18 @@ async function waitUntilReady(deadline: number): Promise<void> {
       if (response.ok) {
         const health = (await response.json()) as { status: string; cv: { reason: string | null } };
         if (health.status !== 'ok') {
-          throw new Error(`Worker démarré mais dégradé : ${health.cv.reason ?? 'sans raison'}`);
+          throw new Error(`Worker started but degraded: ${health.cv.reason ?? 'no reason given'}`);
         }
         return;
       }
     } catch (error) {
       if (Date.now() > deadline) {
-        throw new Error(`Worker injoignable après démarrage : ${String(error)}`, {
+        throw new Error(`Worker unreachable after startup: ${String(error)}`, {
           cause: error,
         });
       }
     }
-    if (Date.now() > deadline) throw new Error('Worker non démarré dans le délai imparti.');
+    if (Date.now() > deadline) throw new Error('Worker did not start within the allotted time.');
     await sleep(POLL_INTERVAL_MS);
   }
 }
@@ -154,14 +154,14 @@ try {
   }
 } catch (error) {
   failures += 1;
-  console.error(`[smoke] ✗ démarrage\n         ${String(error)}\n${output}`);
+  console.error(`[smoke] ✗ startup\n         ${String(error)}\n${output}`);
 } finally {
   worker.kill('SIGTERM');
 }
 
 if (failures > 0) {
-  console.error(`[smoke] ${String(failures)} vérification(s) en échec sur workerd.`);
+  console.error(`[smoke] ${String(failures)} check(s) failed on workerd.`);
   process.exit(1);
 }
-console.log(`[smoke] ${String(checks.length)} vérifications passées sur workerd.`);
+console.log(`[smoke] ${String(checks.length)} checks passed on workerd.`);
 process.exit(0);

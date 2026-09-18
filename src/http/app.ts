@@ -21,11 +21,11 @@ const OK = 200;
 const NOT_MODIFIED = 304;
 
 /**
- * Résout le magasin de CV pour la requête courante.
+ * Resolves the résumé store for the current request.
  *
- * C'est une fonction et non une valeur parce que, sur Workers, le magasin
- * d'assets n'est accessible que par `c.env` — il n'existe pas au moment où
- * l'application est assemblée. Un test, lui, renvoie simplement un double.
+ * It is a function and not a value because, on Workers, the asset store is
+ * only reachable through `c.env` — it does not exist at the moment the app is
+ * assembled. A test simply returns a double.
  */
 export type CvStoreResolver = (context: Context) => CvStore;
 
@@ -35,19 +35,19 @@ export interface AppDependencies {
 }
 
 /**
- * L'assemblage HTTP.
+ * The HTTP assembly.
  *
- * Les dépendances sont injectées : le serveur les construit depuis le disque,
- * un test en fabrique d'autres. Rien ici ne lit un fichier, donc rien ici
- * n'exige un environnement particulier pour être testé.
+ * Dependencies are injected: the server builds them from disk, a test makes
+ * up its own. Nothing here reads a file, so nothing here needs a particular
+ * environment to be tested.
  *
- * Les routes sont **déclarées** dans le registre OpenAPI et **servies** par des
- * handlers ordinaires. Les corps sont pré-sérialisés au démarrage : les
- * réifier en objets pour les re-sérialiser à chaque requête annulerait le
- * bénéfice, et surtout empêcherait de comparer l'`ETag` *avant* de produire la
- * réponse. La conformité au contrat n'est pas perdue pour autant — elle est
- * vérifiée sur les octets réellement servis (`tests/contract.test.ts`), ce qui
- * est plus fort qu'un contrôle de type.
+ * Routes are **declared** in the OpenAPI registry and **served** by ordinary
+ * handlers. Bodies are pre-serialised at startup: turning them back into
+ * objects only to re-serialise them on every request would cancel the benefit,
+ * and above all would make it impossible to compare the `ETag` *before*
+ * producing the response. Contract conformance is not lost for it — it is
+ * checked against the bytes actually served (`tests/contract.test.ts`), which
+ * is stronger than a type check.
  */
 export function createApp(dependencies: AppDependencies): OpenAPIHono {
   const app = new OpenAPIHono();
@@ -120,18 +120,18 @@ const RESPONSE_HEADERS = {
 } as const;
 
 /**
- * Le chemin public du CV dans une langue donnée.
+ * The public path of the résumé in a given language.
  *
- * Le dernier segment est **le nom du fichier**, et c'est tout l'objet de cette
- * forme : sur iOS, Safari ignore `Content-Disposition` pour la feuille de
- * partage et reprend le dernier segment de l'URL. Un chemin en
- * `/v1/cv/fr.pdf` faisait donc apparaître « fr » au partage.
+ * The last segment is **the file name**, and that is the whole point of this
+ * shape: on iOS, Safari ignores `Content-Disposition` for the share sheet and
+ * picks up the last segment of the URL. A path like `/v1/cv/fr.pdf` therefore
+ * showed up as "fr" when shared.
  */
 export function cvPath(locale: Locale): string {
   return `${BASE_PATH}/cv/${cvFileName(locale)}`;
 }
 
-/** L'ancien chemin, conservé en redirection : des liens circulent déjà. */
+/** The old path, kept as a redirect: links to it are already out there. */
 function legacyCvPath(locale: Locale): string {
   return `${BASE_PATH}/cv/${locale}.pdf`;
 }
@@ -177,8 +177,8 @@ function registerCvRoutes(app: OpenAPIHono, resolve: CvStoreResolver): void {
       c.header('Content-Language', locale);
       c.header('Content-Disposition', `inline; filename="${description.fileName}"`);
 
-      // La revalidation répond avant d'ouvrir le PDF : télécharger 330 Ko pour
-      // dire au client qu'il les a déjà serait absurde.
+      // Revalidation answers before opening the PDF: downloading 330 KB to
+      // tell a client it already has them would be absurd.
       if (matchesETag(c.req.header('if-none-match'), description.etag)) {
         return c.body(null, NOT_MODIFIED);
       }
@@ -194,9 +194,9 @@ function registerCvRoutes(app: OpenAPIHono, resolve: CvStoreResolver): void {
       return c.body(body, OK, { 'Content-Type': PDF_CONTENT_TYPE });
     });
 
-    // L'ancien chemin reste, en redirection permanente : il a été partagé, et
-    // un lien de CV qui tombe en 404 chez un recruteur coûte plus cher que
-    // deux lignes de compatibilité.
+    // The old path stays, as a permanent redirect: it has been shared, and a
+    // résumé link that 404s in front of a recruiter costs more than two lines
+    // of compatibility.
     app.openAPIRegistry.registerPath({
       method: 'get',
       path: legacyCvPath(locale),
@@ -272,11 +272,10 @@ function localeOrProblem(c: Context): Locale | Response {
 }
 
 /**
- * Sert une représentation pré-calculée, avec sa revalidation.
+ * Serves a precomputed representation, revalidation included.
  *
- * `Vary: Accept-Language` est indispensable : sans lui, un cache partagé
- * servirait à un lecteur anglophone la réponse française mise en cache juste
- * avant.
+ * `Vary: Accept-Language` is essential: without it, a shared cache would hand
+ * an English-speaking reader the French response it cached a moment earlier.
  */
 function sendJson(c: Context, representation: Representation, locale: Locale): Response {
   c.header('ETag', representation.etag);

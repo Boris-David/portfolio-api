@@ -1,15 +1,16 @@
 import type { Locale } from '../domain/locale.js';
 
 /**
- * Les intitulés du **document** CV.
+ * The headings of the résumé **document**.
  *
- * Ils ne sont pas dans le contenu servi par l'API, et c'est délibéré : « Profil »
- * ou « Expérience » sont la charpente d'un CV, pas des faits du portfolio. Les
- * mettre dans le contenu ferait de l'API un service de traduction d'interface —
- * chaque client a la sienne, et le CV est un client comme un autre.
+ * They are not in the content the API serves, and that is deliberate:
+ * "Profil" and "Expérience" are the skeleton of a résumé, not facts about the
+ * portfolio. Putting them in the content would turn the API into a UI
+ * translation service — every client has its own UI, and the résumé is a
+ * client like any other.
  *
- * Ceux qui existent déjà dans le contenu (les intitulés de sections, les titres
- * de groupes de compétences) ne sont **pas** redéclarés ici : ils sont lus.
+ * The ones that already exist in the content (section headings, skill group
+ * titles) are **not** redeclared here: they are read from it.
  */
 export interface CvLabels {
   readonly documentKind: string;

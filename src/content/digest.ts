@@ -2,28 +2,28 @@ import { createHash } from 'node:crypto';
 import { DIGEST_LENGTH } from '../config.js';
 
 /**
- * Le condensat qui sert à la fois de version de contenu et d'`ETag`.
+ * The digest that serves as both content version and `ETag`.
  *
- * Il est calculé sur les **octets servis**, pas sur une date de build : deux
- * déploiements d'un contenu inchangé produisent le même `ETag`, donc un client
- * qui revalide reçoit `304` au lieu de retélécharger. Une version horodatée
- * casserait exactement ça.
+ * It is computed over the **bytes served**, not over a build date: two
+ * deployments of unchanged content produce the same `ETag`, so a client that
+ * revalidates gets a `304` instead of re-downloading. A timestamped version
+ * would break exactly that.
  */
 export function digest(input: string | Uint8Array): string {
   return createHash('sha256').update(input).digest('base64url').slice(0, DIGEST_LENGTH);
 }
 
-/** Un `ETag` fort, tel qu'il part sur le réseau — guillemets compris. */
+/** A strong `ETag`, exactly as it goes on the wire — quotes included. */
 export function strongETag(input: string | Uint8Array): string {
   return `"${digest(input)}"`;
 }
 
 /**
- * Vrai si l'en-tête `If-None-Match` de la requête couvre cet `ETag`.
+ * True when the request's `If-None-Match` header covers this `ETag`.
  *
- * Gère la liste séparée par des virgules, le joker `*` et le préfixe faible
- * `W/` : un client qui revalide correctement doit obtenir son `304`, quelle
- * que soit la forme qu'il emploie.
+ * Handles the comma-separated list, the `*` wildcard and the weak `W/` prefix:
+ * a client that revalidates correctly must get its `304`, whichever form it
+ * uses.
  */
 export function matchesETag(ifNoneMatch: string | undefined, etag: string): boolean {
   if (ifNoneMatch === undefined) return false;

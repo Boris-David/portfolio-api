@@ -13,11 +13,11 @@ export const LinkSchema = z
 export type Link = z.infer<typeof LinkSchema>;
 
 /**
- * L'identité et l'accroche.
+ * The identity and the headline.
  *
- * Deux formes du nom coexistent par décision éditoriale : la forme courte
- * s'affiche partout, la forme longue est réservée au pied de page et au CV.
- * Elles sont donc deux champs, pas une chaîne qu'on tronquerait.
+ * Two forms of the name coexist by editorial decision: the short form is shown
+ * everywhere, the long form is reserved for the footer and the résumé. So they
+ * are two fields, not one string to be truncated.
  */
 export const ProfileSchema = z
   .object({
@@ -32,10 +32,10 @@ export const ProfileSchema = z
     languages: prose(),
     summary: z.array(richText()).min(1),
     /**
-     * Le visuel mis en avant à côté de l'accroche, et l'étude de cas qu'il
-     * illustre. La référence se fait par `slug` et non par URL : l'adresse de
-     * l'App Store est déjà portée par l'étude de cas, et la recopier ici en
-     * ferait un second endroit à corriger.
+     * The visual featured next to the headline, and the case study it
+     * illustrates. The reference is by `slug`, not by URL: the App Store
+     * address is already carried by the case study, and copying it here would
+     * make a second place to fix.
      */
     showcase: z.object({
       media: MediaSchema,
@@ -57,12 +57,12 @@ export const ProfileSchema = z
 export type Profile = z.infer<typeof ProfileSchema>;
 
 /**
- * Un chiffre publiable et son libellé.
+ * A publishable figure and its caption.
  *
- * `value` et `unit` sont séparés parce que la mise en forme les traite
- * différemment — l'unité porte l'accent visuel. `countTo` n'est renseigné que
- * pour les valeurs réellement dénombrables : un client peut les animer, les
- * autres (« ~1 », « > 99,8 ») n'ont pas de compte à rebours qui ait un sens.
+ * `value` and `unit` are separate because presentation treats them
+ * differently — the unit carries the visual accent. `countTo` is filled in
+ * only for genuinely countable values: a client can animate those, while the
+ * others ("~1", "> 99,8") have no count-up that would mean anything.
  */
 export const MetricSchema = z
   .object({
@@ -81,9 +81,9 @@ export const SectionIdSchema = z.enum(['case-studies', 'apps', 'depth', 'backgro
 export type SectionId = z.infer<typeof SectionIdSchema>;
 
 /**
- * L'en-tête éditorial d'une section. Le numéro affiché sur la page de
- * référence (« 01 · ») n'est pas stocké : c'est le rang dans la liste, et le
- * dupliquer dans le contenu garantirait qu'un jour il ne corresponde plus.
+ * The editorial header of a section. The number shown on the reference page
+ * ("01 · ") is not stored: it is the rank in the list, and duplicating it in
+ * the content would guarantee that one day the two stop matching.
  */
 export const SectionSchema = z
   .object({

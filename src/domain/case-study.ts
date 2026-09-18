@@ -4,10 +4,10 @@ import { MediaSchema } from './media.js';
 import { label, prose, richText } from './text.js';
 
 /**
- * Les trois temps d'un récit d'ingénieur : le problème, la décision, le
- * résultat. `heading` reste une donnée parce que l'intitulé varie réellement
- * d'un cas à l'autre (« Décision » au singulier sur un chantier, « Décisions et
- * réalisations » sur un produit entier).
+ * The three beats of an engineer's story: the problem, the decision, the
+ * result. `heading` stays data because the wording genuinely varies from one
+ * case to the next ("Décision", singular, on a single piece of work;
+ * "Décisions et réalisations" on a whole product).
  */
 export const PanelKindSchema = z.enum(['problem', 'decision', 'result']);
 
@@ -24,9 +24,9 @@ export const PanelSchema = z
 export type Panel = z.infer<typeof PanelSchema>;
 
 /**
- * Un chantier d'une étude de cas. Une étude tient en un seul chapitre sans
- * titre (un produit raconté d'un bloc) ou en plusieurs chapitres titrés (cinq
- * chantiers d'un même périmètre) — la même structure porte les deux.
+ * One piece of work within a case study. A study fits either in a single
+ * untitled chapter (a product told in one go) or in several titled chapters
+ * (five pieces of work within one scope) — the same structure carries both.
  */
 export const ChapterSchema = z
   .object({

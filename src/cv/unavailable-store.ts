@@ -1,12 +1,12 @@
 import type { CvBody, CvLookup, CvStore } from './store.js';
 
 /**
- * Un magasin qui n'a rien à servir, et le dit.
+ * A store with nothing to serve, which says so.
  *
- * Il existe pour les contextes où le CV n'a aucun sens — générer le contrat
- * OpenAPI, par exemple, qui décrit la route sans avoir à la servir. Un `null`
- * ou un double silencieux laisserait croire à une disponibilité ; ici la raison
- * est portée jusqu'au client.
+ * It exists for the contexts where a résumé makes no sense — generating the
+ * OpenAPI contract, for instance, which describes the route without having to
+ * serve it. A `null` or a silent double would suggest availability; here the
+ * reason is carried all the way to the client.
  */
 export function unavailableCvStore(reason: string): CvStore {
   const lookup: CvLookup = { status: 'unavailable', reason };

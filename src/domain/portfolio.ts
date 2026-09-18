@@ -12,11 +12,11 @@ import { DeepDiveSchema } from './deep-dive.js';
 import { MetricSchema, ProfileSchema, SectionSchema } from './profile.js';
 
 /**
- * Les parties du portfolio, et le schéma de chacune.
+ * The parts of the portfolio, and the schema of each.
  *
- * Une seule table : la clé est à la fois le nom du champ dans l'agrégat, le
- * segment d'URL de la ressource, et le nom du fichier de contenu. Aucune table
- * de correspondance à tenir à jour, donc aucune à laisser dériver.
+ * One table: the key is at once the field name in the aggregate, the URL
+ * segment of the resource, and the name of the content file. No correspondence
+ * table to keep in step, so none that can drift.
  */
 export const PART_SCHEMAS = {
   profile: ProfileSchema,
@@ -37,12 +37,12 @@ export type PortfolioPart = keyof typeof PART_SCHEMAS;
 export const PORTFOLIO_PARTS = Object.keys(PART_SCHEMAS) as readonly PortfolioPart[];
 
 /**
- * L'agrégat : tout le contenu du portfolio, dans une seule locale résolue.
+ * The aggregate: the whole portfolio content, in a single resolved locale.
  *
- * C'est **la** définition. Les types TypeScript en sont inférés, le contrat
- * OpenAPI en est généré, le schéma des fichiers de contenu en est dérivé, et le
- * gabarit du CV le consomme. Rien n'est écrit deux fois, donc rien ne peut
- * diverger — c'est exactement ce que promet l'ADR 0002.
+ * This is **the** definition. The TypeScript types are inferred from it, the
+ * OpenAPI contract is generated from it, the content file schema is derived
+ * from it, and the résumé template consumes it. Nothing is written twice, so
+ * nothing can diverge — which is exactly what ADR 0002 promises.
  */
 export const PortfolioSchema = z.object(PART_SCHEMAS).meta({ id: 'Portfolio' });
 

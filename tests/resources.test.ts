@@ -8,7 +8,7 @@ import { createApp } from '../src/http/app.js';
 
 const { portfolio } = loadContent();
 const snapshot = buildSnapshot();
-const app = createApp({ snapshot, cv: () => unavailableCvStore('non requis ici') });
+const app = createApp({ snapshot, cv: () => unavailableCvStore('not needed here') });
 
 /** The three resources the iOS app reads and the website has no room for. */
 const DETAILED_RESOURCES = ['deepDives', 'architectures', 'timeline'] as const;

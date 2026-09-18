@@ -1,10 +1,10 @@
 /**
- * Écrit le contrat OpenAPI dérivé dans `contracts/openapi.json`.
+ * Writes the derived OpenAPI contract to `contracts/openapi.json`.
  *
- * Le contrat vit aussi au runtime (`/v1/openapi.json`) ; le figer dans le
- * dépôt sert la **revue** : un changement de schéma apparaît alors dans le
- * diff d'une PR, au lieu de se découvrir en production. `--check` échoue si le
- * fichier n'a pas été régénéré — c'est ce que la CI exécute.
+ * The contract also lives at runtime (`/v1/openapi.json`); freezing it in the
+ * repo serves **review**: a schema change then shows up in a PR's diff instead
+ * of being discovered in production. `--check` fails when the file has not
+ * been regenerated — that is what CI runs.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -16,7 +16,7 @@ import { openApiDocument } from '../src/http/openapi.js';
 
 const app = createApp({
   snapshot: buildSnapshot(),
-  cv: () => unavailableCvStore('non requis pour générer le contrat'),
+  cv: () => unavailableCvStore('not needed to generate the contract'),
 });
 
 const document = `${JSON.stringify(app.getOpenAPI31Document(openApiDocument), null, 2)}\n`;
@@ -25,14 +25,14 @@ if (process.argv.includes('--check')) {
   const existing = readFileSync(PATHS.contract, 'utf8');
   if (existing !== document) {
     console.error(
-      `[openapi] ${PATHS.contract} ne correspond plus aux schémas Zod. ` +
-        `Lancer « npm run build:openapi » et committer le résultat.`,
+      `[openapi] ${PATHS.contract} no longer matches the Zod schemas. ` +
+        `Run "npm run build:openapi" and commit the result.`,
     );
     process.exit(1);
   }
-  console.log('[openapi] contrat à jour');
+  console.log('[openapi] contract up to date');
 } else {
   mkdirSync(dirname(PATHS.contract), { recursive: true });
   writeFileSync(PATHS.contract, document);
-  console.log(`[openapi] écrit dans ${PATHS.contract}`);
+  console.log(`[openapi] written to ${PATHS.contract}`);
 }
