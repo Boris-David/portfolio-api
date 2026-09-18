@@ -1,9 +1,9 @@
 /**
- * Les erreurs du domaine et du chargement de contenu.
+ * The errors of the domain and of content loading.
  *
- * Elles sont **fatales par nature** : un contenu invalide n'a pas de mode
- * dégradé acceptable — servir un portfolio à moitié faux est pire que ne rien
- * servir. Elles remontent donc au démarrage, jamais au milieu d'une requête.
+ * They are **fatal by nature**: invalid content has no acceptable degraded
+ * mode — serving a half-wrong portfolio is worse than serving nothing. So they
+ * surface at startup, never in the middle of a request.
  */
 
 export class ContentError extends Error {
@@ -13,37 +13,37 @@ export class ContentError extends Error {
   }
 }
 
-/** La grammaire d'emphase inline n'est pas respectée dans un texte de contenu. */
+/** A content text breaks the inline emphasis grammar. */
 export class MarkupError extends ContentError {
   readonly source: string;
 
   constructor(source: string, reason: string) {
-    super(`Balisage invalide (${reason}) dans : ${JSON.stringify(source)}`);
+    super(`Invalid markup (${reason}) in: ${JSON.stringify(source)}`);
     this.source = source;
   }
 }
 
-/** Un fichier de contenu ne satisfait pas le schéma. */
+/** A content file does not satisfy the schema. */
 export class ContentValidationError extends ContentError {
   readonly file: string;
 
   constructor(file: string, issues: string) {
-    super(`Contenu invalide — ${file}\n${issues}`);
+    super(`Invalid content — ${file}\n${issues}`);
     this.file = file;
   }
 }
 
 /**
- * Le schéma de domaine utilise un noeud Zod que la dérivation ne sait pas
- * traduire. Lever plutôt que laisser passer : un noeud ignoré silencieusement
- * produirait un schéma de fichier trop permissif, donc une validation qui ment.
+ * A domain schema uses a Zod node the derivation cannot translate. Throw
+ * rather than let it through: a node silently ignored would produce an
+ * over-permissive file schema, and therefore a validation that lies.
  */
 export class UnsupportedSchemaNodeError extends ContentError {
   constructor(nodeName: string, path: string) {
     super(
-      `Noeud Zod non pris en charge par la dérivation du schéma de contenu : ` +
-        `${nodeName} (à « ${path} »). Ajouter sa prise en charge dans ` +
-        `src/content/derive.ts plutôt que de contourner.`,
+      `Zod node not supported by the content schema derivation: ` +
+        `${nodeName} (at "${path}"). Add support for it in ` +
+        `src/content/derive.ts rather than working around it.`,
     );
   }
 }

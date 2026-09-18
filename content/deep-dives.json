@@ -1,0 +1,311 @@
+[
+  {
+    "$comment": "La version longue des sujets d'« expertise ». Le titre et la forme courte ne sont PAS recopiés ici : « expertise » pointe vers l'entrée qui les porte déjà, comme « profile.showcase.caseStudy » pointe vers une étude de cas. Une plongée développe la technique ; l'anecdote reste dans le chapitre d'étude de cas que « evidence » désigne.",
+    "expertise": "concurrency",
+    "lede": {
+      "fr": "Un bug de concurrence ne se reproduit pas : il se raisonne. La vraie question n'est jamais de savoir si le code marche, mais **ce qui l'empêche de ne pas marcher** — et la bonne réponse est une garantie du compilateur, pas une promesse tenue en relecture.",
+      "en": "A concurrency bug is not reproduced, it is reasoned about. The real question is never whether the code works, it is **what stops it from not working** — and the right answer is a compiler guarantee, not a promise kept at review time."
+    },
+    "sections": [
+      {
+        "slug": "what-a-lock-does-not-guarantee",
+        "heading": {
+          "fr": "Ce qu'un verrou ne garantit pas",
+          "en": "What a lock does not guarantee"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Un verrou protège un état **à condition qu'on pense à le prendre partout**. Rien ne le vérifie : ni le compilateur, ni les tests, qui passent tant que l'ordonnancement leur est favorable. Le jour où un nouvel appelant oublie, le défaut apparaît en production et nulle part ailleurs.",
+              "en": "A lock protects state **provided you remember to take it everywhere**. Nothing checks that: not the compiler, and not the tests, which pass for as long as the scheduling is kind to them. The day a new caller forgets, the fault shows up in production and nowhere else."
+            }
+          },
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Et un verrou tenu pendant une attente asynchrone est un blocage qui n'attend que son heure : le fil qui reprend n'est pas nécessairement celui qui l'a pris.",
+              "en": "And a lock held across a suspension point is a deadlock waiting for its moment: the thread that resumes is not necessarily the one that took it."
+            }
+          }
+        ]
+      },
+      {
+        "slug": "isolation-as-a-type-property",
+        "heading": {
+          "fr": "L'isolation comme propriété du type",
+          "en": "Isolation as a property of the type"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Avec un acteur, l'isolation cesse d'être une discipline pour devenir une **propriété du type**. Tout accès venant de l'extérieur est sérialisé par construction, et l'oubli n'est plus représentable — ce n'est plus une règle qu'on applique, c'est une erreur de compilation.",
+              "en": "With an actor, isolation stops being a discipline and becomes a **property of the type**. Every access from outside is serialised by construction, and forgetting is no longer expressible — it is not a rule you apply any more, it is a compile error."
+            }
+          },
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "La difficulté se déplace alors sur ce qui traverse la frontière : ce qui entre et ce qui sort doit être `Sendable`. C'est là que le travail se fait réellement, et c'est là qu'on découvre quels types de l'application étaient partagés sans que personne ne l'ait décidé.",
+              "en": "The difficulty then moves onto what crosses the boundary: whatever goes in and out must be `Sendable`. That is where the real work happens, and where you find out which of the app's types were being shared without anyone ever deciding so."
+            }
+          }
+        ]
+      },
+      {
+        "slug": "one-remembered-task",
+        "heading": {
+          "fr": "Une tâche mémorisée plutôt que n tâches",
+          "en": "One remembered task rather than n tasks"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Le motif vaut bien au-delà du renouvellement d'un jeton : **plusieurs appelants ont besoin du même résultat, un seul travail doit partir**. On mémorise la tâche en cours, les appelants suivants reçoivent celle-là au lieu d'en créer une nouvelle, et elle est oubliée dès qu'elle se termine.",
+              "en": "The pattern reaches well beyond renewing a token: **several callers need the same result, and exactly one job should start**. The in-flight task is remembered, later callers are handed that one instead of creating another, and it is forgotten as soon as it completes."
+            }
+          },
+          {
+            "type": "list",
+            "items": [
+              {
+                "fr": "Sans mémorisation, autant de requêtes en échec déclenchent autant de renouvellements concurrents — qui s'invalident entre eux.",
+                "en": "Without it, as many failing requests trigger as many concurrent renewals — which invalidate one another."
+              },
+              {
+                "fr": "Avec, la charge ne dépend plus du nombre d'appelants : elle dépend du nombre d'événements.",
+                "en": "With it, the load no longer depends on the number of callers: it depends on the number of events."
+              },
+              {
+                "fr": "Le même raisonnement tient pour le chargement d'une ressource partagée, une migration, un préchauffage de cache.",
+                "en": "The same reasoning holds for loading a shared resource, for a migration, for warming a cache."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "what-it-still-costs",
+        "heading": { "fr": "Ce que ça coûte encore", "en": "What it still costs" },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Un acteur n'est **pas** une section critique. Il est réentrant : l'état peut avoir changé pendant l'attente, donc une valeur lue avant une suspension doit être relue après. Croire l'inverse, c'est remplacer une course par une hypothèse fausse — plus discrète, et bien plus longue à trouver.",
+              "en": "An actor is **not** a critical section. It is reentrant: state may have changed during a suspension, so a value read before one must be read again after. Believing otherwise swaps a race for a wrong assumption — quieter, and far slower to find."
+            }
+          },
+          {
+            "type": "tags",
+            "items": [
+              "actor",
+              "async/await",
+              "Task",
+              "Sendable",
+              { "fr": "Réentrance", "en": "Reentrancy" }
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": { "caseStudy": "mobile-ticketing", "chapter": "authentication" }
+  },
+  {
+    "expertise": "boundaries",
+    "lede": {
+      "fr": "Une frontière qui repose sur la bonne volonté n'est pas une frontière. La seule question qui compte est : **qu'est-ce qui échoue si quelqu'un la traverse ?** Si la réponse est « une remarque en revue », elle sera traversée.",
+      "en": "A boundary that rests on goodwill is not a boundary. The only question that matters is: **what fails if someone crosses it?** If the answer is a review comment, it will be crossed."
+    },
+    "sections": [
+      {
+        "slug": "a-folder-is-not-a-boundary",
+        "heading": {
+          "fr": "Un dossier n'est pas une frontière",
+          "en": "A folder is not a boundary"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Trois dossiers nommés `Domain`, `Data` et `Presentation` dans une même cible ne séparent rien du tout : n'importe quel fichier y importe n'importe quel autre. La structure est là, la contrainte n'y est pas — et c'est la contrainte qui tient une architecture, pas l'arborescence.",
+              "en": "Three folders named `Domain`, `Data` and `Presentation` inside one target separate nothing at all: any file imports any other. The structure is there, the constraint is not — and it is the constraint that holds an architecture up, not the tree."
+            }
+          }
+        ]
+      },
+      {
+        "slug": "a-module-refuses",
+        "heading": {
+          "fr": "Un module, lui, se refuse",
+          "en": "A module, on the other hand, refuses"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Quand chaque couche est une cible à part, la règle devient mécanique : une fonctionnalité qui importe le réseau **ne compile pas**. La violation n'arrive plus en revue, elle arrive en rouge, sur la machine de celui qui vient de l'écrire.",
+              "en": "When each layer is its own target, the rule becomes mechanical: a feature that imports the network **does not compile**. The violation no longer surfaces in review, it surfaces in red, on the machine of whoever just wrote it."
+            }
+          },
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Reste à empêcher le graphe lui-même de dériver : un test lit le manifeste et refuse une dépendance nouvelle. Sans lui, la frontière tient jusqu'au jour où quelqu'un ajoute, en toute bonne foi, la ligne qui la supprime.",
+              "en": "What remains is stopping the graph itself from drifting: a test reads the manifest and refuses a new dependency. Without it, the boundary holds until the day someone adds, in perfectly good faith, the line that removes it."
+            }
+          }
+        ]
+      },
+      {
+        "slug": "the-default-belongs-to-the-product",
+        "heading": {
+          "fr": "Le défaut appartient au produit",
+          "en": "The default belongs to the product"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Une abstraction par fournisseur ne vaut que si l'on décide **où vit le comportement commun**. Laissé dans les modules des fournisseurs, il y est recopié autant de fois qu'il y a de fournisseurs. Remonté au produit, il n'existe qu'une fois, et le fournisseur ne surcharge plus que ce qu'il veut réellement changer.",
+              "en": "A per-vendor abstraction is only worth something once you decide **where the shared behaviour lives**. Left inside the vendor modules, it is copied once per vendor. Lifted up to the product, it exists once, and a vendor overrides only what it actually means to change."
+            }
+          },
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "C'est une règle qui tient sans arbitrage : il n'y a plus de discussion à avoir sur le bon endroit, puisqu'il n'y en a qu'un.",
+              "en": "It is a rule that holds without arbitration: there is no discussion left about the right place, because there is only one."
+            }
+          }
+        ]
+      },
+      {
+        "slug": "where-i-stop",
+        "heading": { "fr": "Où je m'arrête", "en": "Where I stop" },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Multiplier les abstractions n'est pas un objectif. Un protocole qui n'a qu'une implémentation et qu'on ne remplacera jamais coûte une indirection à chaque lecture — un relecteur senior y voit de la sur-ingénierie, pas une qualité.",
+              "en": "Piling up abstractions is not a goal. A protocol with a single implementation you will never replace costs an indirection at every read — a senior reviewer reads that as over-engineering, not as a quality."
+            }
+          },
+          {
+            "type": "list",
+            "items": [
+              {
+                "fr": "**Un port pour ce qui touche le monde extérieur** : réseau, disque, préférences, horloge.",
+                "en": "**A port for whatever touches the outside world**: network, disk, preferences, clock."
+              },
+              {
+                "fr": "**Une abstraction là où elle achète quelque chose** : remplaçabilité réelle, testabilité sans simulateur, ou frontière d'équipe.",
+                "en": "**An abstraction where it buys something**: real replaceability, testability without a simulator, or a team boundary."
+              },
+              {
+                "fr": "**Rien ailleurs.** Savoir où s'arrêter se démontre mieux que des protocoles partout.",
+                "en": "**Nothing elsewhere.** Knowing where to stop proves more than protocols everywhere."
+              }
+            ]
+          },
+          {
+            "type": "tags",
+            "items": [
+              "SPM",
+              { "fr": "Cibles par couche", "en": "Targets per layer" },
+              { "fr": "Inversion de dépendance", "en": "Dependency inversion" },
+              { "fr": "Ports et adaptateurs", "en": "Ports and adapters" }
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": { "caseStudy": "mobile-ticketing", "chapter": "clean-architecture" }
+  },
+  {
+    "expertise": "delivery",
+    "lede": {
+      "fr": "Livrer n'est pas la dernière étape du développement, c'est une partie du produit. Ce qui reste manuel finit par dépendre d'une personne et d'une machine — et le jour où l'une des deux manque, la version n'est pas repoussée, elle est **impossible**.",
+      "en": "Shipping is not the last step of development, it is part of the product. Whatever stays manual ends up depending on one person and one machine — and the day either is missing, the release is not delayed, it is **impossible**."
+    },
+    "sections": [
+      {
+        "slug": "the-project-is-not-a-source-file",
+        "heading": {
+          "fr": "Le projet Xcode n'est pas un fichier source",
+          "en": "The Xcode project is not a source file"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Un `.xcodeproj` est un état sérialisé, pas une intention. Deux personnes qui ajoutent un fichier le même jour produisent un conflit qu'on ne résout pas — on le tranche. Générer le projet depuis une **spécification lisible** rend le conflit relisible : on compare des intentions, pas des identifiants.",
+              "en": "An `.xcodeproj` is serialised state, not an intention. Two people adding a file on the same day produce a conflict you do not resolve — you arbitrate it. Generating the project from a **readable specification** makes the conflict readable again: you compare intentions, not identifiers."
+            }
+          }
+        ]
+      },
+      {
+        "slug": "signing-is-not-a-ritual",
+        "heading": {
+          "fr": "La signature n'est pas un rituel",
+          "en": "Signing is not a ritual"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Des certificats installés à la main sur un poste sont une **dépendance cachée à ce poste**. Versionnés et distribués, ils deviennent une ressource du projet : n'importe quelle machine de la chaîne peut publier, et plus personne n'est un point de passage obligé.",
+              "en": "Certificates installed by hand on one machine are a **hidden dependency on that machine**. Versioned and distributed, they become a project resource: any machine on the pipeline can publish, and nobody is a mandatory checkpoint any more."
+            }
+          }
+        ]
+      },
+      {
+        "slug": "shipping-is-not-releasing",
+        "heading": {
+          "fr": "Livrer n'est pas mettre en service",
+          "en": "Shipping is not releasing"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Un drapeau de fonctionnalité sépare deux décisions qu'on confond : **le code est dans la version** et **la fonctionnalité est visible**. Les séparer supprime la branche qui vit trop longtemps, la fusion douloureuse, et la fenêtre de livraison ratée à cause d'une seule fonctionnalité qui n'était pas prête.",
+              "en": "A feature flag separates two decisions that get confused: **the code is in the build** and **the feature is visible**. Separating them removes the branch that lives too long, the painful merge, and the release window missed because of one feature that was not ready."
+            }
+          }
+        ]
+      },
+      {
+        "slug": "one-pipeline-per-module",
+        "heading": {
+          "fr": "Une chaîne par produit, et une par module",
+          "en": "One pipeline per product, one per module"
+        },
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "Un module publié a besoin de sa propre chaîne. Sans elle, il n'est validé qu'à travers l'application qui le consomme — donc trop tard, et avec une cause racine noyée dans un projet dix fois plus gros que lui.",
+              "en": "A published module needs its own pipeline. Without one, it is only ever validated through the app that consumes it — too late, and with the root cause buried in a project ten times its size."
+            }
+          },
+          {
+            "type": "paragraph",
+            "text": {
+              "fr": "C'est ce que KCalories a servi à prouver à l'échelle d'une seule personne : la chaîne a tenu, et la version suivante n'a pas eu à attendre qu'on ait le temps de la publier.",
+              "en": "That is what KCalories was there to prove at the scale of one person: the pipeline held, and the next version did not have to wait until someone found the time to publish it."
+            }
+          },
+          {
+            "type": "tags",
+            "items": ["XcodeGen", "fastlane", "match", "Jenkins", "Feature flags", "CI/CD"]
+          }
+        ]
+      }
+    ],
+    "evidence": { "caseStudy": "kcalories", "chapter": "product" }
+  }
+]

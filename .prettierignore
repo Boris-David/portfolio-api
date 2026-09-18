@@ -4,3 +4,8 @@ contracts/openapi.json
 assets/
 public/
 .wrangler/
+
+# A snapshot of the hub repo, which owns it (ADR 0001). This repo copies the
+# original over verbatim and never edits it — `npm run check:tokens` says so.
+# Reformatting it here would be editing it.
+design/tokens.json

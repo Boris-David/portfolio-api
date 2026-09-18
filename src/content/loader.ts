@@ -13,10 +13,10 @@ import { digest } from './digest.js';
 import { CONTENT_DOCUMENTS, type ContentDocuments } from './documents.js';
 
 /**
- * Le nom de fichier et le segment d'URL d'une partie, dérivés de son nom.
+ * A part's file name and URL segment, derived from its name.
  *
- * Une table de correspondance serait un troisième endroit à tenir synchronisé
- * avec le schéma et l'arborescence ; une fonction ne peut pas dériver.
+ * A correspondence table would be a third place to keep in step with the
+ * schema and the directory tree; a function cannot drift.
  */
 export function kebabCase(part: string): string {
   return part.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
@@ -27,11 +27,11 @@ export function contentFileName(part: PortfolioPart): string {
 }
 
 /**
- * Retire les clés de commentaire (`$comment`, `$note`…) avant validation.
+ * Strips the comment keys (`$comment`, `$note`…) before validation.
  *
- * Un fichier de contenu se relit ; un commentaire d'auteur y a sa place. Mais
- * le schéma est strict — une clé inconnue est une faute de frappe — donc les
- * clés `$…` sont retirées explicitement, jamais tolérées par laxisme du schéma.
+ * A content file gets re-read; an author's comment belongs in it. But the
+ * schema is strict — an unknown key is a typo — so `$…` keys are removed
+ * explicitly, never tolerated by loosening the schema.
  */
 export function stripAuthorComments(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stripAuthorComments);
@@ -44,20 +44,20 @@ export function stripAuthorComments(value: unknown): unknown {
 }
 
 export interface LoadedContent {
-  /** Condensat de tout le contenu : la version publiée. */
+  /** Digest of all the content: the published version. */
   readonly version: string;
   readonly portfolio: Readonly<Record<Locale, Portfolio>>;
 }
 
 /**
- * Valide et projette tout le contenu — une fois, au démarrage de l'isolat.
+ * Validates and projects the whole content — once, at isolate startup.
  *
- * Aucune lecture disque : les documents sont embarqués à la compilation. Le
- * contenu ne change pas pendant la vie d'un isolat, donc le revalider à chaque
- * requête referait le même travail pour la même réponse.
+ * No disk read: the documents are bundled at compile time. The content does
+ * not change during an isolate's lifetime, so revalidating it on every request
+ * would redo the same work for the same response.
  *
- * Tout échec ici est fatal, et c'est voulu — un portfolio à moitié faux est
- * pire qu'une API qui refuse de démarrer.
+ * Any failure here is fatal, and that is deliberate — a half-wrong portfolio
+ * is worse than an API that refuses to start.
  */
 export function loadContent(documents: ContentDocuments = CONTENT_DOCUMENTS): LoadedContent {
   const portfolio = Object.fromEntries(
@@ -73,12 +73,12 @@ function buildPortfolio(documents: ContentDocuments, locale: Locale): Portfolio 
     parts[part] = projectPart(part, documents[part], locale);
   }
 
-  // Seconde passe : la valeur projetée doit satisfaire le schéma de domaine
-  // lui-même. C'est ce qui rattrape ce que la dérivation ne reproduit pas, et
-  // ce qui transforme un bug de projection en erreur bruyante au démarrage.
+  // Second pass: the projected value must satisfy the domain schema itself.
+  // This is what catches whatever the derivation does not reproduce, and what
+  // turns a projection bug into a loud error at startup.
   const parsed = PortfolioSchema.safeParse(parts);
   if (!parsed.success) {
-    throw new ContentValidationError(`projection ${locale}`, z.prettifyError(parsed.error));
+    throw new ContentValidationError(`${locale} projection`, z.prettifyError(parsed.error));
   }
   return parsed.data;
 }
@@ -96,12 +96,12 @@ function projectPart(part: PortfolioPart, document: unknown, locale: Locale): un
 }
 
 /**
- * La version du contenu : le condensat des documents, dans l'ordre des parties.
+ * The content version: the digest of the documents, in part order.
  *
- * Elle se calcule sur les valeurs **déjà analysées**, jamais sur les octets des
- * fichiers. C'est ce qui la rend identique partout — le Worker reçoit le
- * contenu bundlé, le build le lit par le même module — et insensible à un
- * simple reformatage, qui ne change pourtant rien à ce qui est publié.
+ * It is computed over the **already-parsed** values, never over the files'
+ * bytes. That is what makes it identical everywhere — the Worker receives the
+ * bundled content, the build reads it through the same module — and immune to
+ * a mere reformat, which changes nothing about what is published.
  */
 export function versionOf(documents: ContentDocuments): string {
   const material = PORTFOLIO_PARTS.map((part) => `${part} ${JSON.stringify(documents[part])}`).join(

@@ -92,6 +92,16 @@
             },
             "minItems": 1
           },
+          "deepDives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeepDive"
+            },
+            "minItems": 1
+          },
+          "architectures": {
+            "$ref": "#/components/schemas/ArchitectureDossier"
+          },
           "experience": {
             "type": "array",
             "items": {
@@ -117,6 +127,8 @@
           "caseStudies",
           "apps",
           "expertise",
+          "deepDives",
+          "architectures",
           "experience",
           "background",
           "skills"
@@ -711,6 +723,227 @@
           "body"
         ]
       },
+      "DeepDive": {
+        "type": "object",
+        "properties": {
+          "expertise": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "lede": {
+            "$ref": "#/components/schemas/RichText"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeepDiveSection"
+            },
+            "minItems": 1
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/DeepDiveEvidence"
+          }
+        },
+        "required": [
+          "expertise",
+          "lede",
+          "sections",
+          "evidence"
+        ]
+      },
+      "DeepDiveSection": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "heading": {
+            "type": "string",
+            "minLength": 1
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Block"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "slug",
+          "heading",
+          "blocks"
+        ]
+      },
+      "DeepDiveEvidence": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "caseStudy": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "chapter": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          }
+        },
+        "required": [
+          "caseStudy",
+          "chapter"
+        ],
+        "description": "The case-study chapter where this technique was applied in production."
+      },
+      "ArchitectureDossier": {
+        "type": "object",
+        "properties": {
+          "verifiedOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "intro": {
+            "$ref": "#/components/schemas/RichText"
+          },
+          "patterns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArchitecturePattern"
+            },
+            "minItems": 1
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectArchitecture"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "verifiedOn",
+          "intro",
+          "patterns",
+          "projects"
+        ]
+      },
+      "ArchitecturePattern": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "mvc",
+              "mvp",
+              "mvvm",
+              "clean"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "separates": {
+            "type": "string",
+            "minLength": 1
+          },
+          "buys": {
+            "$ref": "#/components/schemas/RichText"
+          },
+          "costs": {
+            "$ref": "#/components/schemas/RichText"
+          },
+          "chooseWhen": {
+            "$ref": "#/components/schemas/RichText"
+          },
+          "breaksWhen": {
+            "$ref": "#/components/schemas/RichText"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "separates",
+          "buys",
+          "costs",
+          "chooseWhen",
+          "breaksWhen"
+        ],
+        "description": "A pattern, and what it separates, buys, costs, and where it breaks."
+      },
+      "ProjectArchitecture": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "context": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pattern": {
+            "type": "string",
+            "enum": [
+              "mvc",
+              "mvp",
+              "mvvm",
+              "clean"
+            ]
+          },
+          "stack": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArchitectureEvidence"
+            }
+          },
+          "reading": {
+            "$ref": "#/components/schemas/RichText"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "context",
+          "pattern",
+          "stack",
+          "evidence",
+          "reading"
+        ],
+        "description": "A codebase, the pattern it follows, and the measurements that show it."
+      },
+      "ArchitectureEvidence": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "count": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "symbol",
+          "count"
+        ],
+        "description": "How many types carry a given suffix — the measured basis of the reading."
+      },
       "Experience": {
         "type": "object",
         "properties": {
@@ -959,6 +1192,72 @@
           "detail"
         ],
         "description": "Erreur au format RFC 9457."
+      },
+      "Timeline": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/TimelineEntry"
+        },
+        "minItems": 1,
+        "description": "Jobs, degrees and certifications merged into a single run, newest first."
+      },
+      "TimelineEntry": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "experience"
+                ]
+              },
+              "experience": {
+                "$ref": "#/components/schemas/Experience"
+              }
+            },
+            "required": [
+              "kind",
+              "experience"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "education"
+                ]
+              },
+              "education": {
+                "$ref": "#/components/schemas/Education"
+              }
+            },
+            "required": [
+              "kind",
+              "education"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "certification"
+                ]
+              },
+              "certification": {
+                "$ref": "#/components/schemas/Certification"
+              }
+            },
+            "required": [
+              "kind",
+              "certification"
+            ]
+          }
+        ]
       },
       "Health": {
         "type": "object",
@@ -1585,6 +1884,172 @@
         }
       }
     },
+    "/v1/deep-dives": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Les mêmes sujets, en version longue.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DeepDive"
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/architectures": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Les motifs d'architecture comparés, et ceux des bases de code traversées.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ArchitectureDossier"
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/experience": {
       "get": {
         "tags": [
@@ -1810,6 +2275,87 @@
                         "$ref": "#/components/schemas/SkillGroup"
                       },
                       "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "meta",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Inchangé depuis l'« ETag » présenté."
+          },
+          "400": {
+            "description": "Langue demandée inconnue.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/timeline": {
+      "get": {
+        "tags": [
+          "Contenu"
+        ],
+        "summary": "Le parcours entier en une seule suite, du plus récent au plus ancien.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fr",
+                "en"
+              ],
+              "description": "Langue servie. À défaut, « Accept-Language », puis le français."
+            },
+            "required": false,
+            "description": "Langue servie. À défaut, « Accept-Language », puis le français.",
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contenu, dans la langue résolue.",
+            "headers": {
+              "ETag": {
+                "description": "Validateur fort du corps servi.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Language": {
+                "description": "Langue réellement servie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Politique de cache.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Timeline"
                     }
                   },
                   "required": [

@@ -4,27 +4,27 @@ import type { CvDocument } from './model.js';
 import { toCssVariables, type DesignTokens } from './tokens.js';
 
 /**
- * Le gabarit du CV.
+ * The résumé template.
  *
- * Aucune valeur de forme n'est écrite ici : couleurs, espaces, rayons et
- * échelle typographique viennent des tokens, comme le CSS du site. C'est la
- * condition posée par l'ADR 0004 — sinon le PDF et le site divergeraient sur
- * la forme, et on aurait seulement déplacé le problème.
+ * No value of form is written here: colours, spacing, radii and the type scale
+ * come from the tokens, just like the website's CSS. That is the condition ADR
+ * 0004 sets — otherwise the PDF and the site would diverge on form, and the
+ * problem would merely have been moved.
  *
- * `--print-density` est la seule constante propre au support : l'échelle des
- * tokens est calée sur le Dynamic Type d'iOS (base 17 px), trop généreux pour
- * une A4. Le facteur s'applique en `calc()` à tous les niveaux, donc les
- * rapports de l'échelle sont conservés.
+ * `--print-density` is the one constant specific to the medium: the token
+ * scale is calibrated on iOS Dynamic Type (17 px base), too generous for A4.
+ * The factor is applied through `calc()` at every step, so the scale's
+ * **ratios** are preserved.
  */
 const PRINT_DENSITY = 0.68;
 
 /**
- * L'interlettrage des intitulés en capitales.
+ * Letter-spacing on the uppercase headings.
  *
- * Il est **volontairement discret**. À cette taille, un interlettrage large
- * disloque les mots — « COMPÉT ENCES », « S TACK » — et donne un document qui
- * a l'air cassé. Ce qui distingue un intitulé, c'est la graisse, la couleur et
- * le filet sous lui ; l'espacement n'est qu'une respiration.
+ * It is **deliberately restrained**. At this size, wide tracking pulls words
+ * apart — "COMPÉT ENCES", "S TACK" — and makes the document look broken. What
+ * sets a heading apart is its weight, its colour and the rule beneath it;
+ * the spacing is only room to breathe.
  */
 const CAPS_TRACKING = '0.035em';
 const MICRO_CAPS_TRACKING = '0.028em';
@@ -44,13 +44,13 @@ ${embeddedFontFaces()}
 :root {
     ${toCssVariables(tokens)}
     --print-density: ${String(PRINT_DENSITY)};
-    /* Dans un PDF, aucune police système n'existe : la pile d'affichage doit
-       retomber sur une police EMBARQUÉE, jamais sur un générique — sinon un
-       caractère absent de Fraunces se dessine en carré vide. */
+    /* Inside a PDF no system font exists: the display stack must fall back to
+       an EMBEDDED font, never to a generic one — otherwise a character missing
+       from Fraunces is drawn as an empty box. */
     --cv-display: var(--font-display-family), var(--font-text);
 
-    /* Le rythme vertical, dérivé une seule fois puis réutilisé partout : c'est
-       lui qui fait qu'un document « respire » au lieu d'alterner tassé et vide. */
+    /* The vertical rhythm, derived once and reused everywhere: it is what makes
+       a document breathe instead of alternating cramped and empty. */
     --gap-1: calc(var(--space-1) * var(--print-density));
     --gap-2: calc(var(--space-2) * var(--print-density));
     --gap-3: calc(var(--space-3) * var(--print-density));
@@ -86,19 +86,19 @@ strong { color: var(--color-ink); font-weight: 600; }
 a { color: var(--color-accent-d); text-decoration: none; }
 ul { list-style: none; }
 
-/* Le contenu coule d'une page à l'autre ; seuls les blocs qu'on lit d'un bloc
-   refusent d'être coupés. Interdire la coupe d'une expérience entière la
-   repousserait tout entière et laisserait une demi-page blanche. */
+/* Content flows from one page to the next; only the blocks that are read in one
+   go refuse to be split. Forbidding a whole job from breaking would push it
+   entirely onto the next page and leave half a page blank. */
 li, .rows li, .job-head, .product-head { break-inside: avoid; }
 h2, h3, h4 { break-after: avoid; }
-/* Une ligne isolée en haut ou en bas de page est laide ; deux, c'est une
-   demi-page perdue. Trois lignes de part et d'autre : le compromis tient le
-   document plein sans orpheline. */
+/* A single stranded line at the top or bottom of a page is ugly; two is half a
+   page wasted. Three lines on either side: the trade-off keeps the document
+   full without leaving an orphan. */
 p { orphans: 3; widows: 3; }
 
 section { margin-top: var(--gap-5); }
 
-/* ── Intitulés de section ── */
+/* ── Section headings ── */
 h2 {
   font-family: var(--font-text);
   font-size: calc(var(--size-subhead) * 1.02);
@@ -111,7 +111,7 @@ h2 {
   margin-bottom: var(--gap-4);
 }
 
-/* ── Identité ── */
+/* ── Identity ── */
 .identity { border-bottom: 1.6pt solid var(--color-ink); padding-bottom: var(--gap-4); }
 .identity h1 {
   font-family: var(--cv-display);
@@ -139,7 +139,7 @@ h2 {
 .facts li:last-child::after { content: ""; }
 .facts a { color: var(--color-ink-2); font-weight: 500; }
 
-/* ── Chiffres ── */
+/* ── Figures ── */
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -169,10 +169,10 @@ h2 {
 .summary p { max-width: 96%; }
 .summary p + p { margin-top: var(--gap-2); }
 
-/* ── Expérience ──
-   L'entreprise et la période portent le bloc : c'est « où » et « quand » qu'un
-   lecteur cherche d'abord en parcourant un CV. L'intitulé de poste vient
-   ensuite, en accent. */
+/* ── Experience ──
+   The company and the period carry the block: "where" and "when" are what a
+   reader looks for first when scanning a résumé. The job title comes next, as
+   the accent. */
 .job + .job { margin-top: var(--gap-5); }
 .job-head {
   display: flex;
@@ -195,8 +195,8 @@ h2 {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-/* Le poste et ses étiquettes tiennent sur une seule ligne : elles se lisent
-   ensemble, et une rangée séparée coûtait une ligne par expérience. */
+/* The role and its tags sit on a single line: they are read together, and a
+   separate row cost one line per job. */
 .job-role {
   display: flex;
   flex-wrap: wrap;
@@ -243,7 +243,7 @@ h2 {
   color: var(--color-ink-2);
 }
 
-/* ── Le produit tenu de bout en bout ── */
+/* ── The product carried end to end ── */
 .product-head {
   display: flex;
   justify-content: space-between;
@@ -279,11 +279,10 @@ h2 {
 }
 .product-panels .bullets { margin-top: var(--gap-2); }
 
-/* ── Profondeur technique ── */
-/* Colonnes plutôt que grille : une grille CSS ne se fragmente pas entre deux
-   pages — elle bascule tout entière et laisse une demi-page blanche. Les
-   colonnes, elles, coulent. C'est ce qui remplit les pages au lieu de les
-   trouer. */
+/* ── Technical depth ── */
+/* Columns rather than a grid: a CSS grid does not fragment across two pages —
+   it moves over whole and leaves half a page blank. Columns flow. That is what
+   fills the pages instead of punching holes in them. */
 .depth { column-count: 3; column-gap: var(--gap-5); }
 .depth > div { break-inside: avoid; }
 .depth h3 {
@@ -295,7 +294,7 @@ h2 {
 }
 .depth p { font-size: calc(var(--size-caption) * 1.02); color: var(--color-ink-3); line-height: 1.4; }
 
-/* ── Compétences ── */
+/* ── Skills ── */
 .skill-groups { column-count: 2; column-gap: var(--gap-6); }
 .skill-groups > div { break-inside: avoid; margin-bottom: var(--gap-3); }
 .skill-groups h3 {
@@ -316,7 +315,7 @@ h2 {
   color: var(--color-ink-2);
 }
 
-/* ── Formation, certifications, projets ── */
+/* ── Education, certifications, projects ── */
 .two-col { margin-top: var(--gap-5); column-count: 2; column-gap: var(--gap-6); }
 .two-col section { margin-top: 0; break-inside: avoid; }
 .two-col section + section { margin-top: var(--gap-5); }
@@ -330,7 +329,7 @@ h2 {
 }
 
 
-/* ── En production ── */
+/* ── In production ── */
 .production .networks {
   font-size: calc(var(--size-caption) * 1.02);
   color: var(--color-ink-2);
@@ -520,7 +519,7 @@ function productionBlock(document: CvDocument): string {
 </section>`;
 }
 
-/** Le texte enrichi en HTML — jamais du HTML stocké, toujours des spans rendus. */
+/** Rich text as HTML — never stored HTML, always rendered spans. */
 export function richToHtml(rich: RichText): string {
   return rich
     .map((span) => {

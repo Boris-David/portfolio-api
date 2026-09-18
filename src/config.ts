@@ -1,13 +1,14 @@
 /**
- * Les valeurs de configuration du **runtime**, nommées et rassemblées.
+ * The **runtime** configuration values, named and gathered in one place.
  *
- * Ce module doit rester exécutable sur Cloudflare Workers : il n'importe donc
- * rien de `node:fs`, `node:path` ni `node:url`. Les chemins disque, qui ne
- * servent qu'au build et aux tests, vivent dans `src/node/paths.ts` — et
- * l'ESLint du dépôt refuse qu'ils remontent ici.
+ * This module has to stay runnable on Cloudflare Workers, so it imports
+ * nothing from `node:fs`, `node:path` or `node:url`. Disk paths, which only
+ * the build and the tests need, live in `src/node/paths.ts` — and the repo's
+ * ESLint config refuses to let them climb back in here.
  *
- * Aucun littéral de cache ne traîne ailleurs : une valeur magique dispersée
- * est une valeur qu'on ne peut plus changer sans la chercher partout.
+ * No cache literal is left lying around anywhere else: a magic value scattered
+ * across files is a value you can no longer change without hunting it down
+ * everywhere.
  */
 
 const MINUTE_IN_SECONDS = 60;
@@ -15,12 +16,13 @@ const HOUR_IN_SECONDS = 60 * MINUTE_IN_SECONDS;
 const DAY_IN_SECONDS = 24 * HOUR_IN_SECONDS;
 
 /**
- * Les en-têtes de cache.
+ * The cache headers.
  *
- * Le contenu est figé pour la durée d'un déploiement : il est embarqué dans le
- * script, donc il ne peut pas changer sous les pieds d'un isolat. Une fraîcheur
- * courte doublée d'un long `stale-while-revalidate` donne le bon compromis —
- * un client garde une réponse utilisable et revalide en fond avec son `ETag`.
+ * Content is frozen for the lifetime of a deployment: it is bundled into the
+ * script, so it cannot change under an isolate's feet. A short freshness
+ * window paired with a long `stale-while-revalidate` strikes the right
+ * balance — a client keeps a usable response and revalidates in the background
+ * with its `ETag`.
  */
 export const CACHE_CONTROL = {
   content: `public, max-age=${String(5 * MINUTE_IN_SECONDS)}, stale-while-revalidate=${String(DAY_IN_SECONDS)}`,
@@ -30,20 +32,20 @@ export const CACHE_CONTROL = {
 } as const;
 
 /**
- * La longueur du condensat retenu pour les `ETag` et la version de contenu.
+ * How much of the digest is kept for `ETag`s and the content version.
  *
- * 128 bits de SHA-256 en base64url : la collision est hors de portée, et
- * l'en-tête reste lisible dans un journal. Un `ETag` plus court n'économise
- * rien d'utile, plus long ne protège de rien de plus.
+ * 128 bits of SHA-256 in base64url: a collision is out of reach, and the
+ * header stays readable in a log. A shorter `ETag` saves nothing worth having,
+ * a longer one protects against nothing more.
  */
 export const DIGEST_LENGTH = 22;
 
 /**
- * Le préfixe des CV dans le magasin d'assets statiques.
+ * The prefix under which résumés live in the static asset store.
  *
- * Les PDF ne peuvent pas vivre dans le script — le plan gratuit le limite à
- * 1 Mo compressé et chaque CV pèse ~330 Ko. Ils sont donc déposés dans les
- * **Workers Static Assets**, et le Worker les relaie depuis ce préfixe.
+ * The PDFs cannot live in the script — the free plan caps it at 1 MB
+ * compressed and each résumé weighs ~330 KB. They go into the **Workers Static
+ * Assets** instead, and the Worker relays them from this prefix.
  */
 export const CV_ASSET_PREFIX = '/cv';
 

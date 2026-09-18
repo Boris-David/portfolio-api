@@ -31,7 +31,7 @@ describe('négociation de langue', () => {
 });
 
 describe("comparaison d'ETag", () => {
-  const etag = strongETag('un corps');
+  const etag = strongETag('a body');
 
   it('reconnaît la forme exacte', () => {
     expect(matchesETag(etag, etag)).toBe(true);
@@ -47,11 +47,11 @@ describe("comparaison d'ETag", () => {
   });
 
   it("refuse un ETag qui n'est pas le bon, et l'absence d'en-tête", () => {
-    expect(matchesETag('"autre"', etag)).toBe(false);
+    expect(matchesETag('"other"', etag)).toBe(false);
     expect(matchesETag(undefined, etag)).toBe(false);
   });
 
   it('change dès que le corps change', () => {
-    expect(strongETag('un corps')).not.toBe(strongETag('un autre corps'));
+    expect(strongETag('a body')).not.toBe(strongETag('another body'));
   });
 });

@@ -6,13 +6,13 @@ import { unavailableCvStore } from '../src/cv/unavailable-store.js';
 import { strongETag } from '../src/content/digest.js';
 import { createApp, cvPath } from '../src/http/app.js';
 
-const PDF_BYTES = new TextEncoder().encode('%PDF-1.4 faux document de test\n%%EOF');
+const PDF_BYTES = new TextEncoder().encode('%PDF-1.4 fake test document\n%%EOF');
 
 /**
- * Un magasin de CV qui répond, sans toucher au magasin d'assets.
+ * A résumé store that answers, without touching the asset store.
  *
- * Ces tests vérifient le **service** du blob — en-têtes, revalidation, 503 —
- * pas sa production. Celle-ci est exercée pour de vrai, Chromium compris, dans
+ * These tests check the **serving** of the blob — headers, revalidation, 503 —
+ * not its production. That is exercised for real, Chromium included, in
  * `tests/cv.test.ts`.
  */
 function readyStore(): CvStore {
@@ -91,7 +91,10 @@ describe('les ressources de contenu', () => {
     expect(problem.detail).toContain('de');
   });
 
-  it('exposent toutes les parties du portfolio', async () => {
+  it('exposent toutes les ressources de lecture', async () => {
+    // Deliberately written out rather than derived from the resource table: a
+    // list built from the same source it checks would keep passing the day a
+    // route silently disappears from it.
     for (const path of [
       'portfolio',
       'profile',
@@ -100,9 +103,12 @@ describe('les ressources de contenu', () => {
       'case-studies',
       'apps',
       'expertise',
+      'deep-dives',
+      'architectures',
       'experience',
       'background',
       'skills',
+      'timeline',
     ]) {
       const response = await app.request(`/v1/${path}`);
       expect(response.status, path).toBe(200);
@@ -129,7 +135,7 @@ describe('la revalidation par ETag', () => {
 
     const weak = await app.request('/v1/apps', { headers: { 'if-none-match': `W/${etag}` } });
     const list = await app.request('/v1/apps', {
-      headers: { 'if-none-match': `"autre", ${etag}` },
+      headers: { 'if-none-match': `"other", ${etag}` },
     });
 
     expect(weak.status).toBe(304);
@@ -161,9 +167,9 @@ describe('le CV', () => {
   });
 
   it("porte le nom du fichier en DERNIER SEGMENT de l'URL", () => {
-    // Sur iOS, Safari ignore `Content-Disposition` pour la feuille de partage
-    // et reprend le dernier segment de l'URL. Avec « /v1/cv/fr.pdf », le
-    // partage annonçait « fr ». Ce test garde la correction.
+    // On iOS, Safari ignores `Content-Disposition` for the share sheet and
+    // picks up the last segment of the URL. With "/v1/cv/fr.pdf", sharing
+    // announced "fr". This test guards the fix.
     for (const locale of ['fr', 'en'] as const) {
       expect(cvPath(locale).split('/').at(-1)).toBe(cvFileName(locale));
     }
@@ -187,14 +193,14 @@ describe('le CV', () => {
   it('répond 503 en disant quoi faire, plutôt que de servir un CV périmé', async () => {
     const degraded = createApp({
       snapshot,
-      cv: () => unavailableCvStore('CV périmé : rendu pour un autre contenu.'),
+      cv: () => unavailableCvStore('Stale résumé: rendered for other content.'),
     });
 
     const response = await degraded.request(cvPath('fr'));
     const problem = (await response.json()) as { detail: string };
 
     expect(response.status).toBe(503);
-    expect(problem.detail).toContain('périmé');
+    expect(problem.detail).toContain('Stale');
   });
 });
 
@@ -202,7 +208,7 @@ describe("l'exploitation", () => {
   it('signale « degraded » quand le CV manque, sans couper le contenu', async () => {
     const degraded = createApp({
       snapshot,
-      cv: () => unavailableCvStore('aucun rendu'),
+      cv: () => unavailableCvStore('nothing rendered'),
     });
 
     const health = (await (await degraded.request('/health')).json()) as {
@@ -213,7 +219,7 @@ describe("l'exploitation", () => {
 
     expect(health.status).toBe('degraded');
     expect(health.cv.available).toBe(false);
-    expect(health.cv.reason).toBe('aucun rendu');
+    expect(health.cv.reason).toBe('nothing rendered');
     expect(content.status).toBe(200);
   });
 
@@ -224,7 +230,7 @@ describe("l'exploitation", () => {
   });
 
   it('renvoie un problème RFC 9457 sur une route inconnue', async () => {
-    const response = await app.request('/v1/inconnu');
+    const response = await app.request('/v1/unknown');
     const problem = (await response.json()) as { status: number; type: string };
 
     expect(response.status).toBe(404);

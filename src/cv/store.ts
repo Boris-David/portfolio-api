@@ -2,23 +2,23 @@ import type { Locale } from '../domain/locale.js';
 import type { CvDescription } from './manifest.js';
 
 /**
- * Le magasin de CV, vu par la couche HTTP.
+ * The résumé store, as the HTTP layer sees it.
  *
- * Deux opérations, et c'est délibéré : **décrire** ne lit pas les 330 Ko du
- * PDF. Une requête de revalidation — celle qui repart en `304` — n'a besoin
- * que de l'`ETag`, et il serait absurde de télécharger le document pour
- * répondre « vous l'avez déjà ».
+ * Two operations, deliberately: **describing** does not read the PDF's 330 KB.
+ * A revalidation request — the one that leaves as a `304` — needs only the
+ * `ETag`, and downloading the document to answer "you already have it" would
+ * be absurd.
  */
 export type CvLookup =
   | { readonly status: 'ready'; readonly description: CvDescription }
   | { readonly status: 'unavailable'; readonly reason: string };
 
-/** Les octets d'un CV. `null` quand l'asset annoncé n'est pas dans le magasin. */
+/** A résumé's bytes. `null` when the announced asset is not in the store. */
 export type CvBody = ReadableStream<Uint8Array> | ArrayBuffer | null;
 
 export interface CvStore {
-  /** Les métadonnées scellées au rendu, sans lire le PDF. */
+  /** The metadata sealed at render time, without reading the PDF. */
   describe(locale: Locale): Promise<CvLookup>;
-  /** Les octets, seulement quand le client ne les a pas déjà. */
+  /** The bytes, only when the client does not already have them. */
   open(description: CvDescription): Promise<CvBody>;
 }

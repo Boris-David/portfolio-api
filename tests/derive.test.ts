@@ -50,7 +50,7 @@ describe('dérivation du schéma de contenu', () => {
     const schema = deriveContentSchema(z.object({ url: z.url() }), 'fr');
 
     expect(schema.parse({ url: 'https://example.org' })).toEqual({ url: 'https://example.org' });
-    expect(schema.safeParse({ url: 'pas-une-url' }).success).toBe(false);
+    expect(schema.safeParse({ url: 'not-a-url' }).success).toBe(false);
   });
 
   it('traverse tableaux, nullables et unions', () => {

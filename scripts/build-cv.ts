@@ -1,9 +1,8 @@
 /**
- * Rend les CV PDF — une version par langue — et scelle le manifeste.
+ * Renders the résumé PDFs — one per language — and seals the manifest.
  *
- * Déclenché par le build, donc par le changement de contenu : c'est la
- * condition posée par l'ADR 0004. La requête de lecture, elle, ne fait que
- * relayer les octets.
+ * Triggered by the build, and therefore by a content change: that is the
+ * condition ADR 0004 sets. The read request only relays the bytes.
  */
 import { loadContent } from '../src/content/loader.js';
 import { CV_OUTPUT_DIRECTORY, renderAllCvs, writeCvArtifacts } from '../src/cv/build.js';
@@ -15,9 +14,9 @@ const renderer = await createChromiumRenderer();
 try {
   const rendered = await renderAllCvs(portfolio, renderer);
   const manifest = writeCvArtifacts(rendered, version);
-  console.log(`[cv] contenu ${version} → ${CV_OUTPUT_DIRECTORY}`);
+  console.log(`[cv] content ${version} → ${CV_OUTPUT_DIRECTORY}`);
   for (const file of manifest.files) {
-    console.log(`[cv]   ${file.locale} · ${file.file} · ${String(file.bytes)} octets`);
+    console.log(`[cv]   ${file.locale} · ${file.file} · ${String(file.bytes)} bytes`);
   }
 } finally {
   await renderer.close();

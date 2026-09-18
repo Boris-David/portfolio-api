@@ -1,15 +1,15 @@
 import { z } from 'zod';
 import { label, prose, richText } from './text.js';
 
-/** Un mois, `AAAA-MM`. */
+/** A month, `YYYY-MM`. */
 export const YearMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 
-/** Une date d'obtention : l'année, et le mois quand il est connu. */
+/** An award date: the year, plus the month when it is known. */
 export const AwardedOnSchema = z.string().regex(/^\d{4}(-(0[1-9]|1[0-2]))?$/);
 
 /**
- * Un sujet creusé en profondeur. Aucun nom d'icône n'est stocké : c'est de la
- * présentation, et `id` suffit au client pour choisir la sienne.
+ * A topic explored in depth. No icon name is stored: that is presentation, and
+ * `id` is enough for a client to pick its own.
  */
 export const ExpertiseSchema = z
   .object({
@@ -22,12 +22,12 @@ export const ExpertiseSchema = z
 export type Expertise = z.infer<typeof ExpertiseSchema>;
 
 /**
- * Une expérience professionnelle.
+ * A job.
  *
- * Les dates sont stockées en `AAAA-MM`, jamais en « mai 2023 → aujourd'hui » :
- * la chaîne affichée dépend de la langue et de la plateforme, donc elle se
- * formate au rendu. Stocker les deux, ce serait stocker deux vérités — et
- * celle qui se périme le plus vite est justement « aujourd'hui ».
+ * Dates are stored as `YYYY-MM`, never as "May 2023 → today": the displayed
+ * string depends on the language and the platform, so it is formatted at
+ * render time. Storing both would be storing two truths — and the one that
+ * goes stale fastest is precisely "today".
  */
 export const ExperienceSchema = z
   .object({
@@ -91,7 +91,7 @@ export const SkillGroupSchema = z
 
 export type SkillGroup = z.infer<typeof SkillGroupSchema>;
 
-/** Formation, certifications et projets ouverts — la section « Parcours ». */
+/** Education, certifications and open projects — the "Parcours" section. */
 export const BackgroundSchema = z
   .object({
     education: z.array(EducationSchema).min(1),

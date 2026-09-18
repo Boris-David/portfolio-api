@@ -5,7 +5,7 @@ on:
     branches: [main]
   pull_request:
 
-# Une seule exécution utile par référence : les précédentes sont annulées.
+# One useful run per ref: the previous ones are cancelled.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -17,8 +17,8 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  verifier:
-    name: Lint, types, contrat et tests
+  verify:
+    name: Lint, types, contract and tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -30,9 +30,9 @@ jobs:
 
       - run: npm ci
 
-      # Le rendu du CV est testé pour de vrai : un test qui saute le moteur ne
-      # prouve rien sur ce que le recruteur téléchargera.
-      - name: Installer Chromium
+      # Résumé rendering is tested for real: a test that skips the engine
+      # proves nothing about what the recruiter will download.
+      - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Format
@@ -44,23 +44,23 @@ jobs:
       - name: Types
         run: npm run typecheck
 
-      # Le contrat OpenAPI est dérivé des schémas Zod. S'il n'a pas été
-      # régénéré, la revue lit un contrat qui ment — c'est bloquant.
-      - name: Contrat OpenAPI à jour
+      # The OpenAPI contract is derived from the Zod schemas. If it has not
+      # been regenerated, review reads a contract that lies — that is blocking.
+      - name: OpenAPI contract up to date
         run: npm run check:openapi
 
-      # Les tokens de design appartiennent au dépôt hub ; ce dépôt en porte un
-      # instantané, gardé par cette comparaison.
-      - name: Tokens de design non dérivés
+      # The design tokens belong to the hub repo; this repo carries a snapshot,
+      # held by this comparison.
+      - name: Design tokens have not drifted
         run: npm run check:tokens
 
       - name: Tests
         run: npm test
 
   worker:
-    name: Worker — bundle et exécution réelle
+    name: Worker — bundle and real execution
     runs-on: ubuntu-latest
-    needs: verifier
+    needs: verify
     steps:
       - uses: actions/checkout@v5
 
@@ -71,24 +71,24 @@ jobs:
 
       - run: npm ci
 
-      - name: Installer Chromium
+      - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      # Les assets doivent exister avant de monter le Worker : le CV est rendu
-      # au build, jamais à la requête.
-      - name: Rendre les CV
+      # The assets must exist before the Worker comes up: the résumé is
+      # rendered at build time, never on request.
+      - name: Render the résumés
         run: npm run build:cv
 
-      - name: Construire le script
+      - name: Build the script
         run: npm run build
 
-      # Le contenu est embarqué DANS le script : il grossit à chaque
-      # application ajoutée. La marge restante se mesure, elle ne se suppose pas.
-      - name: Le script tient sous le plafond du plan gratuit
+      # The content is bundled INTO the script: it grows with every app added.
+      # The remaining headroom gets measured, not assumed.
+      - name: Script fits under the free plan ceiling
         run: npm run check:bundle
 
-      # Les tests unitaires tournent sur Node. Seule cette étape prouve que ce
-      # qui sera déployé fonctionne : workerd, le bundle réel, les bindings, et
-      # l'absence de système de fichiers.
-      - name: Exercer le Worker sur workerd
+      # The unit tests run on Node. Only this step proves that what will be
+      # deployed works: workerd, the real bundle, the bindings, and the absence
+      # of a file system.
+      - name: Exercise the Worker on workerd
         run: npm run smoke

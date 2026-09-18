@@ -2,24 +2,24 @@ import { z } from 'zod';
 import { RichTextSchema } from './rich-text.js';
 
 /**
- * Les trois primitives de texte du modèle, et ce qu'elles déclarent.
+ * The model's three text primitives, and what each one declares.
  *
- * Le schéma écrit ici est celui que **l'API sert** : une locale résolue, des
- * chaînes nues. Le schéma des **fichiers de contenu** — bilingue — s'en dérive
- * mécaniquement (`src/content/derive.ts`) à partir des marques posées ci-dessous.
- * Une seule déclaration, donc, pour le modèle, le contrat OpenAPI, les types
- * TypeScript et la validation du contenu.
+ * The schema written here is the one **the API serves**: a resolved locale,
+ * bare strings. The schema of the **content files** — bilingual — is derived
+ * from it mechanically (`src/content/derive.ts`) using the marks placed below.
+ * One declaration, then, for the model, the OpenAPI contract, the TypeScript
+ * types and the content validation.
  *
- * | primitive   | ce que l'auteur écrit dans le fichier | intention               |
- * |-------------|---------------------------------------|-------------------------|
- * | `prose()`   | `{ "fr": "…", "en": "…" }` obligatoire | de la phrase : une traduction manquante est une faute |
- * | `label()`   | `"Brest"` **ou** la paire             | un terme court : identique dans les deux langues, sauf mention contraire |
- * | `richText()`| la paire, avec `**gras**` et `` `code` `` | de la phrase à emphase |
+ * | primitive    | what the author writes in the file        | intent                  |
+ * |--------------|-------------------------------------------|-------------------------|
+ * | `prose()`    | `{ "fr": "…", "en": "…" }`, mandatory     | a sentence: a missing translation is a defect |
+ * | `label()`    | `"Brest"` **or** the pair                 | a short term: the same in both languages unless stated otherwise |
+ * | `richText()` | the pair, with `**bold**` and `` `code` ``| a sentence carrying emphasis |
  *
- * La distinction `prose` / `label` n'est pas cosmétique : elle met l'invariant
- * là où il compte. Sur une phrase, une chaîne unique passerait silencieusement
- * du français dans la charge utile anglaise. Sur « Brest », exiger la paire ne
- * protégerait rien et ferait 33 doublons.
+ * The `prose` / `label` distinction is not cosmetic: it puts the invariant
+ * where it matters. On a sentence, a single string would slip French into the
+ * English payload without a sound. On "Brest", demanding the pair would
+ * protect nothing and cost 33 duplicates.
  */
 export type TranslatableKind = 'prose' | 'label' | 'rich';
 
@@ -30,7 +30,7 @@ function mark<T extends z.ZodType>(schema: T, kind: TranslatableKind): T {
   return schema;
 }
 
-/** La marque de traduisibilité d'un noeud, si elle existe. */
+/** A node's translatability mark, if it has one. */
 export function translatableKind(schema: z.ZodType): TranslatableKind | undefined {
   return marks.get(schema);
 }
@@ -39,17 +39,17 @@ const PROSE = mark(z.string().min(1), 'prose');
 const LABEL = mark(z.string().min(1), 'label');
 const RICH = mark(RichTextSchema, 'rich');
 
-/** Une phrase. Les deux langues sont obligatoires côté fichier. */
+/** A sentence. Both languages are mandatory on the file side. */
 export function prose(): z.ZodString {
   return PROSE;
 }
 
-/** Un terme court. Une chaîne nue vaut « identique dans les deux langues ». */
+/** A short term. A bare string means "the same in both languages". */
 export function label(): z.ZodString {
   return LABEL;
 }
 
-/** Une phrase à emphase, transportée en spans. */
+/** A sentence carrying emphasis, transported as spans. */
 export function richText(): typeof RichTextSchema {
   return RICH;
 }

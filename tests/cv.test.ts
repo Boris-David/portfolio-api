@@ -60,8 +60,8 @@ describe('le gabarit', () => {
 
     expect(html).toContain(`--color-accent: ${tokens.color.accent?.light ?? ''};`);
     expect(html).toContain(`--type-body: ${String(tokens.type.body ?? 0)}px;`);
-    // Aucune couleur hexadécimale écrite à la main dans les règles : la seule
-    // qui reste est le blanc du papier, qui est le support et non un token.
+    // No hand-written hex colour in the rules: the only one left is the white
+    // of the paper, which is the medium and not a token.
     const rules = html.slice(html.indexOf('@page'), html.indexOf('</style>'));
     expect(rules.match(/#[0-9a-fA-F]{3,6}\b/g) ?? []).toEqual(['#fff']);
   });
@@ -107,21 +107,21 @@ describe('la couverture des polices', () => {
   });
 
   it("refuse un caractère qu'aucune police embarquée ne dessine", () => {
-    // Sans cette garde, le PDF afficherait un carré vide — et un CV avec un
-    // carré vide est un CV grillé.
+    // Without this guard the PDF would show an empty box — and a résumé with
+    // an empty box in it is a résumé thrown away.
     expect(() => {
-      assertCharactersAreCovered('un emoji 🚀 dans le CV');
-    }).toThrow(/carré vide/);
+      assertCharactersAreCovered('a 🚀 emoji in the résumé');
+    }).toThrow(/empty box/);
   });
 });
 
 /**
- * Le magasin d'assets, simulé depuis un répertoire.
+ * The asset store, simulated from a directory.
  *
- * C'est exactement ce que fait le binding `ASSETS` de Cloudflare : il sert un
- * fichier par chemin, ou 404. Le test exerce donc le vrai chemin de production
- * — manifeste lu depuis le magasin, PDF relayé depuis le magasin — sans monter
- * de Worker.
+ * This is exactly what Cloudflare's `ASSETS` binding does: it serves one file
+ * per path, or a 404. The test therefore exercises the real production path —
+ * manifest read from the store, PDF relayed from the store — with no Worker to
+ * spin up.
  */
 function assetsFromDirectory(directory: string): AssetFetcher {
   return {
@@ -163,9 +163,9 @@ describe('les artefacts rendus', () => {
   });
 
   it("reste lisible par une machine — un CV que l'ATS ne lit pas est un CV perdu", async () => {
-    // Les polices sont embarquées en sous-ensembles : sans table `ToUnicode`,
-    // les glyphes ne se remontent plus en caractères et l'extraction de texte
-    // rend du charabia. Le rendu doit donc toujours en produire une.
+    // The fonts are embedded as subsets: without a `ToUnicode` table the
+    // glyphs no longer map back to characters and text extraction returns
+    // gibberish. So the rendering must always produce one.
     const [cv] = await renderAllCvs(portfolio, renderer, tokens);
     const raw = new TextDecoder('latin1').decode(cv?.bytes ?? new Uint8Array());
 
@@ -188,7 +188,7 @@ describe('les artefacts rendus', () => {
     const store = createAssetsCvStore(
       assetsFromDirectory(directory),
       ASSET_ORIGIN,
-      'une-autre-version',
+      'some-other-version',
     );
 
     const lookup = await store.describe('fr');
@@ -226,7 +226,7 @@ describe('les artefacts rendus', () => {
     expect(lookup.status).toBe('ready');
     if (lookup.status !== 'ready') return;
 
-    // Le manifeste ment : la route HTTP en fera un 503 explicite.
+    // The manifest lies: the HTTP route will turn this into an explicit 503.
     expect(await store.open(lookup.description)).toBeNull();
   });
 
@@ -238,8 +238,8 @@ describe('les artefacts rendus', () => {
   });
 
   it('porte le nom attendu au partage, par langue', () => {
-    // Sur iOS, Safari ignore Content-Disposition pour la feuille de partage et
-    // reprend le dernier segment de l'URL : le nom du fichier EST la route.
+    // On iOS, Safari ignores Content-Disposition for the share sheet and picks
+    // up the last segment of the URL: the file name IS the route.
     expect(cvFileName('fr')).toBe('amissan.ag-cv-fr.pdf');
     expect(cvFileName('en')).toBe('amissan.ag-cv-en.pdf');
   });
@@ -247,8 +247,8 @@ describe('les artefacts rendus', () => {
 
 describe("l'ETag du CV", () => {
   it('se calcule sur le HTML source, jamais sur les octets du PDF', () => {
-    // Deux « rendus » du MÊME document : même HTML source, octets différents —
-    // c'est précisément ce que produit Chromium, qui horodate ses PDF.
+    // Two "renders" of the SAME document: same source HTML, different bytes —
+    // which is precisely what Chromium produces, since it timestamps its PDFs.
     const manifest = (bytes: number) => ({
       contentVersion: 'v1',
       renderedAt: new Date().toISOString(),
@@ -258,18 +258,18 @@ describe("l'ETag du CV", () => {
       ],
     });
 
-    const premier = readCvCatalogue(manifest(101), 'v1');
+    const first = readCvCatalogue(manifest(101), 'v1');
     const second = readCvCatalogue(manifest(202), 'v1');
 
-    expect(premier.status).toBe('ready');
+    expect(first.status).toBe('ready');
     expect(second.status).toBe('ready');
-    if (premier.status !== 'ready' || second.status !== 'ready') return;
+    if (first.status !== 'ready' || second.status !== 'ready') return;
 
-    // La taille des octets a changé, l'ETag non : un client qui revalide
-    // reçoit son 304 au lieu de retélécharger 330 Ko pour rien.
-    expect(second.entries.fr.etag).toBe(premier.entries.fr.etag);
-    expect(premier.entries.fr.etag).toBe('"SOURCE-FR"');
-    // Et deux langues ne partagent jamais le même ETag.
-    expect(premier.entries.en.etag).not.toBe(premier.entries.fr.etag);
+    // The byte count changed, the ETag did not: a client that revalidates gets
+    // its 304 instead of re-downloading 330 KB for nothing.
+    expect(second.entries.fr.etag).toBe(first.entries.fr.etag);
+    expect(first.entries.fr.etag).toBe('"SOURCE-FR"');
+    // And two languages never share the same ETag.
+    expect(first.entries.en.etag).not.toBe(first.entries.fr.etag);
   });
 });

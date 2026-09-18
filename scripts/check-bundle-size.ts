@@ -1,12 +1,12 @@
 /**
- * Vérifie que le script du Worker tient sous le plafond du plan gratuit.
+ * Checks that the Worker script fits under the free plan's ceiling.
  *
- * Le contenu est **embarqué dans le script** : il grossit donc à chaque
- * application ajoutée, à chaque étude de cas. Le plafond n'est pas une
- * abstraction lointaine, c'est une limite qu'un ajout de contenu peut franchir
- * — et le jour où il la franchit, le déploiement échoue sans prévenir.
+ * The content is **bundled into the script**: it grows with every app added,
+ * with every case study. The ceiling is not a distant abstraction, it is a
+ * limit a content addition can cross — and the day it does, the deployment
+ * fails without warning.
  *
- * Cette garde le dit avant, avec la marge restante.
+ * This guard says so beforehand, with the remaining headroom.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
@@ -15,7 +15,7 @@ import { PACKAGE_ROOT } from '../src/node/paths.js';
 
 const BUNDLE = join(PACKAGE_ROOT, 'dist', 'worker.js');
 
-/** Le plafond du plan gratuit, sur le script **compressé**. */
+/** The free plan's ceiling, on the **compressed** script. */
 const LIMIT_BYTES = 1024 * 1024;
 
 const KIB = 1024;
@@ -23,7 +23,7 @@ const PERCENT = 100;
 
 if (!existsSync(BUNDLE)) {
   console.error(
-    `[bundle] ${BUNDLE} est absent. Lancer « npm run build » — c'est lui qui produit le script.`,
+    `[bundle] ${BUNDLE} is missing. Run "npm run build" — that is what produces the script.`,
   );
   process.exit(1);
 }
@@ -32,14 +32,14 @@ const compressed = gzipSync(readFileSync(BUNDLE)).byteLength;
 const used = (compressed / LIMIT_BYTES) * PERCENT;
 
 const summary =
-  `${(compressed / KIB).toFixed(1)} Kio compressés sur ${String(LIMIT_BYTES / KIB)} Kio ` +
+  `${(compressed / KIB).toFixed(1)} KiB compressed out of ${String(LIMIT_BYTES / KIB)} KiB ` +
   `(${used.toFixed(1)} %)`;
 
 if (compressed > LIMIT_BYTES) {
   console.error(
-    `[bundle] script trop gros : ${summary}.\n` +
-      `         Le contenu est embarqué dans le script ; ce qui ne peut pas y tenir ` +
-      `va dans les Workers Static Assets, comme les CV.`,
+    `[bundle] script too large: ${summary}.\n` +
+      `         The content is bundled into the script; whatever cannot fit in it ` +
+      `goes into the Workers Static Assets, like the résumés.`,
   );
   process.exit(1);
 }

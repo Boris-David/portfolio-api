@@ -3,19 +3,19 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Les chemins disque — **uniquement pour le build et les tests**.
+ * Disk paths — **for the build and the tests only**.
  *
- * Rien de ce qui tourne sur Cloudflare Workers ne passe par ici : un Worker n'a
- * pas de système de fichiers. Tout ce qui vit sous `src/node/` est par
- * construction hors runtime, et l'ESLint du dépôt interdit d'importer
- * `node:fs`, `node:path` ou `node:url` ailleurs dans `src/`.
+ * Nothing that runs on Cloudflare Workers goes through here: a Worker has no
+ * file system. Everything under `src/node/` is out of the runtime by
+ * construction, and the repo's ESLint config forbids importing `node:fs`,
+ * `node:path` or `node:url` anywhere else in `src/`.
  */
 
 /**
- * La racine du paquet, trouvée en remontant jusqu'au `package.json`.
+ * The package root, found by walking up to the `package.json`.
  *
- * Un chemin relatif figé mentirait dès que la profondeur du module change ;
- * remonter jusqu'au marqueur donne le même résultat depuis n'importe où.
+ * A hardcoded relative path would start lying the moment a module changes
+ * depth; walking up to the marker gives the same answer from anywhere.
  */
 function findPackageRoot(from: string): string {
   let current = from;
@@ -23,7 +23,7 @@ function findPackageRoot(from: string): string {
     if (existsSync(join(current, 'package.json'))) return current;
     const parent = dirname(current);
     if (parent === current) {
-      throw new Error(`Racine du paquet introuvable au-dessus de ${from}`);
+      throw new Error(`No package root found above ${from}`);
     }
     current = parent;
   }
@@ -32,24 +32,24 @@ function findPackageRoot(from: string): string {
 export const PACKAGE_ROOT = findPackageRoot(dirname(fileURLToPath(import.meta.url)));
 
 export const PATHS = {
-  /** Les fichiers de contenu, source unique du portfolio. */
+  /** The content files, the portfolio's single source. */
   content: join(PACKAGE_ROOT, 'content'),
-  /** Les tokens de design, instantané du dépôt hub (voir `check:tokens`). */
+  /** The design tokens, a snapshot of the hub repo (see `check:tokens`). */
   designTokens: join(PACKAGE_ROOT, 'design', 'tokens.json'),
-  /** Les polices embarquées dans le PDF. */
+  /** The fonts embedded in the PDF. */
   fonts: join(PACKAGE_ROOT, 'assets', 'fonts'),
   /**
-   * Le répertoire des **Workers Static Assets**, publié avec le Worker.
-   * C'est là que le build dépose les CV rendus et leur manifeste.
+   * The **Workers Static Assets** directory, published alongside the Worker.
+   * This is where the build drops the rendered résumés and their manifest.
    */
   assets: join(PACKAGE_ROOT, 'public'),
-  /** Le contrat OpenAPI figé dans le dépôt, pour être relu en revue. */
+  /** The OpenAPI contract frozen in the repo, so it can be read in review. */
   contract: join(PACKAGE_ROOT, 'contracts', 'openapi.json'),
 } as const;
 
-/** Le dépôt hub, source de vérité des tokens de design. */
+/** The hub repo, source of truth for the design tokens. */
 export const DESIGN_TOKENS_SOURCE = {
   rawUrl: 'https://raw.githubusercontent.com/Boris-David/portfolio/main/design/tokens.json',
-  /** Le même fichier dans le workspace local, quand les dépôts sont côte à côte. */
+  /** The same file in the local workspace, when the repos sit side by side. */
   siblingPath: resolve(PACKAGE_ROOT, '..', 'design', 'tokens.json'),
 } as const;

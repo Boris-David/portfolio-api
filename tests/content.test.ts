@@ -19,14 +19,14 @@ describe('le contenu publié', () => {
   });
 
   it('a exactement la même structure dans les deux langues', () => {
-    // La forme bilingue interdit qu'une entrée existe dans une langue et pas
-    // dans l'autre ; ce test vérifie que la promesse tient sur le contenu réel.
+    // The bilingual shape forbids an entry from existing in one language and
+    // not the other; this test checks the promise holds on the real content.
     expect(shapeOf(portfolio.fr)).toEqual(shapeOf(portfolio.en));
   });
 
   it('ne laisse aucune traduction identique là où une phrase était attendue', () => {
-    // Un copier-coller du français dans le champ anglais passerait le schéma.
-    // Il ne passe pas ici : les accroches et les titres doivent différer.
+    // Pasting the French into the English field would pass the schema. It
+    // does not pass here: headlines and titles have to differ.
     expect(portfolio.fr.profile.headline).not.toBe(portfolio.en.profile.headline);
     for (const [index, summary] of portfolio.fr.profile.summary.entries()) {
       expect(plainText(summary)).not.toBe(plainText(portfolio.en.profile.summary[index] ?? []));
@@ -46,18 +46,18 @@ describe('le compte des réseaux', () => {
   const inventoried = String(countByRole(portfolio.fr.apps, 'ticketing'));
 
   it("n'est cité qu'à un seul endroit : là où la liste le démontre", () => {
-    // Un nombre écrit dans une phrase est une seconde source de vérité ; il
-    // n'est acceptable que gardé. Et répété partout, il s'affaiblit — il vaut
-    // par la liste qui l'accompagne, pas par sa fréquence.
+    // A number written into a sentence is a second source of truth; it is
+    // only acceptable when guarded. And repeated everywhere it weakens — it
+    // is worth the list that backs it, not its frequency.
     const appsSection = portfolio.fr.sections.find((section) => section.id === 'apps');
     expect(appsSection?.title).toContain(inventoried);
 
-    const ailleurs = [
+    const elsewhere = [
       ...portfolio.fr.caseStudies.map((study) => study.title),
       ...portfolio.fr.metrics.map((metric) => metric.value),
     ];
-    for (const texte of ailleurs) {
-      expect(texte, texte).not.toContain(inventoried);
+    for (const text of elsewhere) {
+      expect(text, text).not.toContain(inventoried);
     }
   });
 });
@@ -85,7 +85,7 @@ describe('les liens publiés', () => {
   });
 });
 
-/** La forme d'une valeur : ses clés et ses longueurs, sans le texte. */
+/** The shape of a value: its keys and its lengths, without the text. */
 function shapeOf(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(shapeOf);
   if (value === null || typeof value !== 'object') return typeof value;

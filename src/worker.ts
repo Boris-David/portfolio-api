@@ -4,38 +4,36 @@ import { createAssetsCvStore, type AssetFetcher } from './cv/assets-store.js';
 import { createApp } from './http/app.js';
 
 /**
- * L'entrée Cloudflare Workers.
+ * The Cloudflare Workers entry point.
  *
- * Le contenu est validé **au démarrage de l'isolat**, avant la première
- * requête : un contenu cassé fait échouer le déploiement, pas les requêtes des
- * lecteurs. Il est embarqué dans le script, donc il n'y a ni lecture disque ni
- * appel réseau à faire — et les isolats V8 n'ont pas de démarrage à froid à
- * amortir.
+ * Content is validated **at isolate startup**, before the first request: broken
+ * content fails the deployment, not a reader's request. It is bundled into the
+ * script, so there is no disk read and no network call to make — and V8
+ * isolates have no cold start to amortise.
  *
- * Les CV, eux, ne peuvent pas être dans le script : ~330 Ko chacun contre 1 Mo
- * compressé de plafond. Ils vivent dans les **Workers Static Assets**, publiés
- * avec le Worker, et sont relayés par la route CV.
+ * The résumés cannot live in the script: ~330 KB each against a 1 MB
+ * compressed ceiling. They live in the **Workers Static Assets**, published
+ * alongside the Worker, and the résumé route relays them.
  */
 interface WorkerBindings {
-  /** Le magasin d'assets statiques, déclaré dans `wrangler.jsonc`. */
+  /** The static asset store, declared in `wrangler.jsonc`. */
   readonly ASSETS: AssetFetcher;
 }
 
 const snapshot = buildSnapshot();
 
 /**
- * Le binding d'assets, exigé explicitement.
+ * The assets binding, demanded explicitly.
  *
- * Sans lui, la route CV échouerait par un `undefined` illisible en pleine
- * requête. Une erreur nommée dit tout de suite ce qui manque et où le déclarer.
+ * Without it the résumé route would fail on an unreadable `undefined` in the
+ * middle of a request. A named error says straight away what is missing and
+ * where to declare it.
  */
 function assetsOf(context: Context): AssetFetcher {
   const bindings = context.env as Partial<WorkerBindings>;
   const assets = bindings.ASSETS;
   if (assets === undefined) {
-    throw new Error(
-      'Le binding « ASSETS » est absent : déclarer `assets.binding` dans wrangler.jsonc.',
-    );
+    throw new Error('The "ASSETS" binding is missing: declare `assets.binding` in wrangler.jsonc.');
   }
   return assets;
 }

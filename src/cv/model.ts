@@ -6,29 +6,29 @@ import { formatAwardedOn, formatPeriod, formatYearRange } from './format.js';
 import { CV_LABELS, type CvLabels } from './labels.js';
 
 /**
- * Le modèle du document CV : la **sélection** du contenu qui tient sur deux
- * pages, et rien d'autre.
+ * The résumé document model: the **selection** of content that fits on two
+ * pages, and nothing else.
  *
- * Un CV n'est pas la page imprimée. La page déplie deux études de cas, dont
- * une en cinq chantiers ; les y reverser produirait six pages qu'aucun
- * recruteur ne lit. La sélection est donc explicite ici, en code relisible,
- * plutôt que dissimulée dans du balisage — et elle ne retire aucun fait du
- * contenu, qui reste servi entier par l'API.
+ * A résumé is not the printed web page. The page unfolds two case studies, one
+ * of them across five pieces of work; pouring those in would produce six pages
+ * no recruiter reads. So the selection is explicit here, in readable code,
+ * rather than hidden inside markup — and it removes no fact from the content,
+ * which the API keeps serving whole.
  *
- * Ce qui entre : identité, accroche, chiffres, expériences, **le produit tenu
- * de bout en bout**, profondeur technique, compétences, formation,
- * certifications, et l'inventaire des réseaux en production.
+ * What goes in: identity, headline, figures, jobs, **the product carried end
+ * to end**, technical depth, skills, education, certifications, and the
+ * inventory of networks in production.
  *
- * Ce qui n'entre pas : les **projets ouverts**. Un composant calendrier et un
- * exercice d'entretien ne pèsent rien à côté d'un produit livré sur l'App
- * Store, et les garder repoussait la fin du document sur une troisième page
- * au quart pleine. Ils restent servis par l'API, et le site les montre.
+ * What stays out: the **open projects**. A calendar component and an interview
+ * exercise weigh nothing next to a product shipped on the App Store, and
+ * keeping them pushed the end of the document onto a third page a quarter
+ * full. The API still serves them, and the website shows them.
  *
- * KCalories y a une place à sa mesure, et pas une ligne en bas de page : c'est
- * la seule pièce du dossier qui prouve un produit entier — quatre stacks,
- * seul, jusqu'à l'App Store. L'étude de cas de la billettique, elle, n'est pas
- * reprise : l'expérience Instant System porte déjà les mêmes faits, et les
- * écrire deux fois les affaiblirait.
+ * KCalories gets room to match what it is, not a line at the bottom of a page:
+ * it is the only piece of the file that proves a whole product — four stacks,
+ * alone, all the way to the App Store. The ticketing case study is not
+ * repeated: the Instant System job already carries the same facts, and writing
+ * them twice would weaken them.
  */
 export interface CvDocument {
   readonly locale: Locale;
@@ -51,7 +51,7 @@ export interface CvDocument {
     readonly highlights: readonly RichText[];
     readonly stack: readonly string[];
   }[];
-  /** Le produit personnel, raconté comme une pièce à conviction. */
+  /** The personal product, told as a piece of evidence. */
   readonly project: {
     readonly heading: string;
     readonly title: string;
@@ -157,10 +157,10 @@ export function buildCvDocument(portfolio: Portfolio, locale: Locale): CvDocumen
 }
 
 /**
- * L'étude de cas qui entre au CV.
+ * The case study that makes it onto the résumé.
  *
- * Le choix est éditorial, donc il est écrit ici, en clair, plutôt que deviné
- * par une heuristique sur les données. Un test garde qu'elle existe.
+ * The choice is editorial, so it is written out here rather than guessed by a
+ * heuristic over the data. A test guards that it exists.
  */
 const CV_PROJECT_SLUG = 'kcalories';
 
@@ -168,22 +168,24 @@ function caseStudyBySlug(portfolio: Portfolio, slug: string) {
   const found = portfolio.caseStudies.find((study) => study.slug === slug);
   if (found === undefined) {
     throw new Error(
-      `Le contenu ne décrit pas l'étude de cas « ${slug} » : le CV ne peut pas s'écrire.`,
+      `The content does not describe the case study "${slug}": the résumé cannot be written.`,
     );
   }
   return found;
 }
 
 /**
- * Le CV lit ses intitulés de section dans le contenu. Une section absente est
- * une erreur de contenu, pas un cas à contourner par un libellé de secours —
- * un libellé de secours serait précisément la seconde source de vérité qu'on
- * refuse partout ailleurs.
+ * The résumé reads its section headings from the content. A missing section is
+ * a content error, not a case to work around with a fallback label — a
+ * fallback label would be precisely the second source of truth refused
+ * everywhere else.
  */
 function sectionById(portfolio: Portfolio, id: Portfolio['sections'][number]['id']) {
   const found = portfolio.sections.find((section) => section.id === id);
   if (found === undefined) {
-    throw new Error(`Le contenu ne décrit pas la section « ${id} » : le CV ne peut pas s'écrire.`);
+    throw new Error(
+      `The content does not describe the section "${id}": the résumé cannot be written.`,
+    );
   }
   return found;
 }

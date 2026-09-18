@@ -1,10 +1,10 @@
 /**
- * La description du contrat.
+ * The contract's description.
  *
- * Seules les métadonnées sont écrites ici : titre, version, licence, serveurs.
- * Les **schémas** ne le sont jamais — ils sont générés depuis les schémas Zod
- * du domaine. Un contrat écrit à la main est un contrat qui ment un jour
- * (ADR 0003) ; celui-ci ne peut pas décrire autre chose que ce qui est servi.
+ * Only the metadata is written here: title, version, licence, servers. The
+ * **schemas** never are — they are generated from the domain's Zod schemas. A
+ * hand-written contract is a contract that lies one day (ADR 0003); this one
+ * cannot describe anything other than what is served.
  */
 export const OPENAPI_VERSION = '1.0.0';
 

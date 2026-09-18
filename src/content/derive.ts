@@ -6,26 +6,25 @@ import { parseMarkup } from '../domain/markup.js';
 import { translatableKind } from '../domain/text.js';
 
 /**
- * Dérive, depuis un schéma de domaine, le schéma des **fichiers de contenu**
- * pour une locale donnée.
+ * Derives, from a domain schema, the schema of the **content files** for a
+ * given locale.
  *
- * Le schéma de domaine décrit ce que l'API sert : une locale résolue, des
- * chaînes nues, du texte enrichi en spans. Les fichiers, eux, portent les deux
- * langues et le balisage d'auteur. Plutôt que d'écrire ce second schéma à la
- * main — ce qui recréerait exactement la divergence que l'ADR 0002 refuse —
- * on le **calcule** en remplaçant chaque feuille marquée traduisible par sa
- * forme bilingue, suivie de sa projection.
+ * The domain schema describes what the API serves: a resolved locale, bare
+ * strings, rich text as spans. The files, by contrast, carry both languages
+ * and the author's markup. Rather than writing that second schema by hand —
+ * which would recreate exactly the divergence ADR 0002 refuses — we
+ * **compute** it, replacing each leaf marked translatable by its bilingual
+ * form followed by its projection.
  *
- * Parser un fichier avec le schéma dérivé fait donc trois choses d'un coup :
- * valider la structure, vérifier qu'aucune traduction ne manque, et produire
- * directement la valeur de domaine pour la locale demandée.
+ * Parsing a file with the derived schema therefore does three things at once:
+ * validates the structure, checks that no translation is missing, and produces
+ * the domain value for the requested locale directly.
  *
- * Ce que la dérivation **ne** reproduit pas — les contraintes portées par les
- * conteneurs (`array().min()`, raffinements d'objet) — est rattrapé par une
- * seconde validation de la valeur projetée contre le schéma de domaine
- * lui-même (`loader.ts`). Les deux passes sont complémentaires, et un bug de
- * dérivation devient une erreur bruyante au démarrage plutôt qu'une charge
- * utile silencieusement fausse.
+ * What the derivation does **not** reproduce — the constraints carried by
+ * containers (`array().min()`, object refinements) — is caught by a second
+ * validation of the projected value against the domain schema itself
+ * (`loader.ts`). The two passes complement each other, and a derivation bug
+ * becomes a loud error at startup rather than a silently wrong payload.
  */
 export function deriveContentSchema(schema: z.ZodType, locale: Locale, path = '$'): z.ZodType {
   const kind = translatableKind(schema);
@@ -46,8 +45,8 @@ export function deriveContentSchema(schema: z.ZodType, locale: Locale, path = '$
     for (const [key, value] of Object.entries(shape)) {
       derived[key] = deriveContentSchema(value, locale, `${path}.${key}`);
     }
-    // `strictObject` : une clé inconnue dans un fichier de contenu est une
-    // faute de frappe, pas une extension. Elle doit échouer, pas être ignorée.
+    // `strictObject`: an unknown key in a content file is a typo, not an
+    // extension. It has to fail, not be ignored.
     return z.strictObject(derived);
   }
 
@@ -60,10 +59,10 @@ export function deriveContentSchema(schema: z.ZodType, locale: Locale, path = '$
   }
 
   if (schema instanceof z.ZodUnion || schema instanceof z.ZodDiscriminatedUnion) {
-    // Une union discriminée est dérivée en union simple : le discriminant est
-    // un littéral non traduisible, donc exactement une branche peut encore
-    // correspondre. Le schéma de domaine, lui, garde la forme discriminée —
-    // c'est elle qui produit le contrat et les messages d'erreur.
+    // A discriminated union derives to a plain union: the discriminant is a
+    // non-translatable literal, so exactly one branch can still match. The
+    // domain schema keeps the discriminated form — that is the one producing
+    // the contract and the error messages.
     const options = (schema.options as readonly z.ZodType[]).map((option, index) =>
       deriveContentSchema(option, locale, `${path}|${String(index)}`),
     );
@@ -71,23 +70,23 @@ export function deriveContentSchema(schema: z.ZodType, locale: Locale, path = '$
   }
 
   if (LEAF_TYPES.has(schema.def.type)) {
-    // Feuille non traduisible : identifiant, URL, date, énumération. Elle est
-    // reprise telle quelle, avec ses contraintes.
+    // Non-translatable leaf: identifier, URL, date, enum. It is taken as-is,
+    // constraints included.
     return schema;
   }
 
   throw new UnsupportedSchemaNodeError(schema.constructor.name, path);
 }
 
-/** Les types de feuille que le contenu a le droit de porter, sans traduction. */
+/** The leaf types the content is allowed to carry untranslated. */
 const LEAF_TYPES = new Set(['string', 'number', 'boolean', 'enum', 'literal']);
 
 const NON_EMPTY = z.string().min(1);
 
 /**
- * Le balisage d'auteur : `**gras**` et `` `code` ``. Un délimiteur non fermé
- * remonte avec sa raison, à l'endroit exact du fichier — pas en « chaîne
- * invalide ».
+ * The author's markup: `**bold**` and `` `code` ``. An unclosed delimiter
+ * surfaces with its reason, at the exact spot in the file — not as an
+ * "invalid string".
  */
 const MARKUP = z
   .string()

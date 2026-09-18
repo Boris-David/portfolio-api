@@ -12,19 +12,19 @@ import { renderCvHtml } from './template.js';
 import { loadDesignTokens, type DesignTokens } from './tokens.js';
 
 /**
- * La fabrique des CV : contenu + tokens → HTML → PDF.
+ * The résumé factory: content + tokens → HTML → PDF.
  *
- * Elle est déclenchée par le **build**, jamais par une requête (ADR 0004) —
- * Chromium ne tourne de toute façon pas sur un Worker. Le manifeste qu'elle
- * écrit scelle la version de contenu rendue : c'est ce qui permet à l'API de
- * refuser de servir un PDF qui ne correspond plus.
+ * It is triggered by the **build**, never by a request (ADR 0004) — Chromium
+ * does not run on a Worker anyway. The manifest it writes seals the content
+ * version that was rendered: that is what lets the API refuse to serve a PDF
+ * that no longer matches.
  *
- * Les fichiers atterrissent dans le répertoire des **Workers Static Assets**,
- * publié avec le Worker : les PDF pèsent ~330 Ko et le script est plafonné à
- * 1 Mo compressé, donc ils ne peuvent pas y être embarqués.
+ * The files land in the **Workers Static Assets** directory, published
+ * alongside the Worker: the PDFs weigh ~330 KB and the script is capped at
+ * 1 MB compressed, so they cannot be bundled into it.
  */
 
-/** Le répertoire des CV dans le magasin d'assets. */
+/** The résumé directory inside the asset store. */
 export const CV_OUTPUT_DIRECTORY = join(PATHS.assets, CV_ASSET_PREFIX.replace(/^\//, ''));
 
 export function buildCvHtml(
@@ -40,13 +40,14 @@ export interface RenderedCv {
   readonly fileName: string;
   readonly bytes: Uint8Array;
   /**
-   * L'empreinte du **HTML source**, pas des octets du PDF.
+   * The digest of the **source HTML**, not of the PDF's bytes.
    *
-   * Chromium écrit une date de création dans le PDF : deux rendus d'un contenu
-   * identique produisent donc des octets différents, et une empreinte calculée
-   * dessus changerait à chaque build. Un client qui revalide retéléchargerait
-   * 330 Ko pour rien. Le HTML, lui, ne dépend que du contenu et des tokens —
-   * il change exactement quand le document change, et jamais autrement.
+   * Chromium writes a creation date into the PDF: two renders of identical
+   * content therefore produce different bytes, and a digest computed over them
+   * would change on every build. A client that revalidates would re-download
+   * 330 KB for nothing. The HTML, by contrast, depends only on the content and
+   * the tokens — it changes exactly when the document changes, and never
+   * otherwise.
    */
   readonly sourceDigest: string;
 }

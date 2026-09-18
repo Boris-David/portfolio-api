@@ -3,18 +3,18 @@ import { z } from 'zod';
 import { PATHS } from '../node/paths.js';
 
 /**
- * Les tokens de design — la source unique de la **forme**.
+ * The design tokens — the single source of **form**.
  *
- * L'ADR 0004 est explicite : déplacer le gabarit du CV dans l'API déplace le
- * risque de dérive du contenu vers la forme, *sauf* si la mise en page du PDF
- * et celle du site boivent à la même source. Aucune couleur, aucune police,
- * aucune espace n'est donc écrite en dur dans le gabarit : tout vient d'ici.
+ * ADR 0004 is explicit: moving the résumé template into the API moves the
+ * drift risk from content to form, *unless* the PDF's layout and the website's
+ * drink from the same source. So no colour, no font and no spacing is
+ * hardcoded in the template: everything comes from here.
  *
- * Le fichier est un **instantané** du dépôt hub, qui en est propriétaire (ADR
- * 0001). Ce dépôt doit se cloner et se construire seul, donc il en porte une
- * copie — et `npm run check:tokens` échoue si elle dérive de l'original. Même
- * dispositif que l'instantané embarqué côté iOS : une copie gardée par une
- * vérification, jamais une seconde source de vérité.
+ * The file is a **snapshot** of the hub repo, which owns it (ADR 0001). This
+ * repo has to clone and build on its own, so it carries a copy — and
+ * `npm run check:tokens` fails if that copy drifts from the original. Same
+ * arrangement as the snapshot embedded on the iOS side: a copy held by a
+ * check, never a second source of truth.
  */
 const ThemedColorSchema = z.object({ light: z.string(), dark: z.string() });
 
@@ -49,11 +49,10 @@ function stripComments(value: unknown): unknown {
 }
 
 /**
- * Les tokens, en variables CSS.
+ * The tokens, as CSS variables.
  *
- * Le PDF est un document imprimé : il prend systématiquement la déclinaison
- * claire. Le mode sombre n'est pas « non implémenté », il n'a pas de sens sur
- * du papier.
+ * The PDF is a printed document: it always takes the light variant. Dark mode
+ * is not "not implemented" — it has no meaning on paper.
  */
 export function toCssVariables(tokens: DesignTokens): string {
   const lines: string[] = [];

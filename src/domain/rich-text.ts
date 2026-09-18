@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 /**
- * Un fragment de texte et son emphase. C'est la forme **transportée** : les
- * clients composent des spans (un `Text` SwiftUI, un `<strong>` React) sans
- * jamais interpréter de HTML ni réécrire un analyseur de balisage.
+ * A fragment of text and its emphasis. This is the **transported** shape:
+ * clients compose spans (a SwiftUI `Text`, a React `<strong>`) without ever
+ * interpreting HTML or rewriting a markup parser.
  */
 export const SpanStyleSchema = z.enum(['plain', 'strong', 'code']);
 

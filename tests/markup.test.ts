@@ -36,7 +36,7 @@ describe("grammaire d'emphase inline", () => {
   });
 
   it('nomme la raison dans le message, pour situer la faute dans le fichier', () => {
-    expect(() => parseMarkup('Un `code oublié')).toThrow(/jamais fermé/);
+    expect(() => parseMarkup('Un `code oublié')).toThrow(/never closed/);
   });
 
   it('expose la validité sans lever, pour le schéma', () => {

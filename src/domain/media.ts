@@ -2,15 +2,15 @@ import { z } from 'zod';
 import { prose } from './text.js';
 
 /**
- * Une capture d'écran.
+ * A screenshot.
  *
- * L'URL n'est pas ici : l'hébergement des visuels ne fait pas partie de cette
- * version. Inventer un chemin qui ne résout rien créerait un contrat faux ; le
- * client résout `id` contre son propre jeu d'assets.
+ * The URL is not here: hosting the imagery is not part of this version.
+ * Inventing a path that resolves to nothing would make the contract lie; the
+ * client resolves `id` against its own asset set.
  *
- * `alt` et `caption` sont deux textes distincts et le resteront : l'un décrit
- * l'image pour qui ne la voit pas, l'autre la commente pour qui la voit. Les
- * confondre dégrade les deux.
+ * `alt` and `caption` are two distinct texts and will stay that way: one
+ * describes the image for whoever cannot see it, the other comments on it for
+ * whoever can. Conflating them degrades both.
  */
 export const MediaSchema = z
   .object({
