@@ -66,6 +66,33 @@ describe('le gabarit', () => {
     expect(rules.match(/#[0-9a-fA-F]{3,6}\b/g) ?? []).toEqual(['#fff']);
   });
 
+  /**
+   * L'alignement vient du hub, comme les couleurs — donc le CV, le site et
+   * l'application ne peuvent pas diverger dessus. Un gabarit qui écrirait
+   * « justify » en dur serait une quatrième source de vérité.
+   */
+  it("prend l'alignement de la prose dans les tokens, pas en dur", () => {
+    const html = buildCvHtml(portfolio.fr, 'fr', tokens);
+
+    expect(html).toContain(`--align-prose: ${tokens.text.align.prose ?? ''};`);
+    expect(html).toContain('text-align: var(--align-prose);');
+
+    // Et nulle part la valeur écrite à la main.
+    const rules = html.slice(html.indexOf('@page'), html.indexOf('</style>'));
+    expect(rules).not.toContain('text-align: justify');
+  });
+
+  /**
+   * ⚠️ Toute cette feuille de style vit dans un template literal. Un backtick
+   * dans un commentaire ferme la chaîne — c'est exactement comme ça que la
+   * première version du bloc de justification a refusé de compiler.
+   */
+  it('ne contient aucun backtick dans sa feuille de style', () => {
+    const template = readFileSync(new URL('../src/cv/template.ts', import.meta.url), 'utf8');
+    const stylesheet = template.slice(template.indexOf('@page'), template.indexOf('</style>'));
+    expect(stylesheet).not.toContain('`');
+  });
+
   it('rend le texte enrichi en balises, jamais en HTML stocké', () => {
     expect(richToHtml([{ text: 'fait', style: 'strong' }])).toBe('<strong>fait</strong>');
     expect(richToHtml([{ text: 'async/await', style: 'code' }])).toBe('<code>async/await</code>');
