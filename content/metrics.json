@@ -22,7 +22,7 @@
   },
   {
     "id": "kcalories-crash-free",
-    "value": { "fr": "> 99,8", "en": "> 99.8" },
+    "value": { "fr": "> 99,9", "en": "> 99.9" },
     "unit": "%",
     "countTo": null,
     "caption": {

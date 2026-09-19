@@ -438,8 +438,8 @@
                     "en": "**Published on the App Store five months** after the first line of code."
                   },
                   {
-                    "fr": "**Plus de 99,8 % de sessions sans crash** — la qualité se mesure, elle ne se déclare pas.",
-                    "en": "**Over 99.8% crash-free sessions** — quality is measured, not claimed."
+                    "fr": "**Plus de 99,9 % de sessions sans crash**, relevés dans App Store Connect — au-dessus de ce qu'on attend d'une application mobile qui tourne bien.",
+                    "en": "**Over 99.9% crash-free sessions**, taken from App Store Connect — above what you expect of a mobile app that runs well."
                   },
                   {
                     "fr": "**Version 2.0 vingt jours** après la 1.0 : la chaîne de livraison tenait.",
