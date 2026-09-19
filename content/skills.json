@@ -51,6 +51,25 @@
     ]
   },
   {
+    "$comment": "Les outils que l'équipe utilise autour du code. Ils ont leur place ici parce qu'un recruteur cherche aussi quelqu'un qui sait tenir un board et écrire une page de spéc — et parce que l'administration de Jira et les JQL ne s'apprennent pas en une semaine.",
+    "id": "collaboration",
+    "title": {
+      "fr": "Collaboration et pilotage",
+      "en": "Collaboration & delivery tooling"
+    },
+    "items": [
+      {
+        "fr": "Jira — administration, JQL, boards kanban",
+        "en": "Jira — administration, JQL, kanban boards"
+      },
+      "Confluence",
+      {
+        "fr": "Google Workspace — agendas partagés, salles, visios",
+        "en": "Google Workspace — shared calendars, rooms, meetings"
+      }
+    ]
+  },
+  {
     "id": "practice",
     "title": { "fr": "Méthode", "en": "Practice" },
     "items": [
