@@ -2,20 +2,26 @@
   {
     "$comment": "Les en-têtes éditoriaux. Le numéro affiché (« 01 · ») est le rang dans cette liste, jamais une donnée.",
     "id": "case-studies",
-    "eyebrow": { "fr": "Études de cas", "en": "Case studies" },
+    "eyebrow": {
+      "fr": "Problèmes résolus",
+      "en": "Problems solved"
+    },
     "title": {
-      "fr": "Deux projets racontés comme un ingénieur produit",
-      "en": "Two projects told the way a product engineer would"
+      "fr": "Du problème posé à la mise en production",
+      "en": "From the problem on the table to production"
     },
     "intro": {
-      "fr": "Le problème, les décisions que j'ai prises, et ce qu'elles ont produit. Ce n'est pas la syntaxe Swift qui se juge ici, c'est le jugement technique.",
-      "en": "The problem, the decisions I made, and what they produced. What is being judged here is not Swift syntax — it is technical judgement."
+      "fr": "Deux contextes très différents : la billettique embarquée dans trente-trois applications de transport, et une application que j'ai menée seul de bout en bout.",
+      "en": "Two very different settings: the ticketing embedded in thirty-three transport apps, and an application I carried end to end on my own."
     },
     "note": null
   },
   {
     "id": "apps",
-    "eyebrow": { "fr": "En production", "en": "In production" },
+    "eyebrow": {
+      "fr": "En production",
+      "en": "In production"
+    },
     "title": {
       "fr": "33 applications, 3 territoires, un même socle",
       "en": "33 apps, 3 territories, one platform"
@@ -31,20 +37,29 @@
   },
   {
     "id": "depth",
-    "eyebrow": { "fr": "Profondeur technique", "en": "Technical depth" },
-    "title": { "fr": "Là où je vais au fond", "en": "Where I go deep" },
+    "eyebrow": {
+      "fr": "Expertise",
+      "en": "Expertise"
+    },
+    "title": {
+      "fr": "Les sujets que je maîtrise le mieux",
+      "en": "The subjects I know best"
+    },
     "intro": {
-      "fr": "Trois sujets creusés, plutôt que quinze technologies listées. Ce sont ceux sur lesquels je peux être challengé une heure durant.",
-      "en": "Three subjects explored properly, rather than fifteen technologies listed. These are the ones I can be challenged on for an hour."
+      "fr": "Trois sujets sur lesquels je peux entrer dans le détail, en entretien comme en revue de code.",
+      "en": "Three subjects I can go into detail on, in an interview as in a code review."
     },
     "note": null
   },
   {
     "id": "background",
-    "eyebrow": { "fr": "Parcours", "en": "Background" },
+    "eyebrow": {
+      "fr": "Missions",
+      "en": "Experience"
+    },
     "title": {
-      "fr": "Expériences, formation et certifications",
-      "en": "Experience, education and certifications"
+      "fr": "Où j'ai travaillé, et ce que j'y ai fait",
+      "en": "Where I have worked, and what I did there"
     },
     "intro": null,
     "note": null

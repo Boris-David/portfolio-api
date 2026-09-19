@@ -41,7 +41,7 @@ describe('le modèle du CV', () => {
   });
 
   it('lit ses intitulés de section dans le contenu', () => {
-    expect(document.expertise.heading).toBe('Profondeur technique');
+    expect(document.expertise.heading).toBe('Expertise');
     expect(document.production.heading).toBe('En production');
   });
 });
