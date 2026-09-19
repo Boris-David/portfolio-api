@@ -8,6 +8,7 @@
       "territory": "Alès",
       "appStoreId": "1568307294",
       "appStoreUrl": "https://apps.apple.com/fr/app/alesy/id1568307294",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -19,6 +20,7 @@
       },
       "appStoreId": "1636455849",
       "appStoreUrl": "https://apps.apple.com/fr/app/at-bus/id1636455849",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -27,6 +29,7 @@
       "territory": "Auxerre",
       "appStoreId": "6475961624",
       "appStoreUrl": "https://apps.apple.com/fr/app/auxr-m-le-bus/id6475961624",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -35,6 +38,7 @@
       "territory": "Brest",
       "appStoreId": "1469372029",
       "appStoreUrl": "https://apps.apple.com/fr/app/bibus/id1469372029",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -43,6 +47,7 @@
       "territory": "Cholet",
       "appStoreId": "1375557619",
       "appStoreUrl": "https://apps.apple.com/fr/app/choletbus/id1375557619",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -51,6 +56,7 @@
       "territory": "Narbonne",
       "appStoreId": "1211228399",
       "appStoreUrl": "https://apps.apple.com/fr/app/citibus/id1211228399",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -59,6 +65,7 @@
       "territory": "Clermont-Ferrand",
       "appStoreId": "1593178553",
       "appStoreUrl": "https://apps.apple.com/fr/app/clermoov/id1593178553",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -67,6 +74,7 @@
       "territory": "Arles",
       "appStoreId": "6612028427",
       "appStoreUrl": "https://apps.apple.com/fr/app/envia/id6612028427",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -75,6 +83,7 @@
       "territory": "Sophia Antipolis",
       "appStoreId": "1441409420",
       "appStoreUrl": "https://apps.apple.com/fr/app/envibus-cap-azur/id1441409420",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -83,6 +92,7 @@
       "territory": "La Roche-sur-Yon",
       "appStoreId": "1218911819",
       "appStoreUrl": "https://apps.apple.com/fr/app/impulsyon-la-roche-sur-yon/id1218911819",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -91,6 +101,7 @@
       "territory": "Angers",
       "appStoreId": "598934011",
       "appStoreUrl": "https://apps.apple.com/fr/app/irigo/id598934011",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -99,6 +110,7 @@
       "territory": "Lorient",
       "appStoreId": "1409695018",
       "appStoreUrl": "https://apps.apple.com/fr/app/izilo/id1409695018",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -107,6 +119,7 @@
       "territory": "Centre-Val de Loire",
       "appStoreId": "934859202",
       "appStoreUrl": "https://apps.apple.com/fr/app/jvmalin/id934859202",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -115,6 +128,7 @@
       "territory": "Occitanie",
       "appStoreId": "1477980319",
       "appStoreUrl": "https://apps.apple.com/fr/app/lio-occitanie/id1477980319",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -123,6 +137,7 @@
       "territory": "Troyes",
       "appStoreId": "1064410903",
       "appStoreUrl": "https://apps.apple.com/fr/app/mobilit%C3%A9s-by-tcm-tcat/id1064410903",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -131,6 +146,7 @@
       "territory": "Rouen",
       "appStoreId": "550492144",
       "appStoreUrl": "https://apps.apple.com/fr/app/my-astuce/id550492144",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -139,6 +155,7 @@
       "territory": "Aix-Marseille",
       "appStoreId": "1516283411",
       "appStoreUrl": "https://apps.apple.com/fr/app/la-m%C3%A9tropole-mobilite/id1516283411",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -147,6 +164,7 @@
       "territory": "Grand Lac",
       "appStoreId": "1022819776",
       "appStoreUrl": "https://apps.apple.com/fr/app/ondea/id1022819776",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -155,6 +173,7 @@
       "territory": "Auvergne-Rhône-Alpes",
       "appStoreId": "1496323667",
       "appStoreUrl": "https://apps.apple.com/fr/app/o%C3%B9ra/id1496323667",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -163,6 +182,7 @@
       "territory": "Cannes",
       "appStoreId": "1133998027",
       "appStoreUrl": "https://apps.apple.com/fr/app/palm-bus-cap-azur/id1133998027",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -171,6 +191,7 @@
       "territory": "Quimper",
       "appStoreId": "1046521320",
       "appStoreUrl": "https://apps.apple.com/fr/app/qub-lappli/id1046521320",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -179,6 +200,7 @@
       "territory": "Riom",
       "appStoreId": "6747768439",
       "appStoreUrl": "https://apps.apple.com/fr/app/rlv-mobilit%C3%A9s/id6747768439",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -187,6 +209,7 @@
       "territory": "Porte de l'Isère",
       "appStoreId": "1545373705",
       "appStoreUrl": "https://apps.apple.com/fr/app/ruban/id1545373705",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -195,6 +218,7 @@
       "territory": "Toulon",
       "appStoreId": "429896529",
       "appStoreUrl": "https://apps.apple.com/fr/app/r%C3%A9seau-mistral/id429896529",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -203,6 +227,7 @@
       "territory": "Charleville-Mézières",
       "appStoreId": "6746128528",
       "appStoreUrl": "https://apps.apple.com/fr/app/r%C3%A9seau-tac/id6746128528",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -211,6 +236,7 @@
       "territory": "Le Mans",
       "appStoreId": "1399018127",
       "appStoreUrl": "https://apps.apple.com/fr/app/setram/id1399018127",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -219,6 +245,7 @@
       "territory": "Annecy",
       "appStoreId": "1047139539",
       "appStoreUrl": "https://apps.apple.com/fr/app/sibra/id1047139539",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -227,6 +254,7 @@
       "territory": "Annemasse",
       "appStoreId": "1019613481",
       "appStoreUrl": "https://apps.apple.com/fr/app/tac-mobilit%C3%A9s/id1019613481",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -235,6 +263,7 @@
       "territory": "Lyon",
       "appStoreId": "579379606",
       "appStoreUrl": "https://apps.apple.com/fr/app/tcl/id579379606",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -246,6 +275,7 @@
       },
       "appStoreId": "6737310055",
       "appStoreUrl": "https://apps.apple.com/fr/app/tere-tahiti-mobilit%C3%A9s/id6737310055",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -254,6 +284,7 @@
       "territory": "Saint-Brieuc",
       "appStoreId": "1100130027",
       "appStoreUrl": "https://apps.apple.com/fr/app/tub/id1100130027",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -262,6 +293,7 @@
       "territory": "Laval",
       "appStoreId": "1069887708",
       "appStoreUrl": "https://apps.apple.com/fr/app/tul-laval/id1069887708",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -270,6 +302,7 @@
       "territory": "Caen",
       "appStoreId": "592996452",
       "appStoreUrl": "https://apps.apple.com/fr/app/twisto/id592996452",
+      "sourceUrl": null,
       "role": "ticketing"
     },
     {
@@ -278,6 +311,7 @@
       "territory": "Orange",
       "appStoreId": "580161193",
       "appStoreUrl": "https://apps.apple.com/fr/app/mail-orange-messagerie-email/id580161193",
+      "sourceUrl": null,
       "role": "features"
     },
     {
@@ -289,6 +323,20 @@
       },
       "appStoreId": "6761574750",
       "appStoreUrl": "https://apps.apple.com/fr/app/kcalories/id6761574750",
+      "sourceUrl": null,
+      "role": "end-to-end"
+    },
+    {
+      "$comment": "Ce portfolio : le site, l'API et l'app iOS. Pas encore sur l'App Store — les trois dépôts sont publics, donc sourceUrl porte le lien et appStoreUrl reste null jusqu'à la mise en vente. Ne pas inventer un identifiant en attendant.",
+      "slug": "portfolio",
+      "name": "Portfolio",
+      "territory": {
+        "fr": "Projet personnel",
+        "en": "Personal project"
+      },
+      "appStoreId": null,
+      "appStoreUrl": null,
+      "sourceUrl": "https://github.com/Boris-David/portfolio-ios",
       "role": "end-to-end"
     }
   ]

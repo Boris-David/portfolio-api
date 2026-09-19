@@ -677,11 +677,24 @@
             "minLength": 1
           },
           "appStoreId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "pattern": "^\\d+$"
           },
           "appStoreUrl": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uri"
           },
           "role": {
@@ -699,6 +712,7 @@
           "territory",
           "appStoreId",
           "appStoreUrl",
+          "sourceUrl",
           "role"
         ]
       },
