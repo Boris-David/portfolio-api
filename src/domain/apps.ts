@@ -12,13 +12,28 @@ export const AppRoleSchema = z.enum(['ticketing', 'features', 'end-to-end']);
 
 export type AppRole = z.infer<typeof AppRoleSchema>;
 
+/**
+ * One app, and the ways a reader can reach it.
+ *
+ * Both links are nullable, and for opposite reasons. An app shipped inside
+ * somebody else's product is on the App Store and has no public source; an app
+ * of the author's own can be readable long before it is downloadable. Requiring
+ * an App Store identifier would have meant either leaving his own work out of
+ * the inventory, or inventing one — so the pair is optional and the surfaces
+ * show whichever link exists.
+ *
+ * `null` is written explicitly: an absent key would be a typo, a `null` is a
+ * statement.
+ */
 export const AppSchema = z
   .object({
     slug: z.string().regex(/^[a-z0-9-]+$/),
     name: z.string().min(1),
     territory: label(),
-    appStoreId: z.string().regex(/^\d+$/),
-    appStoreUrl: z.url(),
+    appStoreId: z.string().regex(/^\d+$/).nullable(),
+    appStoreUrl: z.url().nullable(),
+    /** The public repository, when the code is open. */
+    sourceUrl: z.url().nullable(),
     role: AppRoleSchema,
   })
   .meta({ id: 'App' });

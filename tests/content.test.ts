@@ -65,14 +65,37 @@ describe('le compte des réseaux', () => {
 describe("l'inventaire des applications", () => {
   it("n'a ni slug ni identifiant App Store en double", () => {
     const { items } = portfolio.fr.apps;
+    // Les identifiants absents ne se comparent pas entre eux : deux `null`
+    // s'effondreraient en un seul et rendraient ce test complaisant.
+    const identifiers = items.map((app) => app.appStoreId).filter((id) => id !== null);
 
     expect(new Set(items.map((app) => app.slug)).size).toBe(items.length);
-    expect(new Set(items.map((app) => app.appStoreId)).size).toBe(items.length);
+    expect(new Set(identifiers).size).toBe(identifiers.length);
   });
 
   it('pointe chaque application vers son propre identifiant', () => {
     for (const app of portfolio.fr.apps.items) {
-      expect(app.appStoreUrl).toContain(`id${app.appStoreId}`);
+      if (app.appStoreId === null) continue;
+
+      expect(app.appStoreUrl, app.slug).toContain(`id${app.appStoreId}`);
+    }
+  });
+
+  it("n'a jamais un identifiant sans son lien, ni l'inverse", () => {
+    for (const app of portfolio.fr.apps.items) {
+      expect(
+        app.appStoreId === null,
+        `${app.slug} : un identifiant App Store et son lien vont ensemble ou pas du tout`,
+      ).toBe(app.appStoreUrl === null);
+    }
+  });
+
+  it('donne au moins un lien à chaque application', () => {
+    for (const app of portfolio.fr.apps.items) {
+      expect(
+        app.appStoreUrl !== null || app.sourceUrl !== null,
+        `${app.slug} n'est atteignable par aucun lien — une carte sans destination`,
+      ).toBe(true);
     }
   });
 });
