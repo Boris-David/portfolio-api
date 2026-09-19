@@ -3,16 +3,16 @@
     "$comment": "Les en-têtes éditoriaux. Le numéro affiché (« 01 · ») est le rang dans cette liste, jamais une donnée.",
     "id": "case-studies",
     "eyebrow": {
-      "fr": "Projets",
-      "en": "Projects"
+      "fr": "Problèmes résolus",
+      "en": "Problems solved"
     },
     "title": {
-      "fr": "Deux projets, du problème à la mise en production",
-      "en": "Two projects, from the problem to production"
+      "fr": "Du problème posé à la mise en production",
+      "en": "From the problem on the table to production"
     },
     "intro": {
-      "fr": "Pour chacun : ce qu'il fallait résoudre, les choix que j'ai faits, et ce que ça a donné une fois en production.",
-      "en": "For each one: what had to be solved, the choices I made, and what it gave once it was live."
+      "fr": "Deux contextes très différents : la billettique embarquée dans trente-trois applications de transport, et une application que j'ai menée seul de bout en bout.",
+      "en": "Two very different settings: the ticketing embedded in thirty-three transport apps, and an application I carried end to end on my own."
     },
     "note": null
   },
