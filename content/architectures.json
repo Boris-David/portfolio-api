@@ -1,9 +1,9 @@
 {
-  "$comment": "Les motifs d'architecture, et ce que montrent les bases de code traversées. Aucun nom de dépôt, de module interne, de client ni de prestataire : on décrit des motifs, jamais le code d'un employeur. Les comptes sont des suffixes de types relevés dans les dépôts le 2026-09-18 ; ils sont épinglés par tests/resources.test.ts, parce qu'un chiffre qui n'est pas gardé finit par être arrondi.",
-  "verifiedOn": "2026-09-18",
+  "$comment": "Les motifs d'architecture, et ce que montrent les bases de code traversées. Aucun nom de dépôt, de module interne, de client ni de prestataire : on décrit des motifs, jamais le code d'un employeur. Et AUCUNE mesure relevée dans une base de code privée : un compte de types dit l'échelle d'un produit qui ne m'appartient pas, et aucun lecteur ne peut le recompter. Seul un projet portant un sourceUrl public peut donc publier des comptes — tests/resources.test.ts refuse les deux fautes : un compte sans dépôt ouvert, et un compte qui aurait dérivé.",
+  "verifiedOn": "2026-09-20",
   "intro": {
-    "fr": "Trois bases de code, trois motifs, et une trajectoire : **MVVM sur UIKit vers Clean Architecture sur SwiftUI**. Les comptes cités plus bas ont été relevés dans les dépôts, pas dans un souvenir — c'est la seule raison pour laquelle ils sont là.",
-    "en": "Three codebases, three patterns, one trajectory: **MVVM on UIKit towards Clean Architecture on SwiftUI**. The counts below were measured in the repositories, not remembered — that is the only reason they are here."
+    "fr": "Quatre bases de code, et une trajectoire : **MVVM sur UIKit vers Clean Architecture sur SwiftUI**. Les motifs se comparent sur ce qu'ils achètent et ce qu'ils coûtent ; les comptes, eux, ne sont donnés que pour du code ouvert, où ils se recomptent.",
+    "en": "Four codebases, and one trajectory: **MVVM on UIKit towards Clean Architecture on SwiftUI**. The patterns are compared on what they buy and what they cost; the counts are given only for code that is open, where they can be counted again."
   },
   "patterns": [
     {
@@ -120,15 +120,11 @@
         "UIKit",
         { "fr": "Navigation par objets de flux", "en": "Navigation by flow objects" }
       ],
-      "evidence": [
-        { "symbol": "ViewController", "count": 304 },
-        { "symbol": "ViewModel", "count": 325 },
-        { "symbol": "Flow", "count": 124 },
-        { "symbol": "Presenter", "count": 14 }
-      ],
+      "evidence": [],
+      "sourceUrl": null,
       "reading": {
-        "fr": "**MVVM sur UIKit**, avec la navigation sortie des contrôleurs et portée par des objets de flux dédiés. Le rapport entre les modèles de vue et les présentateurs tranche la question : MVP n'y couvre qu'une poignée de modules — c'est un vestige, pas le motif de la base.",
-        "en": "**MVVM on UIKit**, with navigation lifted out of the controllers and carried by dedicated flow objects. The ratio between view models and presenters settles the question: MVP covers only a handful of modules — a leftover, not the pattern of the codebase."
+        "fr": "**MVVM sur UIKit**, avec la navigation sortie des contrôleurs et portée par des objets de flux dédiés. MVP y subsiste par endroits, hérité d'une époque antérieure : un vestige, pas le motif de la base.",
+        "en": "**MVVM on UIKit**, with navigation lifted out of the controllers and carried by dedicated flow objects. MVP survives in places, inherited from an earlier era: a leftover, not the pattern of the codebase."
       }
     },
     {
@@ -146,15 +142,11 @@
         { "fr": "Modules par fonctionnalité", "en": "Feature modules" },
         { "fr": "Injection de dépendances", "en": "Dependency injection" }
       ],
-      "evidence": [
-        { "symbol": "UseCase", "count": 677 },
-        { "symbol": "Repository", "count": 417 },
-        { "symbol": "Protocol", "count": 558 },
-        { "symbol": "Store", "count": 69 }
-      ],
+      "evidence": [],
+      "sourceUrl": null,
       "reading": {
-        "fr": "**Clean Architecture modularisée par fonctionnalité** : chaque fonctionnalité porte ses trois couches — domaine, infrastructure, présentation — et l'état d'écran est tenu par des objets observables. Le nombre de protocoles n'est pas un détail de style : c'est la mesure de l'endroit où passent réellement les frontières.",
-        "en": "**Clean Architecture modularised per feature**: every feature carries its three layers — domain, infrastructure, presentation — and screen state is held by observable objects. The number of protocols is not a matter of style: it measures where the boundaries actually run."
+        "fr": "**Clean Architecture modularisée par fonctionnalité** : chaque fonctionnalité porte ses trois couches — domaine, infrastructure, présentation — et l'état d'écran est tenu par des objets observables. La frontière n'y est pas une convention de dossier : elle est déclarée par un module, donc c'est le compilateur qui la refuse.",
+        "en": "**Clean Architecture modularised per feature**: every feature carries its three layers — domain, infrastructure, presentation — and screen state is held by observable objects. The boundary is not a folder convention there: it is declared by a module, so the compiler is what refuses to cross it."
       }
     },
     {
@@ -173,9 +165,39 @@
         "Feature flags"
       ],
       "evidence": [],
+      "sourceUrl": null,
       "reading": {
         "fr": "**SwiftUI, SwiftData et Clean Architecture en modules SPM**, posés quand rien ne les imposait encore. Sur un produit d'une seule personne, la frontière ne protège d'aucune autre équipe — elle empêche le raccourci qu'on se permet à soi-même.",
         "en": "**SwiftUI, SwiftData and Clean Architecture in SPM modules**, laid down when nothing yet demanded them. On a one-person product, a boundary protects you from no other team — it stops the shortcut you would grant yourself."
+      }
+    },
+    {
+      "id": "portfolio-app",
+      "name": {
+        "fr": "Ce portfolio",
+        "en": "This portfolio"
+      },
+      "context": {
+        "fr": "L'application que vous lisez, et l'API qui la sert. Les trois dépôts sont publics : les comptes ci-dessous se recomptent en une commande.",
+        "en": "The app you are reading, and the API serving it. All three repositories are public: the counts below can be re-counted with one command."
+      },
+      "pattern": "clean",
+      "stack": [
+        "Swift 6",
+        "SwiftUI",
+        "Clean Architecture",
+        { "fr": "Modules SPM", "en": "SPM modules" },
+        { "fr": "Concurrence stricte", "en": "Strict concurrency" }
+      ],
+      "evidence": [
+        { "symbol": "Screen", "count": 15 },
+        { "symbol": "Store", "count": 6 },
+        { "symbol": "Repository", "count": 3 }
+      ],
+      "sourceUrl": "https://github.com/Boris-David/portfolio-ios",
+      "reading": {
+        "fr": "**Neuf modules, et un dixième que personne n'importe** : la racine de composition. Le domaine ne dépend de rien, et ce n'est pas une intention — c'est son manifeste, et une suite de tests lit les manifestes pour refuser l'arête qui ne doit pas exister. C'est la seule de ces quatre bases dont vous pouvez vérifier chaque phrase.",
+        "en": "**Nine modules, and a tenth nobody imports**: the composition root. The domain depends on nothing, and that is not an intention — it is its manifest, and a test suite reads the manifests to refuse the edge that must not exist. It is the only one of these four codebases whose every sentence you can check."
       }
     }
   ]

@@ -911,6 +911,13 @@
               "$ref": "#/components/schemas/ArchitectureEvidence"
             }
           },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
           "reading": {
             "$ref": "#/components/schemas/RichText"
           }
@@ -922,6 +929,7 @@
           "pattern",
           "stack",
           "evidence",
+          "sourceUrl",
           "reading"
         ],
         "description": "A codebase, the pattern it follows, and the measurements that show it."

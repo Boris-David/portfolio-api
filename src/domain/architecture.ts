@@ -38,14 +38,20 @@ export const ArchitecturePatternSchema = z
 export type ArchitecturePattern = z.infer<typeof ArchitecturePatternSchema>;
 
 /**
- * A counted symbol suffix in a codebase — "325 types whose name ends in
- * ViewModel".
+ * A counted symbol suffix in a codebase — "15 types whose name ends in Screen".
  *
  * It is structured data rather than a number written inside a sentence, and
  * that is the whole point: a figure buried in prose cannot be checked, while
- * this one is pinned by a test against what was actually measured. It says
- * nothing about the business, names no module and no client — it is the shape
- * of the code, which is exactly what the reading claims.
+ * this one is pinned by a test against what was actually measured.
+ *
+ * ## Only open code may be counted
+ *
+ * A count also says something the reading does not: the **scale** of the
+ * codebase it was taken from. On an employer's private repository that is not
+ * the author's to publish, and no reader could re-derive it anyway — the worst
+ * of both, a figure that discloses and cannot be checked. So evidence is
+ * admissible only where `sourceUrl` points at a public repository, and
+ * `tests/resources.test.ts` refuses the pair that breaks the rule.
  */
 export const ArchitectureEvidenceSchema = z
   .object({
@@ -74,6 +80,13 @@ export const ProjectArchitectureSchema = z
     pattern: ArchitecturePatternIdSchema,
     stack: z.array(label()).min(1),
     evidence: z.array(ArchitectureEvidenceSchema),
+    /**
+     * The public repository a reader can open, or `null` when there is none.
+     *
+     * It is what makes `evidence` admissible: a count is published only for a
+     * codebase the reader can clone and count again.
+     */
+    sourceUrl: z.url().nullable(),
     reading: richText(),
   })
   .meta({

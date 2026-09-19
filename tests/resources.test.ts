@@ -51,19 +51,30 @@ describe('les plongées en version longue', () => {
 });
 
 /**
- * What was actually measured in the codebases, and when.
+ * What was actually measured, and when.
  *
- * These counts cannot be derived from anything the portfolio publishes: they
- * come from outside. A figure like that, published and guarded by nothing, is
- * the one that gets rounded up the day someone retells it — so it is pinned
- * here, and re-measuring means changing this table on purpose.
+ * A count is pinned here so that re-measuring means changing this table on
+ * purpose — a figure guarded by nothing is the one that gets rounded up the day
+ * someone retells it.
+ *
+ * Only the portfolio's own repository carries counts. The employer platforms
+ * carried some until 2026-09-20 and no longer do: a count of types states the
+ * scale of a private product, it is not the author's to publish, and no reader
+ * could check it. `evidence` is therefore tied to `sourceUrl` below, so the
+ * figures cannot come back without a public repository coming with them.
+ *
+ * Re-measure with, from the root of `portfolio-ios`:
+ *
+ *     grep -rEoh "(struct|final class|actor|enum) [A-Za-z]+Screen\b" \
+ *       --include="*.swift" Packages App | wc -l
  */
-const MEASURED_ON = '2026-09-18';
+const MEASURED_ON = '2026-09-20';
 
 const MEASURED: Readonly<Record<string, Readonly<Record<string, number>>>> = {
-  'first-generation-platform': { ViewController: 304, ViewModel: 325, Flow: 124, Presenter: 14 },
-  'current-generation-platform': { UseCase: 677, Repository: 417, Protocol: 558, Store: 69 },
+  'first-generation-platform': {},
+  'current-generation-platform': {},
   kcalories: {},
+  'portfolio-app': { Screen: 15, Store: 6, Repository: 3 },
 };
 
 describe("le dossier d'architecture", () => {
@@ -77,6 +88,17 @@ describe("le dossier d'architecture", () => {
         project.evidence.map((entry) => [entry.symbol, entry.count]),
       );
       expect(counted, project.id).toEqual(MEASURED[project.id]);
+    }
+  });
+
+  it('ne publie de comptes que pour un dépôt que le lecteur peut ouvrir', () => {
+    for (const project of architectures.projects) {
+      if (project.evidence.length === 0) continue;
+
+      expect(
+        project.sourceUrl,
+        `${project.id} publie des comptes sans dépôt public : un chiffre relevé dans une base privée dit son échelle et ne se vérifie pas`,
+      ).not.toBeNull();
     }
   });
 
