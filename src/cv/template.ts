@@ -96,6 +96,25 @@ h2, h3, h4 { break-after: avoid; }
    full without leaving an orphan. */
 p { orphans: 3; widows: 3; }
 
+/* Editorial prose is justified, from the same token as the site and the
+   application — see the "text" group in design/tokens.json.
+
+   Only the profile paragraphs: a bullet is a line you scan, and a bullet
+   justified opens gaps to fill a width nobody asked to be filled.
+
+   "hyphenate-limit-chars" is what keeps it from being worse than no
+   hyphenation: left alone the engine cuts a six-letter company name in half.
+   Eight letters minimum, four either side.
+
+   NOTE: no backtick anywhere in here. This whole stylesheet lives inside a
+   template literal, and a backtick in a comment closes it — which is exactly
+   how the first version of this block failed to compile. */
+.summary p {
+  text-align: var(--align-prose);
+  hyphens: auto;
+  hyphenate-limit-chars: 8 4 4;
+}
+
 section { margin-top: var(--gap-5); }
 
 /* ── Section headings ── */

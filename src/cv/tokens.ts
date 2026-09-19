@@ -28,6 +28,14 @@ const TokensSchema = z.object({
   space: z.record(z.string(), z.number()),
   radius: z.record(z.string(), z.number()),
   type: z.record(z.string(), z.number()),
+  /**
+   * How a block of text is set. The vocabulary is platform-neutral — `start`,
+   * `center`, `end`, `justify` — and happens to be CSS's own here, which is a
+   * coincidence of this medium rather than the reason for it: the application
+   * maps the same four values onto `TextAlignment`, which has no justified
+   * case and reaches TextKit for it.
+   */
+  text: z.object({ align: z.record(z.string(), z.enum(['start', 'center', 'end', 'justify'])) }),
   a11y: z.object({ minTouchTarget: z.number(), contrast: z.string() }).loose(),
 });
 
@@ -73,5 +81,8 @@ export function toCssVariables(tokens: DesignTokens): string {
   lines.push(`--font-display: "${tokens.font.display.family}", ${tokens.font.display.fallback};`);
   lines.push(`--font-text: "${tokens.font.text.family}", ${tokens.font.text.fallback};`);
   lines.push(`--font-mono: ${tokens.font.mono.family}, ${tokens.font.mono.fallback};`);
+  for (const [role, value] of Object.entries(tokens.text.align)) {
+    lines.push(`--align-${role}: ${value};`);
+  }
   return lines.join('\n    ');
 }
