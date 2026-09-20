@@ -34,7 +34,7 @@ export interface CvDocument {
   readonly locale: Locale;
   readonly labels: CvLabels;
   readonly identity: {
-    readonly fullName: string;
+    readonly formalName: string;
     readonly headline: string;
     readonly facts: readonly string[];
     readonly email: string;
@@ -97,7 +97,7 @@ export function buildCvDocument(portfolio: Portfolio, locale: Locale): CvDocumen
     locale,
     labels: CV_LABELS[locale],
     identity: {
-      fullName: profile.name.full,
+      formalName: profile.name.formal,
       headline: profile.headline,
       facts: [profile.location, profile.remote, profile.languages],
       email: profile.contact.email,

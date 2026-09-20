@@ -19,12 +19,12 @@
   {
     "id": "apps",
     "eyebrow": {
-      "fr": "En production",
-      "en": "In production"
+      "fr": "Applications en production",
+      "en": "Apps in production"
     },
     "title": {
-      "fr": "33 applications, 3 territoires, un même socle",
-      "en": "33 apps, 3 territories, one platform"
+      "fr": "33 applications de transport sur lesquelles j'ai travaillé",
+      "en": "33 transport apps I have worked on"
     },
     "intro": {
       "fr": "Chez Instant System, les applications de transport sont construites en marque blanche sur un socle commun. **La couche de billettique que je développe et maintiens est embarquée dans chacune de celles-ci** — de Lyon à la Toscane, jusqu'à la Polynésie française.",
@@ -38,17 +38,14 @@
   {
     "id": "depth",
     "eyebrow": {
-      "fr": "Expertise",
-      "en": "Expertise"
+      "fr": "Compétences clés",
+      "en": "Key skills"
     },
     "title": {
-      "fr": "Les sujets que je maîtrise le mieux",
-      "en": "The subjects I know best"
+      "fr": "Quelques compétences clés, et des exemples concrets d'utilisation",
+      "en": "A few key skills, and concrete examples of them in use"
     },
-    "intro": {
-      "fr": "Trois sujets sur lesquels je peux entrer dans le détail, en entretien comme en revue de code.",
-      "en": "Three subjects I can go into detail on, in an interview as in a code review."
-    },
+    "intro": null,
     "note": null
   },
   {

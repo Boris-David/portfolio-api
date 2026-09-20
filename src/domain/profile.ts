@@ -15,15 +15,21 @@ export type Link = z.infer<typeof LinkSchema>;
 /**
  * The identity and the headline.
  *
- * Two forms of the name coexist by editorial decision: the short form is shown
- * everywhere, the long form is reserved for the footer and the résumé. So they
- * are two fields, not one string to be truncated.
+ * Two forms of the name coexist by editorial decision. `display` is shown
+ * everywhere; `formal` is the one the résumé header carries — the surname in
+ * capitals, the way a French CV sets it.
+ *
+ * It was called `full` and held the civil name in full until 2026-09-20. The
+ * author asked for the short form there too: *"tout le monde n'a pas
+ * forcément accès à mon nom complet aussi facilement"*. The field was renamed
+ * with the value, because a field named `full` holding an abbreviation is a
+ * small lie that the next reader pays for.
  */
 export const ProfileSchema = z
   .object({
     name: z.object({
       display: z.string().min(1),
-      full: z.string().min(1),
+      formal: z.string().min(1),
     }),
     headline: prose(),
     availability: prose(),
@@ -36,9 +42,16 @@ export const ProfileSchema = z
      * illustrates. The reference is by `slug`, not by URL: the App Store
      * address is already carried by the case study, and copying it here would
      * make a second place to fix.
+     *
+     * `description` says what the **product** does. It is separate from
+     * `media.alt`, which describes the **picture** for somebody who cannot see
+     * it — the two were the same string, so the sentence a sighted reader read
+     * as a pitch was also the one VoiceOver read as a description of a
+     * screenshot. Neither job was done well.
      */
     showcase: z.object({
       media: MediaSchema,
+      description: prose(),
       caseStudy: z.string().regex(/^[a-z0-9-]+$/),
     }),
     contact: z.object({
@@ -57,12 +70,23 @@ export const ProfileSchema = z
 export type Profile = z.infer<typeof ProfileSchema>;
 
 /**
- * A publishable figure and its caption.
+ * A publishable figure, what it counts, and what it means.
  *
  * `value` and `unit` are separate because presentation treats them
  * differently — the unit carries the visual accent. `countTo` is filled in
  * only for genuinely countable values: a client can animate those, while the
- * others ("~1", "> 99,8") have no count-up that would mean anything.
+ * others ("~5", "> 99,9") have no count-up that would mean anything.
+ *
+ * ## Two lengths, two jobs — not two copies
+ *
+ * `caption` names what the figure counts, in a few words: it goes under the
+ * number wherever the column is narrow, and the résumé puts three of them side
+ * by side on a page that has to stay at two.
+ *
+ * `detail` is the sentence the author would say out loud. It goes where there
+ * is a measure to read it on — a full-width row in the app, the proof bar on
+ * the site. Neither can be derived from the other, and a surface picks the one
+ * its layout can carry rather than truncating the wrong one.
  */
 export const MetricSchema = z
   .object({
@@ -71,6 +95,7 @@ export const MetricSchema = z
     unit: label().nullable(),
     countTo: z.number().int().positive().nullable(),
     caption: prose(),
+    detail: prose(),
   })
   .meta({ id: 'Metric' });
 
