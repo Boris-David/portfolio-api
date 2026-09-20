@@ -697,6 +697,13 @@
             ],
             "format": "uri"
           },
+          "summary": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
           "role": {
             "type": "string",
             "enum": [
@@ -713,6 +720,7 @@
           "appStoreId",
           "appStoreUrl",
           "sourceUrl",
+          "summary",
           "role"
         ]
       },

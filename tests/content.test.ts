@@ -90,6 +90,20 @@ describe("l'inventaire des applications", () => {
     }
   });
 
+  it("donne de quoi présenter chaque app dont il est l'auteur", () => {
+    // Vu à l'écran avant d'être écrit ici : l'onglet « Mes apps » tire son
+    // sous-titre de l'étude de cas, et l'app sans étude n'affichait que son
+    // nom au-dessus d'un bouton. Une carte muette.
+    const studied = new Set(portfolio.fr.caseStudies.map((study) => study.slug));
+
+    for (const app of portfolio.fr.apps.items.filter((item) => item.role === 'end-to-end')) {
+      expect(
+        studied.has(app.slug) || app.summary !== null,
+        `${app.slug} n'a ni étude de cas ni résumé : sa carte n'aurait rien à dire`,
+      ).toBe(true);
+    }
+  });
+
   it('donne au moins un lien à chaque application', () => {
     for (const app of portfolio.fr.apps.items) {
       expect(

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { label } from './text.js';
+import { label, prose } from './text.js';
 
 /**
  * The nature of the contribution made to the app.
@@ -34,6 +34,15 @@ export const AppSchema = z
     appStoreUrl: z.url().nullable(),
     /** The public repository, when the code is open. */
     sourceUrl: z.url().nullable(),
+    /**
+     * One sentence on what the app is — for an app with no case study.
+     *
+     * `null` where a case study already says it: the study's subtitle is the
+     * better sentence and duplicating it would be a second copy to keep in
+     * step. So this is not "a description field nobody filled in", it is the
+     * fallback for the apps that have no longer story to tell.
+     */
+    summary: prose().nullable(),
     role: AppRoleSchema,
   })
   .meta({ id: 'App' });
