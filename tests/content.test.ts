@@ -124,7 +124,7 @@ describe('la personnalité', () => {
       const written = portfolio[locale].profile.personality.summary.map(plainText).join(' ');
 
       for (const adjective of [/\bleader\b/i, /\bjovial/i, /\bdéterminé/i, /\baltruiste/i]) {
-        expect(written, `${locale} : ${adjective}`).not.toMatch(adjective);
+        expect(written, `${locale} : ${adjective.source}`).not.toMatch(adjective);
       }
     }
   });
