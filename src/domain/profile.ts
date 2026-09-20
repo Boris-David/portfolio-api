@@ -54,6 +54,29 @@ export const ProfileSchema = z
       description: prose(),
       caseStudy: z.string().regex(/^[a-z0-9-]+$/),
     }),
+    /**
+     * Who he is when he is not writing code.
+     *
+     * ## Why this is content and not a paragraph of the summary
+     *
+     * The summary answers "what has he done". This answers "what is he like to
+     * work with", and a reader looks for it at a different moment — usually
+     * after being convinced by the rest, never before. Two questions, two
+     * places, so a reader who only wants the first does not wade through the
+     * second.
+     *
+     * ## Facts, not adjectives
+     *
+     * The editorial rule is explicit: *the facts carry the personality better
+     * than the adjectives do*. "Class representative, president of the student
+     * committee, team captain" says leader without using the word, and it is
+     * checkable in a way "leader" never is. `interests` stays a plain list —
+     * it is the one place where naming things is the honest form.
+     */
+    personality: z.object({
+      summary: z.array(richText()).min(1),
+      interests: z.array(label()).min(1),
+    }),
     contact: z.object({
       email: z.email(),
       title: prose(),
