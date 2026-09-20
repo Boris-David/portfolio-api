@@ -114,6 +114,28 @@ describe("l'inventaire des applications", () => {
   });
 });
 
+describe('la personnalité', () => {
+  it("se raconte par des faits, pas par une liste d'adjectifs", () => {
+    // Règle éditoriale racine : « les faits portent la personnalité mieux que
+    // les adjectifs ». « Délégué de classe, président du comité étudiant,
+    // capitaine d'équipe » dit leader sans le mot, et se vérifie — ce que
+    // « leader » ne fait jamais.
+    for (const locale of LOCALES) {
+      const written = portfolio[locale].profile.personality.summary.map(plainText).join(' ');
+
+      for (const adjective of [/\bleader\b/i, /\bjovial/i, /\bdéterminé/i, /\baltruiste/i]) {
+        expect(written, `${locale} : ${adjective}`).not.toMatch(adjective);
+      }
+    }
+  });
+
+  it("nomme au moins un centre d'intérêt, dans les deux langues", () => {
+    for (const locale of LOCALES) {
+      expect(portfolio[locale].profile.personality.interests.length).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe('les liens publiés', () => {
   it('sont tous en HTTPS — un lien en clair sur un portfolio public est une faute', () => {
     for (const url of collectUrls(portfolio.fr)) {

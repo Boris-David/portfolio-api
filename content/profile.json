@@ -57,6 +57,37 @@
     },
     "caseStudy": "kcalories"
   },
+  "personality": {
+    "$comment": "Traits revendiqués et centres d'intérêt : _private/brief/DOSSIER.md et l'ancien CV. Les rôles (délégué, président du comité étudiant, capitaine) viennent de l'auteur, le 2026-09-20. Règle éditoriale : les faits portent la personnalité mieux que les adjectifs — on ne réintroduit pas « leader, jovial, déterminé » en liste.",
+    "summary": [
+      {
+        "fr": "Délégué de classe, président du comité étudiant, capitaine d'équipe : j'ai toujours pris les rôles où il faut tenir un groupe. Aujourd'hui, c'est l'équipe de **football de l'entreprise**.",
+        "en": "Class representative, president of the student committee, team captain: I have always taken the roles where somebody has to hold a group together. These days it is the **company football team**."
+      },
+      {
+        "fr": "En dehors du code : la **musculation** et le goût du dépassement de soi, le football, la photo de paysages, les voyages.",
+        "en": "Away from the code: **strength training** and the taste for pushing myself, football, landscape photography, travel."
+      }
+    ],
+    "interests": [
+      {
+        "fr": "Musculation",
+        "en": "Strength training"
+      },
+      {
+        "fr": "Football",
+        "en": "Football"
+      },
+      {
+        "fr": "Photo de paysages",
+        "en": "Landscape photography"
+      },
+      {
+        "fr": "Voyages",
+        "en": "Travel"
+      }
+    ]
+  },
   "contact": {
     "email": "amissan.ag@outlook.fr",
     "title": {

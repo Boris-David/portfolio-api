@@ -202,6 +202,30 @@
               "caseStudy"
             ]
           },
+          "personality": {
+            "type": "object",
+            "properties": {
+              "summary": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RichText"
+                },
+                "minItems": 1
+              },
+              "interests": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "summary",
+              "interests"
+            ]
+          },
           "contact": {
             "type": "object",
             "properties": {
@@ -259,6 +283,7 @@
           "languages",
           "summary",
           "showcase",
+          "personality",
           "contact",
           "footer"
         ]
