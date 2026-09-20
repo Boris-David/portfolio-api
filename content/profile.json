@@ -59,44 +59,62 @@
   },
   "personality": {
     "$comment": "Traits revendiqués et centres d'intérêt : _private/brief/DOSSIER.md et l'ancien CV. Les rôles (délégué, président du comité étudiant, capitaine) viennent de l'auteur, le 2026-09-20. Règle éditoriale : les faits portent la personnalité mieux que les adjectifs — on ne réintroduit pas « leader, jovial, déterminé » en liste.",
+    "highlight": {
+      "title": "Mister Good Mood",
+      "detail": {
+        "fr": "Élu en 2024, au vote de toute l'entreprise.",
+        "en": "Voted for by the whole company, in 2024."
+      }
+    },
     "summary": [
       {
-        "fr": "Délégué de classe, président du comité étudiant, capitaine d'équipe : j'ai toujours pris les rôles où il faut tenir un groupe. Aujourd'hui, **Scrum Master et coach** de mon équipe, et capitaine de l'équipe de football de l'entreprise.",
-        "en": "Class representative, president of the student committee, team captain: I have always taken the roles where somebody has to hold a group together. These days, **Scrum Master and coach** of my team, and captain of the company football team."
+        "fr": "Délégué de classe, président du comité étudiant, capitaine d'équipe. Ça a commencé tôt et ça ne s'est jamais arrêté : aujourd'hui je suis **Scrum Master et coach** de mon équipe, et je porte le brassard au foot de l'entreprise.",
+        "en": "Class representative, president of the student committee, team captain. It started early and never really stopped: today I am **Scrum Master and coach** of my team, and I wear the armband for the company football side."
       },
       {
-        "fr": "En 2024, l'entreprise entière a voté : j'en suis sorti **Mister Good Mood**.",
-        "en": "In 2024 the whole company voted, and I came out of it **Mister Good Mood**."
+        "fr": "Les sujets dont personne ne veut, je les prends. La **bibliothèque anti-fraude** est sortie d'un sprint d'innovation où j'avais carte blanche. L'authentification n'avait pas bougé depuis 2019 et tout le monde la contournait — je l'ai reprise. Et travailler seul sur un périmètre entier ne me fait pas peur : je l'ai fait pendant un an.",
+        "en": "The subjects nobody wants, I take. The **anti-fraud library** came out of an innovation sprint where I had a free hand. Authentication had not moved since 2019 and everyone worked around it — I took it back. And being the only one on a whole scope does not scare me: I did it for a year."
       },
       {
-        "fr": "Je prends volontiers les sujets dont personne ne veut : la bibliothèque anti-fraude est née d'une **initiative en sprint d'innovation**, et la refonte de l'authentification d'un code que plus personne n'ouvrait. Et je sais tenir un périmètre **seul** quand c'est ce qu'il faut.",
-        "en": "I am glad to take the subjects nobody wants: the anti-fraud library came out of an **initiative in an innovation sprint**, and the authentication rebuild out of code nobody would open any more. And I can hold a scope **on my own** when that is what it takes."
-      },
-      {
-        "fr": "Et ce que je cherche ailleurs, c'est la même chose : le **dépassement de soi**. La nutrition et le fonctionnement du corps me passionnent — au point d'en avoir fait une application.",
-        "en": "And what I look for elsewhere is the same thing: **pushing myself**. Nutrition and the way the body works fascinate me — enough that I built an app out of it."
+        "fr": "En dehors, c'est la salle et le terrain. La **nutrition** et la mécanique du corps me passionnent — assez pour que j'en aie fait une application.",
+        "en": "Outside of that, it is the gym and the pitch. **Nutrition** and the mechanics of the body fascinate me — enough that I built an app out of it."
       }
     ],
     "interests": [
       {
-        "fr": "Musculation",
-        "en": "Strength training"
+        "id": "strength",
+        "label": {
+          "fr": "Musculation",
+          "en": "Strength training"
+        }
       },
       {
-        "fr": "Nutrition",
-        "en": "Nutrition"
+        "id": "nutrition",
+        "label": {
+          "fr": "Nutrition",
+          "en": "Nutrition"
+        }
       },
       {
-        "fr": "Football",
-        "en": "Football"
+        "id": "football",
+        "label": {
+          "fr": "Football",
+          "en": "Football"
+        }
       },
       {
-        "fr": "Photo de paysages",
-        "en": "Landscape photography"
+        "id": "photography",
+        "label": {
+          "fr": "Photo de paysages",
+          "en": "Landscape photography"
+        }
       },
       {
-        "fr": "Voyages",
-        "en": "Travel"
+        "id": "travel",
+        "label": {
+          "fr": "Voyages",
+          "en": "Travel"
+        }
       }
     ]
   },
