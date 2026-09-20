@@ -8,26 +8,44 @@
     "caption": {
       "fr": "d'utilisateurs des applications auxquelles j'ai contribué",
       "en": "users of the apps I have contributed to"
+    },
+    "detail": {
+      "fr": "C'est le nombre de personnes qui utilisent aujourd'hui une application à laquelle j'ai contribué.",
+      "en": "That is how many people use an app I have contributed to, today."
     }
   },
   {
     "id": "experience",
     "value": "6",
-    "unit": { "fr": "ans", "en": "yrs" },
+    "unit": {
+      "fr": "ans",
+      "en": "yrs"
+    },
     "countTo": 6,
     "caption": {
       "fr": "d'ingénierie iOS, depuis octobre 2020",
       "en": "of iOS engineering, since October 2020"
+    },
+    "detail": {
+      "fr": "Six années de développement iOS professionnel, dont une en alternance.",
+      "en": "Six years of professional iOS development, one of them as an apprentice."
     }
   },
   {
     "id": "kcalories-crash-free",
-    "value": { "fr": "> 99,9", "en": "> 99.9" },
+    "value": {
+      "fr": "> 99,9",
+      "en": "> 99.9"
+    },
     "unit": "%",
     "countTo": null,
     "caption": {
       "fr": "de sessions sans crash sur KCalories",
       "en": "crash-free sessions on KCalories"
+    },
+    "detail": {
+      "fr": "C'est le taux de sessions sans crash de KCalories, et la mesure du sérieux que je mets dans ce que je livre.",
+      "en": "That is KCalories' crash-free session rate, and the measure of the care I put into what I ship."
     }
   }
 ]

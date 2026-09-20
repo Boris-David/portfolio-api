@@ -2,7 +2,7 @@
   "$comment": "Identité, accroche et contact. La forme longue du nom est réservée au pied de page et au CV.",
   "name": {
     "display": "Amissan Amoussou-G.",
-    "full": "Amissan Boris-David Amoussou-Guenou"
+    "formal": "Amissan AMOUSSOU-G."
   },
   "headline": {
     "fr": "Ingénieur iOS senior",
@@ -17,8 +17,8 @@
     "en": "French Riviera, France"
   },
   "remote": {
-    "fr": "Opportunités de télétravail complet et fréquent",
-    "en": "Fully remote, or mostly remote"
+    "fr": "Télétravail complet ou fréquent",
+    "en": "Fully or mostly remote"
   },
   "languages": {
     "fr": "Français · anglais professionnel (TOEIC 840)",
@@ -39,6 +39,7 @@
     }
   ],
   "showcase": {
+    "$comment": "description dit ce que fait le PRODUIT ; media.alt décrit l'IMAGE pour qui ne la voit pas. Les deux étaient la même phrase, donc ni le lecteur ni VoiceOver n'étaient bien servis.",
     "media": {
       "id": "journal",
       "alt": {
@@ -46,9 +47,13 @@
         "en": "KCalories' main screen: the day's food diary."
       },
       "caption": {
-        "fr": "KCalories — sur l'App Store",
-        "en": "KCalories — on the App Store"
+        "fr": "KCalories",
+        "en": "KCalories"
       }
+    },
+    "description": {
+      "fr": "Le tableau de bord de KCalories : ses besoins en calories d'un coup d'œil, son nombre de pas, sa consommation d'eau du jour — et bien plus pour qui jeûne ou suit un régime particulier.",
+      "en": "KCalories' dashboard: calorie needs at a glance, step count, the day's water intake — and a good deal more for anyone fasting or on a particular diet."
     },
     "caseStudy": "kcalories"
   },

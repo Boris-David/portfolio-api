@@ -37,7 +37,7 @@ export function renderCvHtml(document: CvDocument, tokens: DesignTokens): string
 <html lang="${document.locale}">
 <head>
 <meta charset="utf-8">
-<title>${escapeHtml(`${identity.fullName} — ${labels.documentKind}`)}</title>
+<title>${escapeHtml(`${identity.formalName} — ${labels.documentKind}`)}</title>
 <style>
 ${embeddedFontFaces()}
 
@@ -386,7 +386,7 @@ function identityBlock(document: CvDocument): string {
     ),
   ];
   return `<header class="identity">
-  <h1>${escapeHtml(identity.fullName)}</h1>
+  <h1>${escapeHtml(identity.formalName)}</h1>
   <p class="headline">${escapeHtml(identity.headline)}</p>
   <ul class="facts">${facts.map((fact) => `<li>${fact}</li>`).join('')}</ul>
 </header>`;

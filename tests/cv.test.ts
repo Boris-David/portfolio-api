@@ -20,9 +20,14 @@ const tokens = loadDesignTokens();
 describe('le modèle du CV', () => {
   const document = buildCvDocument(portfolio.fr, 'fr');
 
-  it('porte la forme longue du nom, réservée au CV et au pied de page', () => {
-    expect(document.identity.fullName).toBe('Amissan Boris-David Amoussou-Guenou');
-    expect(document.identity.fullName).not.toBe(portfolio.fr.profile.name.display);
+  it('porte la forme formelle du nom, et pas le nom civil complet', () => {
+    // Arbitrage du 2026-09-20 : le CV circule, et le nom civil complet n'a pas
+    // à circuler avec lui — « tout le monde n'a pas forcément accès à mon nom
+    // complet aussi facilement ». Le patronyme en capitales est la convention
+    // française pour un CV ; le prénom ne l'est pas.
+    expect(document.identity.formalName).toBe('Amissan AMOUSSOU-G.');
+    expect(document.identity.formalName).not.toBe(portfolio.fr.profile.name.display);
+    expect(document.identity.formalName).not.toContain('Boris-David');
   });
 
   it('reprend toutes les expériences et tous les groupes de compétences', () => {
@@ -41,8 +46,8 @@ describe('le modèle du CV', () => {
   });
 
   it('lit ses intitulés de section dans le contenu', () => {
-    expect(document.expertise.heading).toBe('Expertise');
-    expect(document.production.heading).toBe('En production');
+    expect(document.expertise.heading).toBe('Compétences clés');
+    expect(document.production.heading).toBe('Applications en production');
   });
 });
 
@@ -115,7 +120,7 @@ describe('la couverture des polices', () => {
     for (const locale of ['fr', 'en'] as const) {
       const document = buildCvDocument(portfolio[locale], locale);
       const text = [
-        document.identity.fullName,
+        document.identity.formalName,
         document.identity.headline,
         ...document.summary.map(plainText),
         ...document.experience.flatMap((job) => [
