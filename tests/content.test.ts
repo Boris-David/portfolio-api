@@ -114,6 +114,23 @@ describe("l'inventaire des applications", () => {
   });
 });
 
+/**
+ * Les adjectifs que l'auteur a revendiqués, et qui ne doivent pas être écrits.
+ *
+ * Ce n'est pas qu'ils soient faux : c'est qu'ils ne se vérifient pas. La règle
+ * éditoriale demande le fait qui les démontre — « la bibliothèque anti-fraude
+ * est née d'une initiative en sprint d'innovation » dit proactif, et un lecteur
+ * peut aller voir.
+ */
+const ADJECTIVES = [
+  /\bleader\b/i,
+  /\bjovial/i,
+  /\bdéterminé/i,
+  /\baltruiste/i,
+  /\bproactif/i,
+  /\bautonome/i,
+];
+
 describe('la personnalité', () => {
   it("se raconte par des faits, pas par une liste d'adjectifs", () => {
     // Règle éditoriale racine : « les faits portent la personnalité mieux que
@@ -123,8 +140,8 @@ describe('la personnalité', () => {
     for (const locale of LOCALES) {
       const written = portfolio[locale].profile.personality.summary.map(plainText).join(' ');
 
-      for (const adjective of [/\bleader\b/i, /\bjovial/i, /\bdéterminé/i, /\baltruiste/i]) {
-        expect(written, `${locale} : ${adjective}`).not.toMatch(adjective);
+      for (const adjective of ADJECTIVES) {
+        expect(written, `${locale} : ${adjective.source}`).not.toMatch(adjective);
       }
     }
   });
