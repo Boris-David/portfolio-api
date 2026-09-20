@@ -205,6 +205,23 @@
           "personality": {
             "type": "object",
             "properties": {
+              "highlight": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "title",
+                  "detail"
+                ]
+              },
               "summary": {
                 "type": "array",
                 "items": {
@@ -215,13 +232,27 @@
               "interests": {
                 "type": "array",
                 "items": {
-                  "type": "string",
-                  "minLength": 1
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z-]+$"
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "label"
+                  ]
                 },
                 "minItems": 1
               }
             },
             "required": [
+              "highlight",
               "summary",
               "interests"
             ]

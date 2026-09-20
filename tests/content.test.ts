@@ -146,9 +146,28 @@ describe('la personnalité', () => {
     }
   });
 
-  it("nomme au moins un centre d'intérêt, dans les deux langues", () => {
+  it("nomme ses centres d'intérêt sous une identité stable", () => {
     for (const locale of LOCALES) {
-      expect(portfolio[locale].profile.personality.interests.length).toBeGreaterThan(0);
+      const { interests } = portfolio[locale].profile.personality;
+      expect(interests.length).toBeGreaterThan(0);
+
+      // L'identité sert à poser un glyphe à côté du libellé, côté client. Deux
+      // fois la même donnerait deux fois le même glyphe sans que rien ne le
+      // dise ; et elle doit être la même dans les deux langues, sinon elle ne
+      // sert à rien.
+      const ids = interests.map((interest) => interest.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      expect(ids).toEqual(portfolio.fr.profile.personality.interests.map((item) => item.id));
+    }
+  });
+
+  it('met en avant un fait, avec ce qui le rend vérifiable', () => {
+    for (const locale of LOCALES) {
+      const { highlight } = portfolio[locale].profile.personality;
+
+      expect(highlight.title.length).toBeGreaterThan(0);
+      // Le détail est ce qui empêche la distinction d'être une auto-proclamation.
+      expect(highlight.detail).toMatch(/2024/);
     }
   });
 });

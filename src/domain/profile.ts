@@ -74,8 +74,24 @@ export const ProfileSchema = z
      * it is the one place where naming things is the honest form.
      */
     personality: z.object({
+      /**
+       * The one fact worth setting apart, because a reader remembers it.
+       *
+       * It was a paragraph among the others and it disappeared into them. A
+       * distinction voted by a whole company is not a sentence of running
+       * prose — it is the thing somebody repeats about him afterwards, and
+       * the surfaces set it as such.
+       */
+      highlight: z.object({ title: label(), detail: prose() }),
       summary: z.array(richText()).min(1),
-      interests: z.array(label()).min(1),
+      /**
+       * `id` is a stable identity, `label` is what a reader sees.
+       *
+       * The identity exists so a client can put a glyph beside it. The glyph
+       * name itself stays out of the content: an SF Symbol means nothing to
+       * the website and nothing at all to the résumé.
+       */
+      interests: z.array(z.object({ id: z.string().regex(/^[a-z-]+$/), label: label() })).min(1),
     }),
     contact: z.object({
       email: z.email(),
